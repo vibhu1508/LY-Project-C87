@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Crown, Mail, Briefcase, Shield, Search, Newspaper, ArrowRight, Hexagon, Send, Bot, Radar, Reply, DollarSign, MapPin, Calendar, UserPlus, Twitter } from "lucide-react";
+import { Mail, Briefcase, Shield, Search, Newspaper, ArrowRight, Hexagon, Send, Bot, Radar, Reply, DollarSign, MapPin, Calendar, UserPlus, Twitter } from "lucide-react";
 import TopBar from "@/components/TopBar";
 import type { LucideIcon } from "lucide-react";
 import { agentsApi } from "@/api/agents";
@@ -24,18 +24,18 @@ const AGENT_ICONS: Record<string, LucideIcon> = {
 };
 
 const AGENT_COLORS: Record<string, string> = {
-  email_inbox_management: "hsl(38,80%,55%)",
-  job_hunter: "hsl(30,85%,58%)",
-  vulnerability_assessment: "hsl(15,70%,52%)",
-  deep_research_agent: "hsl(210,70%,55%)",
-  tech_news_reporter: "hsl(270,60%,55%)",
-  competitive_intel_agent: "hsl(190,70%,45%)",
-  email_reply_agent: "hsl(45,80%,55%)",
-  hubspot_revenue_leak_detector: "hsl(145,60%,42%)",
-  local_business_extractor: "hsl(350,65%,55%)",
-  meeting_scheduler: "hsl(220,65%,55%)",
-  sdr_agent: "hsl(165,55%,45%)",
-  twitter_news_agent: "hsl(200,85%,55%)",
+  email_inbox_management: "hsl(142,70%,45%)",
+  job_hunter: "hsl(148,68%,42%)",
+  vulnerability_assessment: "hsl(156,70%,40%)",
+  deep_research_agent: "hsl(138,62%,48%)",
+  tech_news_reporter: "hsl(144,60%,44%)",
+  competitive_intel_agent: "hsl(150,65%,40%)",
+  email_reply_agent: "hsl(134,62%,46%)",
+  hubspot_revenue_leak_detector: "hsl(160,56%,36%)",
+  local_business_extractor: "hsl(146,58%,42%)",
+  meeting_scheduler: "hsl(152,58%,43%)",
+  sdr_agent: "hsl(140,54%,41%)",
+  twitter_news_agent: "hsl(158,62%,45%)",
 };
 
 function agentSlug(path: string): string {
@@ -99,21 +99,21 @@ export default function Home() {
       {/* Main content */}
       <div className="flex-1 flex flex-col items-center justify-center p-6">
         <div className="w-full max-w-2xl">
-          {/* Queen Bee greeting */}
+          {/* Master Agent greeting */}
           <div className="text-center mb-8">
             <div
               className="inline-flex w-12 h-12 rounded-2xl items-center justify-center mb-4"
               style={{
-                backgroundColor: "hsl(45,95%,58%,0.1)",
-                border: "1.5px solid hsl(45,95%,58%,0.25)",
-                boxShadow: "0 0 24px hsl(45,95%,58%,0.08)",
+                backgroundColor: "hsl(145,70%,46%,0.12)",
+                border: "1.5px solid hsl(145,70%,46%,0.28)",
+                boxShadow: "0 0 24px hsl(145,70%,46%,0.14)",
               }}
             >
-              <Crown className="w-6 h-6 text-primary" />
+              <Bot className="w-6 h-6 text-primary" />
             </div>
             <h1 className="text-xl font-semibold text-foreground mb-1.5">What can I help you with?</h1>
             <p className="text-sm text-muted-foreground">
-              I'm your Queen Bee — I create and coordinate worker agents to handle tasks for you.
+              I am your Master Agent. I plan and coordinate child agents to execute your goals.
             </p>
           </div>
 
@@ -136,7 +136,7 @@ export default function Home() {
                     handleSubmit(e);
                   }
                 }}
-                placeholder="Describe a task for the hive..."
+                placeholder="Describe a task for TeamAgents..."
                 className="w-full bg-transparent px-5 py-4 pr-12 text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none rounded-xl resize-none overflow-y-auto"
               />
               <div className="absolute right-3 bottom-2.5">
@@ -166,7 +166,7 @@ export default function Home() {
               className="inline-flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-lg border border-border/60 text-muted-foreground hover:text-foreground hover:border-primary/30 hover:bg-primary/[0.03] transition-all"
             >
               <Bot className="w-4 h-4 text-primary/60" />
-              <span>My Agents</span>
+              <span>Child Agents</span>
             </button>
           </div>
 
@@ -200,7 +200,7 @@ export default function Home() {
                   {agents.map((agent) => {
                     const slug = agentSlug(agent.path);
                     const Icon = AGENT_ICONS[slug] || Hexagon;
-                    const color = AGENT_COLORS[slug] || "hsl(45,95%,58%)";
+                    const color = AGENT_COLORS[slug] || "hsl(145,70%,46%)";
                     return (
                       <button
                         key={agent.path}

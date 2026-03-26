@@ -2,7 +2,7 @@ import { memo, useState, useRef, useEffect, useMemo } from "react";
 import {
   Send,
   Square,
-  Crown,
+  Sparkles,
   Cpu,
   Check,
   Loader2,
@@ -91,8 +91,8 @@ interface ChatPanelProps {
   contextUsage?: Record<string, ContextUsageEntry>;
 }
 
-const queenColor = "hsl(45,95%,58%)";
-const workerColor = "hsl(220,60%,55%)";
+const queenColor = "hsl(145,72%,48%)";
+const workerColor = "hsl(155,56%,44%)";
 
 function getColor(_agent: string, role?: "queen" | "worker"): string {
   if (role === "queen") return queenColor;
@@ -102,14 +102,14 @@ function getColor(_agent: string, role?: "queen" | "worker"): string {
 // Honey-drizzle palette — based on color-hex.com/color-palette/80116
 // #8e4200 · #db6f02 · #ff9624 · #ffb825 · #ffd69c + adjacent warm tones
 const TOOL_HEX = [
-  "#db6f02", // rich orange
-  "#ffb825", // golden yellow
-  "#ff9624", // bright orange
-  "#c48820", // warm bronze
-  "#e89530", // honey
-  "#d4a040", // goldenrod
-  "#cc7a10", // caramel
-  "#e5a820", // sunflower
+  "#2CC96A",
+  "#36B75C",
+  "#21A768",
+  "#3FAF7A",
+  "#2FA05B",
+  "#46C184",
+  "#2EBC74",
+  "#1D9B59",
 ];
 
 function toolHex(name: string): string {
@@ -277,7 +277,7 @@ const MessageBubble = memo(
           }}
         >
           {isQueen ? (
-            <Crown className="w-4 h-4" style={{ color }} />
+            <Sparkles className="w-4 h-4" style={{ color }} />
           ) : (
             <Cpu className="w-3.5 h-3.5" style={{ color }} />
           )}
@@ -307,7 +307,7 @@ const MessageBubble = memo(
                     : (msg.phase ?? queenPhase) === "planning"
                       ? "planning"
                       : "building"
-                : "Worker"}
+                : "Child Agent"}
             </span>
           </div>
           <div
@@ -547,7 +547,7 @@ export default function ChatPanel({
                 boxShadow: `0 0 12px ${queenColor}20`,
               }}
             >
-              <Crown className="w-4 h-4" style={{ color: queenColor }} />
+              <Sparkles className="w-4 h-4" style={{ color: queenColor }} />
             </div>
             <div className="border border-primary/20 bg-primary/5 rounded-2xl rounded-tl-md px-4 py-3">
               <div className="flex gap-1.5">
@@ -621,9 +621,9 @@ export default function ChatPanel({
                 className="flex items-center gap-2 flex-1 min-w-0"
                 title={`Queen: ${(queenUsage.estimatedTokens / 1000).toFixed(1)}k / ${(queenUsage.maxTokens / 1000).toFixed(0)}k tokens \u00b7 ${queenUsage.messageCount} messages`}
               >
-                <Crown
+                <Sparkles
                   className="w-3 h-3 flex-shrink-0"
-                  style={{ color: "hsl(45,95%,58%)" }}
+                  style={{ color: "hsl(145,72%,48%)" }}
                 />
                 <div className="flex-1 h-1.5 rounded-full bg-muted/50 overflow-hidden min-w-[60px]">
                   <div
@@ -635,7 +635,7 @@ export default function ChatPanel({
                           ? "hsl(0,65%,55%)"
                           : queenUsage.usagePct >= 70
                             ? "hsl(35,90%,55%)"
-                            : "hsl(45,95%,58%)",
+                            : "hsl(145,72%,48%)",
                     }}
                   />
                 </div>
@@ -764,7 +764,7 @@ export default function ChatPanel({
                 }
               }}
               placeholder={
-                disabled ? "Connecting to agent..." : "Message Queen Bee..."
+                disabled ? "Connecting to child agent..." : "Message Master Agent..."
               }
               disabled={disabled}
               className="flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground disabled:opacity-50 disabled:cursor-not-allowed resize-none overflow-y-auto"

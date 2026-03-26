@@ -34,7 +34,7 @@ export type HistorySession = {
   message_count?: number;
 };
 
-const LABEL_STORE_KEY = "hive:history-labels";
+const LABEL_STORE_KEY = "teamagents:history-labels";
 
 function loadLabelStore(): Record<string, string> {
   try {
@@ -62,7 +62,7 @@ function defaultLabel(s: HistorySession, index: number): string {
       .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
       .join(" ");
   }
-  return `New Agent${index > 0 ? ` #${index + 1}` : ""}`;
+  return `New Child Agent${index > 0 ? ` #${index + 1}` : ""}`;
 }
 
 function formatDateTime(createdAt: number, sessionId: string): string {

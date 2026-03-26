@@ -40,6 +40,11 @@ def episodic_memory_path(d: date | None = None) -> Path:
     return _queen_dir() / "memories" / f"MEMORY-{d.strftime('%Y-%m-%d')}.md"
 
 
+def _human_date_label(d: date) -> str:
+    """Return a cross-platform human-readable date label."""
+    return f"{d.strftime('%B')} {d.day}, {d.year}"
+
+
 def read_semantic_memory() -> str:
     path = semantic_memory_path()
     return path.read_text(encoding="utf-8").strip() if path.exists() else ""
@@ -90,10 +95,11 @@ def format_for_injection() -> str:
         if len(content) > _EPISODIC_CHAR_BUDGET:
             content = content[:_EPISODIC_CHAR_BUDGET] + "\n\n…(truncated)"
         today = date.today()
+        date_label = _human_date_label(d)
         if d == today:
-            label = f"## Today — {d.strftime('%B %-d, %Y')}"
+            label = f"## Today — {date_label}"
         else:
-            label = f"## {d.strftime('%B %-d, %Y')}"
+            label = f"## {date_label}"
         parts.append(f"{label}\n\n{content}")
 
     if not parts:

@@ -22,6 +22,26 @@ import { ApiError } from "@/api/client";
 
 const makeId = () => Math.random().toString(36).slice(2, 9);
 
+function sanitizeLogValue(value: unknown): unknown {
+  if (typeof value === "string") {
+    return value
+      .replace(/queen-graph/gi, "master-agent-graph")
+      .replace(/queen/gi, "master-agent")
+      .replace(/hive/gi, "teamagents");
+  }
+  if (Array.isArray(value)) {
+    return value.map(sanitizeLogValue);
+  }
+  if (value && typeof value === "object") {
+    const out: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
+      out[k] = sanitizeLogValue(v);
+    }
+    return out;
+  }
+  return value;
+}
+
 /**
  * Strip the instance suffix added when multiple tabs share the same agentType.
  * e.g. "exports/deep_research::abc123" → "exports/deep_research"
@@ -168,7 +188,7 @@ setPos({
           </button>
         )}
         <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-          {step === "root" ? "Add Tab" : step === "new-agent-choice" ? "New Agent" : "Open Agent"}
+          {step === "root" ? "Add Tab" : step === "new-agent-choice" ? "New Child Agent" : "Open Agent"}
         </span>
       </div>
 
@@ -185,7 +205,7 @@ setPos({
             <button className={optionClass} onClick={() => setStep("new-agent-choice")}>
               <span className={iconWrap}><Sparkles className="w-3.5 h-3.5 text-primary" /></span>
               <div>
-                <div className="font-medium leading-tight">New agent</div>
+                <div className="font-medium leading-tight">New Child Agent</div>
                 <div className="text-xs text-muted-foreground mt-0.5">Build or clone a fresh agent</div>
               </div>
             </button>
@@ -198,7 +218,7 @@ setPos({
               <span className={iconWrap}><Sparkles className="w-3.5 h-3.5 text-primary" /></span>
               <div>
                 <div className="font-medium leading-tight">From scratch</div>
-                <div className="text-xs text-muted-foreground mt-0.5">Empty pipeline + Queen Bee setup</div>
+                <div className="text-xs text-muted-foreground mt-0.5">Empty pipeline + Master Agent setup</div>
               </div>
             </button>
             <button className={optionClass} onClick={() => setStep("clone-pick")}>
@@ -472,7 +492,7 @@ export default function Workspace() {
     // coming from home, so the new tab won't overwrite existing ones.
     if (initialPrompt && hasExplicitAgent) {
       const rawLabel = initialAgent.startsWith("new-agent")
-        ? "New Agent"
+        ? "New Child Agent"
         : formatAgentDisplayName(initialAgent);
       const existingNewAgentCount = Object.keys(initial).filter(
         k => (k === "new-agent" || k.startsWith("new-agent-")) && (initial[k] || []).length > 0
@@ -487,7 +507,7 @@ export default function Workspace() {
     // If ?session= was passed we intentionally do NOT create a tab here —
     // handleHistoryOpen is called post-mount and does proper dedup.
     if (initialAgent === "new-agent") {
-      const s = createSession("new-agent", "New Agent");
+      const s = createSession("new-agent", "New Child Agent");
       initial["new-agent"] = [...(initial["new-agent"] || []), s];
     } else if (!initialSessionId) {
       // Only auto-create an agent tab if there's no session to restore
@@ -831,7 +851,7 @@ export default function Workspace() {
           const alreadyHasMessages = (activeSess?.messages?.length ?? 0) > 0;
           if (restoreFrom && !alreadyHasMessages) {
             try {
-              const restored = await restoreSessionMessages(restoreFrom, agentType, "Queen Bee");
+              const restored = await restoreSessionMessages(restoreFrom, agentType, "Master Agent");
               preRestoredMsgs.push(...restored.messages);
               restoredPhase = restored.restoredPhase;
               restoredFlowchartMap = restored.flowchartMap;
@@ -843,7 +863,7 @@ export default function Workspace() {
             // Messages already cached in localStorage — still fetch events for
             // non-message state (phase, flowchart) that isn't cached.
             try {
-              const restored = await restoreSessionMessages(restoreFrom, agentType, "Queen Bee");
+              const restored = await restoreSessionMessages(restoreFrom, agentType, "Master Agent");
               restoredPhase = restored.restoredPhase;
               restoredFlowchartMap = restored.flowchartMap;
               restoredOriginalDraft = restored.originalDraft;
@@ -920,7 +940,7 @@ export default function Workspace() {
         queenPhaseRef.current[agentType] = qPhase;
         updateAgentState(agentType, {
           sessionId: liveSession.session_id,
-          displayName: "Queen Bee",
+          displayName: "Master Agent",
           ready: true,
           loading: false,
           queenReady: true,
@@ -1601,12 +1621,19 @@ export default function Workspace() {
     (agentType: string, event: AgentEvent) => {
       const streamId = event.stream_id;
       const isQueen = streamId === "queen";
-      if (isQueen) console.log('[QUEEN] handleSSEEvent:', event.type, 'agentType:', agentType);
+      if (isQueen) {
+        console.log(
+          "[MASTER_AGENT] handleSSEEvent:",
+          sanitizeLogValue(event.type),
+          "agentType:",
+          sanitizeLogValue(agentType),
+        );
+      }
       // Drop queen message content while suppressing the auto-intro after a cold-restore.
       // Uses a synchronous ref to avoid race conditions with React state batching.
       const suppressQueenMessages = isQueen && suppressIntroRef.current.has(agentType);
       const agentDisplayName = agentStates[agentType]?.displayName;
-      const displayName = isQueen ? "Queen Bee" : (agentDisplayName || undefined);
+      const displayName = isQueen ? "Master Agent" : (agentDisplayName || undefined);
       const role = isQueen ? "queen" as const : "worker" as const;
       const ts = fmtLogTs(event.timestamp);
       // Turn counter is per-stream so queen and worker tool pills don't
@@ -1633,7 +1660,7 @@ export default function Workspace() {
             // Warn if prior LLM snapshots are being dropped (edge case: execution_completed never arrived)
             const priorSnapshots = agentStates[agentType]?.llmSnapshots || {};
             if (Object.keys(priorSnapshots).length > 0) {
-              console.debug(`[hive] execution_started: dropping ${Object.keys(priorSnapshots).length} unflushed LLM snapshot(s)`);
+              console.debug(`[teamagents] execution_started: dropping ${Object.keys(priorSnapshots).length} unflushed LLM snapshot(s)`);
             }
             // Insert a run divider when a new run_id is detected
             const incomingRunId = event.run_id || null;
@@ -1716,7 +1743,15 @@ export default function Workspace() {
         case "client_input_requested":
         case "llm_text_delta": {
           const chatMsg = sseEventToChatMessage(event, agentType, displayName, currentTurn);
-          if (isQueen) console.log('[QUEEN] chatMsg:', chatMsg?.id, chatMsg?.content?.slice(0, 50), 'turn:', currentTurn);
+          if (isQueen) {
+            console.log(
+              "[MASTER_AGENT] chatMsg:",
+              sanitizeLogValue(chatMsg?.id),
+              sanitizeLogValue(chatMsg?.content?.slice(0, 50)),
+              "turn:",
+              currentTurn,
+            );
+          }
           if (chatMsg && !suppressQueenMessages) {
             // Queen emits multiple client_output_delta / llm_text_delta snapshots
             // across iterations and inner tool-loop turns.  Merge all inner_turns
@@ -1775,7 +1810,18 @@ export default function Workspace() {
           }
 
           if (event.type === "client_input_requested") {
-            console.log('[CLIENT_INPUT_REQ] stream_id:', streamId, 'isQueen:', isQueen, 'node_id:', event.node_id, 'prompt:', (event.data?.prompt as string)?.slice(0, 80), 'agentType:', agentType);
+            console.log(
+              "[CLIENT_INPUT_REQ] stream_id:",
+              sanitizeLogValue(streamId),
+              "isMasterAgent:",
+              isQueen,
+              "node_id:",
+              sanitizeLogValue(event.node_id),
+              "prompt:",
+              sanitizeLogValue((event.data?.prompt as string)?.slice(0, 80)),
+              "agentType:",
+              sanitizeLogValue(agentType),
+            );
             const rawOptions = event.data?.options;
             const options = Array.isArray(rawOptions) ? (rawOptions as string[]) : null;
             const rawQuestions = event.data?.questions;
@@ -1840,7 +1886,12 @@ export default function Workspace() {
                   thread: agentType,
                   createdAt: eventCreatedAt,
                 };
-                console.log('[CLIENT_INPUT_REQ] creating worker_input_request msg:', workerInputMsg.id, 'content:', prompt.slice(0, 80));
+                console.log(
+                  "[CLIENT_INPUT_REQ] creating worker_input_request msg:",
+                  sanitizeLogValue(workerInputMsg.id),
+                  "content:",
+                  sanitizeLogValue(prompt.slice(0, 80)),
+                );
                 upsertChatMessage(agentType, workerInputMsg);
               }
               updateAgentState(agentType, {
@@ -1944,7 +1995,17 @@ export default function Workspace() {
         }
 
         case "tool_call_started": {
-          console.log('[TOOL_PILL] tool_call_started received:', { isQueen, nodeId: event.node_id, streamId: event.stream_id, agentType, executionId: event.execution_id, toolName: event.data?.tool_name });
+          console.log(
+            "[TOOL_PILL] tool_call_started received:",
+            sanitizeLogValue({
+              isMasterAgent: isQueen,
+              nodeId: event.node_id,
+              streamId: event.stream_id,
+              agentType,
+              executionId: event.execution_id,
+              toolName: event.data?.tool_name,
+            }),
+          );
 
           // queenBuilding is now driven by queen_phase_changed events
 
@@ -2025,7 +2086,7 @@ export default function Workspace() {
               };
             });
           } else {
-            console.log('[TOOL_PILL] SKIPPED: no node_id', event.node_id);
+            console.log("[TOOL_PILL] SKIPPED: no node_id", sanitizeLogValue(event.node_id));
           }
           break;
         }
@@ -2628,7 +2689,7 @@ export default function Workspace() {
         content: text, timestamp: "", type: "user", thread, createdAt: Date.now(),
       };
       const promptMsg: ChatMessage = {
-        id: makeId(), agent: "Queen Bee", agentColor: "",
+        id: makeId(), agent: "Master Agent", agentColor: "",
         content: "Before we get started, you'll need to configure your credentials. Click the **Credentials** button in the top bar to connect the required integrations for this agent.",
         timestamp: "", role: "queen" as const, thread, createdAt: Date.now(),
       };
@@ -2966,7 +3027,7 @@ export default function Workspace() {
           k => (k === "new-agent" || k.startsWith("new-agent-")) && (sessionsByAgent[k] || []).length > 0
         ).length
       : 0;
-    const rawLabel = agentLabel || (isNewAgent ? "New Agent" : formatAgentDisplayName(agentType));
+    const rawLabel = agentLabel || (isNewAgent ? "New Child Agent" : formatAgentDisplayName(agentType));
     const displayLabel = existingNewAgentCount === 0 ? rawLabel : `${rawLabel} #${existingNewAgentCount + 1}`;
     const newSession = createSession(tabKey, displayLabel);
 
@@ -3017,7 +3078,7 @@ export default function Workspace() {
     ).length;
     const rawLabel = agentName ||
       (agentPath ? agentPath.replace(/\/$/, "").split("/").pop()?.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase()) || agentPath : null) ||
-      "New Agent";
+      "New Child Agent";
     const label = existingTabCount === 0 ? rawLabel : `${rawLabel} #${existingTabCount + 1}`;
     const newSession = createSession(resolvedAgentType, label);
     newSession.backendSessionId = sessionId;

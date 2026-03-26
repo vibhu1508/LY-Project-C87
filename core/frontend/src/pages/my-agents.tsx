@@ -55,7 +55,7 @@ export default function MyAgents() {
       <div className="flex-1 p-6 md:p-10 max-w-5xl mx-auto w-full overflow-y-auto">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-xl font-semibold text-foreground">My Agents</h1>
+            <h1 className="text-xl font-semibold text-foreground">Child Agents</h1>
             <p className="text-sm text-muted-foreground mt-1">
               {activeCount} active · {idleCount} idle
             </p>
@@ -65,7 +65,7 @@ export default function MyAgents() {
             className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"
           >
             <Plus className="w-4 h-4" />
-            New Agent
+            New Child Agent
           </button>
         </div>
 

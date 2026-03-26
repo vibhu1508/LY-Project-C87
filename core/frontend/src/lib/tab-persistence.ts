@@ -6,7 +6,7 @@
 import type { ChatMessage } from "@/components/ChatPanel";
 import type { GraphNode } from "@/components/graph-types";
 
-export const TAB_STORAGE_KEY = "hive:workspace-tabs";
+export const TAB_STORAGE_KEY = "teamagents:workspace-tabs";
 
 export interface PersistedTabState {
   tabs: Array<{ id: string; agentType: string; tabKey?: string; label: string; backendSessionId?: string; historySourceId?: string }>;

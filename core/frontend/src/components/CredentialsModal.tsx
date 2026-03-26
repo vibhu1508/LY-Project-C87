@@ -202,20 +202,20 @@ export default function CredentialsModal({
         }
         return;
       }
-      // Empty input on aden_api_key — fall through to re-open Aden
+      // Empty input on aden_api_key — fall through to reopen platform auth flow
       if (row.id !== "aden_api_key") return;
     }
 
     if (row.id === "aden_api_key" && row.adenSupported) {
-      // Aden Platform key — open Aden so user can grab key from Developers tab
-      window.open("https://hive.adenhq.com/", "_blank", "noopener");
+      // Platform key — open TeamAgents console so user can grab the key from Developers tab
+      window.open("https://adenhq.com/", "_blank", "noopener");
       pendingAdenAuth.current = true;
       return;
     }
 
     if (row.adenSupported) {
-      // OAuth credential — redirect to Aden platform
-      window.open("https://hive.adenhq.com/", "_blank", "noopener");
+      // OAuth credential — redirect to TeamAgents console
+      window.open("https://adenhq.com/", "_blank", "noopener");
       return;
     }
 
@@ -428,7 +428,7 @@ export default function CredentialsModal({
                       </div>
                     ) : row.adenSupported && !adenPlatformConnected && row.id !== "aden_api_key" ? (
                       <span className="text-[11px] text-muted-foreground italic flex-shrink-0">
-                        Connect Aden Platform key first
+                        Connect TeamAgents platform key first
                       </span>
                     ) : (
                       <button

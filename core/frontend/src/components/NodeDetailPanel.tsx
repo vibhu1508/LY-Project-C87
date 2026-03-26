@@ -253,7 +253,7 @@ function SubagentsTab({ subAgentIds, allNodeSpecs, subagentReports }: { subAgent
 
   return (
     <div className="space-y-3">
-      <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1">Sub-agents ({subAgentIds.length})</p>
+      <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1">Child Agents ({subAgentIds.length})</p>
       {subAgentIds.map(saId => {
         const spec = allNodeSpecs.find(n => n.id === saId);
         const reports = subagentReports.filter(r => r.subagent_id === saId);

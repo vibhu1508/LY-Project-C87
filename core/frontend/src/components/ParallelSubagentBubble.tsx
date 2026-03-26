@@ -7,17 +7,17 @@ import MarkdownContent from "@/components/MarkdownContent";
 // Shared helpers
 // ---------------------------------------------------------------------------
 
-const workerColor = "hsl(220,60%,55%)";
+const workerColor = "hsl(148,64%,46%)";
 
 const SUBAGENT_COLORS = [
-  "hsl(220,60%,55%)",
-  "hsl(260,50%,55%)",
-  "hsl(180,50%,45%)",
-  "hsl(30,70%,50%)",
-  "hsl(340,55%,50%)",
-  "hsl(150,45%,45%)",
-  "hsl(45,80%,50%)",
-  "hsl(290,45%,55%)",
+  "hsl(148,64%,46%)",
+  "hsl(140,56%,42%)",
+  "hsl(160,54%,40%)",
+  "hsl(132,48%,44%)",
+  "hsl(154,58%,38%)",
+  "hsl(145,46%,40%)",
+  "hsl(166,48%,42%)",
+  "hsl(138,52%,45%)",
 ];
 
 function colorForIndex(i: number): string {
@@ -325,7 +325,7 @@ const ParallelSubagentBubble = memo(
           {/* Header */}
           <div className="flex items-center gap-2 mb-1">
             <span className="font-medium text-xs" style={{ color: workerColor }}>
-              {groups.length === 1 ? "Sub-agent" : "Parallel Agents"}
+              {groups.length === 1 ? "Child Agent" : "Parallel Child Agents"}
             </span>
             <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-md bg-muted text-muted-foreground">
               {activeCount > 0 ? `${activeCount} running` : `${groups.length} done`}

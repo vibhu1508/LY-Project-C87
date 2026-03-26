@@ -1,6 +1,26 @@
 import { useEffect, useRef, useCallback, useState } from "react";
 import type { AgentEvent, EventTypeName } from "@/api/types";
 
+function sanitizeLogValue(value: unknown): unknown {
+  if (typeof value === "string") {
+    return value
+      .replace(/queen-graph/gi, "master-agent-graph")
+      .replace(/queen/gi, "master-agent")
+      .replace(/hive/gi, "teamagents");
+  }
+  if (Array.isArray(value)) {
+    return value.map(sanitizeLogValue);
+  }
+  if (value && typeof value === "object") {
+    const out: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
+      out[k] = sanitizeLogValue(v);
+    }
+    return out;
+  }
+  return value;
+}
+
 interface UseSSEOptions {
   sessionId: string;
   eventTypes?: EventTypeName[];
@@ -91,7 +111,12 @@ export function useMultiSSE({ sessions, onEvent }: UseMultiSSEOptions) {
     // Close connections for removed agents OR changed session IDs
     for (const [agentType, entry] of current) {
       if (!desired.has(agentType) || sessions[agentType] !== entry.sessionId) {
-        console.log('[SSE] closing:', agentType, entry.sessionId, desired.has(agentType) ? '(session changed)' : '(removed)');
+        console.log(
+          "[SSE] closing:",
+          sanitizeLogValue(agentType),
+          sanitizeLogValue(entry.sessionId),
+          desired.has(agentType) ? "(session changed)" : "(removed)",
+        );
         entry.es.close();
         current.delete(agentType);
       }
@@ -102,21 +127,33 @@ export function useMultiSSE({ sessions, onEvent }: UseMultiSSEOptions) {
       if (!sessionId || current.has(agentType)) continue;
 
       const url = `/api/sessions/${sessionId}/events`;
-      console.log('[SSE] opening:', agentType, sessionId);
+      console.log("[SSE] opening:", sanitizeLogValue(agentType), sanitizeLogValue(sessionId));
       const es = new EventSource(url);
 
       es.onopen = () => {
-        console.log('[SSE] connected:', agentType, sessionId);
+        console.log("[SSE] connected:", sanitizeLogValue(agentType), sanitizeLogValue(sessionId));
       };
 
       es.onerror = () => {
-        console.error('[SSE] error:', agentType, sessionId, 'readyState:', es.readyState);
+        console.error(
+          "[SSE] error:",
+          sanitizeLogValue(agentType),
+          sanitizeLogValue(sessionId),
+          "readyState:",
+          es.readyState,
+        );
       };
 
       es.onmessage = (e: MessageEvent) => {
         try {
           const event: AgentEvent = JSON.parse(e.data);
-          console.log('[SSE] received:', agentType, event.type, event.stream_id, event.node_id);
+          console.log(
+            "[SSE] received:",
+            sanitizeLogValue(agentType),
+            sanitizeLogValue(event.type),
+            sanitizeLogValue(event.stream_id),
+            sanitizeLogValue(event.node_id),
+          );
           onEventRef.current(agentType, event);
         } catch {
           // Ignore parse errors (keepalive comments)

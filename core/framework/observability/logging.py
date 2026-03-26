@@ -36,6 +36,31 @@ _STANDARD_LOG_RECORD_FIELDS = set(logging.makeLogRecord({}).__dict__)
 ANSI_ESCAPE_PATTERN = re.compile(r"\x1b\[[0-9;]*m|\033\[[0-9;]*m")
 
 
+def _rebrand_terms_text(text: str) -> str:
+    """Rewrite legacy Hive/Queen wording in emitted log text only."""
+    return (
+        text.replace("Queen Bee", "Master Agent")
+        .replace("queen bee", "master agent")
+        .replace("Queen", "Master Agent")
+        .replace("queen", "master-agent")
+        .replace("Hive", "TeamAgents")
+        .replace("hive", "teamagents")
+    )
+
+
+def _rebrand_value(value: Any) -> Any:
+    """Apply branding rewrite recursively for string-like log payload fields."""
+    if isinstance(value, str):
+        return _rebrand_terms_text(value)
+    if isinstance(value, list):
+        return [_rebrand_value(v) for v in value]
+    if isinstance(value, tuple):
+        return tuple(_rebrand_value(v) for v in value)
+    if isinstance(value, dict):
+        return {k: _rebrand_value(v) for k, v in value.items()}
+    return value
+
+
 def strip_ansi_codes(text: str) -> str:
     """Remove ANSI escape codes from text for clean JSON logging."""
     return ANSI_ESCAPE_PATTERN.sub("", text)
@@ -57,7 +82,7 @@ class StructuredFormatter(logging.Formatter):
         context = trace_context.get() or {}
 
         # Strip ANSI codes from message for clean JSON output
-        message = strip_ansi_codes(record.getMessage())
+        message = _rebrand_terms_text(strip_ansi_codes(record.getMessage()))
 
         # Build base log entry
         log_entry = {
@@ -68,15 +93,15 @@ class StructuredFormatter(logging.Formatter):
         }
 
         # Add trace context (trace_id, execution_id, agent_id, etc.) - AUTOMATIC!
-        log_entry.update(context)
+        log_entry.update({k: _rebrand_value(v) for k, v in context.items()})
 
         # Add custom fields from extra (optional)
         event = getattr(record, "event", None)
         if event is not None:
             if isinstance(event, str):
-                log_entry["event"] = strip_ansi_codes(str(event))
+                log_entry["event"] = _rebrand_terms_text(strip_ansi_codes(str(event)))
             else:
-                log_entry["event"] = event
+                log_entry["event"] = _rebrand_value(event)
 
         latency_ms = getattr(record, "latency_ms", None)
         if latency_ms is not None:
@@ -100,7 +125,7 @@ class StructuredFormatter(logging.Formatter):
                 continue
             if key in log_entry:
                 continue
-            log_entry[key] = value
+            log_entry[key] = _rebrand_value(value)
 
         # Add exception info if present (strip ANSI codes from exception text too)
         if record.exc_info:
@@ -132,11 +157,11 @@ class HumanReadableFormatter(logging.Formatter):
         """Format log record as human-readable string."""
         # Get trace context; omit trace_id and execution_id in terminal for readability
         context = trace_context.get() or {}
-        agent_id = context.get("agent_id", "")
+        agent_id = str(context.get("agent_id", ""))
 
         prefix_parts = []
         if agent_id:
-            prefix_parts.append(f"agent:{agent_id}")
+            prefix_parts.append(f"agent:{_rebrand_terms_text(agent_id)}")
 
         context_prefix = f"[{' | '.join(prefix_parts)}] " if prefix_parts else ""
 
@@ -151,11 +176,12 @@ class HumanReadableFormatter(logging.Formatter):
         event = ""
         record_event = getattr(record, "event", None)
         if record_event is not None:
-            event = f" [{record_event}]"
+            event = f" [{_rebrand_value(record_event)}]"
 
         timestamp = self.formatTime(record, "%Y-%m-%d %H:%M:%S")
         # Format message: TIMESTAMP [LEVEL] [trace context] message
-        return f"{timestamp} {color}[{level}]{reset} {context_prefix}{record.getMessage()}{event}"
+        message = _rebrand_terms_text(record.getMessage())
+        return f"{timestamp} {color}[{level}]{reset} {context_prefix}{message}{event}"
 
 
 def configure_logging(
@@ -197,6 +223,9 @@ def configure_logging(
             format = "json"
         else:
             format = "human"
+
+    # Suppress noisy third-party console output (not all libraries use std logging).
+    _suppress_third_party_console_noise()
 
     # Select formatter
     if format == "json":
@@ -254,6 +283,26 @@ def _disable_third_party_colors() -> None:
         # LiteLLM respects NO_COLOR, but we can also suppress debug info
         if hasattr(litellm, "suppress_debug_info"):
             litellm.suppress_debug_info = True  # type: ignore[attr-defined]
+    except (ImportError, AttributeError):
+        pass
+
+
+def _suppress_third_party_console_noise() -> None:
+    """Disable direct third-party stdout/stderr helper spam where possible."""
+    # Keep explicit user overrides if already set.
+    os.environ.setdefault("LITELLM_LOG", "ERROR")
+    os.environ.setdefault("LITELLM_DISABLE_TELEMETRY", "1")
+
+    try:
+        import litellm
+
+        # Prevent recurring "Provider List" / "Give Feedback" helper prints.
+        if hasattr(litellm, "suppress_debug_info"):
+            litellm.suppress_debug_info = True  # type: ignore[attr-defined]
+        if hasattr(litellm, "set_verbose"):
+            litellm.set_verbose = False  # type: ignore[attr-defined]
+        if hasattr(litellm, "telemetry"):
+            litellm.telemetry = False  # type: ignore[attr-defined]
     except (ImportError, AttributeError):
         pass
 

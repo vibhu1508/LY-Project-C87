@@ -70,7 +70,7 @@ def recall_diary(query: str = "", days_back: int = 7) -> str:
             if not matched:
                 continue
             content = "### ".join(matched)
-        label = d.strftime("%B %-d, %Y")
+        label = f"{d.strftime('%B')} {d.day}, {d.year}"
         if d == today:
             label = f"Today — {label}"
         entry = f"## {label}\n\n{content}"

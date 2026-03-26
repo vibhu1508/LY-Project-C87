@@ -1698,7 +1698,7 @@ def cmd_serve(args: argparse.Namespace) -> int:
         dashboard_url = f"http://{args.host}:{args.port}"
 
         print()
-        print(f"Hive API server running on {dashboard_url}")
+        print(f"TeamAgents API server running on {dashboard_url}")
         if has_frontend:
             print(f"Dashboard: {dashboard_url}")
         print(f"Health: {dashboard_url}/api/health")
