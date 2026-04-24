@@ -40,7 +40,7 @@ GITHUB_CREDENTIALS = {
         api_key_instructions="""To get a GitHub Personal Access Token:
 1. Go to GitHub Settings > Developer settings > Personal access tokens
 2. Click "Generate new token" > "Generate new token (classic)"
-3. Give your token a descriptive name (e.g., "Hive Agent")
+3. Give your token a descriptive name (e.g., "TeamAgents Agent")
 4. Select the following scopes:
    - repo (Full control of private repositories)
    - read:org (Read org and team membership - optional)

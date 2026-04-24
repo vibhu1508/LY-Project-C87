@@ -6,8 +6,8 @@ from pathlib import Path
 
 
 def _load_preferred_model() -> str:
-    """Load preferred model from ~/.hive/configuration.json."""
-    config_path = Path.home() / ".hive" / "configuration.json"
+    """Load preferred model from ~/.teamagents/configuration.json."""
+    config_path = Path.home() / ".teamagents" / "configuration.json"
     if config_path.exists():
         try:
             with open(config_path, encoding="utf-8") as f:
@@ -34,17 +34,17 @@ default_config = RuntimeConfig()
 
 @dataclass
 class AgentMetadata:
-    name: str = "Queen"
+    name: str = "Master Agent"
     version: str = "1.0.0"
     description: str = (
-        "Native coding agent that builds production-ready Hive agent packages "
-        "from natural language specifications. Deeply understands the agent framework "
-        "and produces complete Python packages with goals, nodes, edges, system prompts, "
-        "MCP configuration, and tests."
+        "Education-specific automation agent that builds production-ready TeamAgents "
+        "agent packages from natural language specifications. Dedicated to automating "
+        "tasks for students, teachers, and school/college management."
     )
     intro_message: str = (
-        "I'm Queen — I build Hive agents. Describe what kind of agent "
-        "you want to create and I'll design, implement, and validate it for you."
+        "I'm the Master Agent — your Education Automation Architect. Describe the workflow "
+        "you want to automate for your classroom, studies, or school management, and I'll "
+        "design, implement, and validate a custom agent for you."
     )
 
 

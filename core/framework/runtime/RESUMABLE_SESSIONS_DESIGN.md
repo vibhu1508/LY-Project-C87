@@ -75,7 +75,7 @@ class Checkpoint:
 #### Storage Structure
 
 ```
-~/.hive/agents/{agent_name}/
+~/.teamagents/agents/{agent_name}/
 └── sessions/
     └── session_YYYYMMDD_HHMMSS_{uuid}/
         ├── state.json                    # Session state (existing)
@@ -476,22 +476,22 @@ async def resume_session(
 
 ```bash
 # List resumable sessions
-hive sessions list --agent deep_research_agent --status failed
+teamagents sessions list --agent deep_research_agent --status failed
 
 # Show checkpoints for a session
-hive sessions checkpoints session_20260208_143022_abc12345
+teamagents sessions checkpoints session_20260208_143022_abc12345
 
 # Inspect a checkpoint
-hive sessions inspect session_20260208_143022_abc12345 checkpoint_20260208_143045_abc789
+teamagents sessions inspect session_20260208_143022_abc12345 checkpoint_20260208_143045_abc789
 
 # Resume a session
-hive sessions resume session_20260208_143022_abc12345
+teamagents sessions resume session_20260208_143022_abc12345
 
 # Resume from specific checkpoint
-hive sessions resume session_20260208_143022_abc12345 --checkpoint checkpoint_20260208_143030_xyz123
+teamagents sessions resume session_20260208_143022_abc12345 --checkpoint checkpoint_20260208_143030_xyz123
 
 # Resume with memory modifications (e.g., after adding credentials)
-hive sessions resume session_20260208_143022_abc12345 --set api_key=sk-...
+teamagents sessions resume session_20260208_143022_abc12345 --set api_key=sk-...
 ```
 
 ### 6. Configuration
@@ -591,10 +591,10 @@ class MyAgent(Agent):
    - `resume_session`
 
 2. **Add CLI commands**
-   - `hive sessions list`
-   - `hive sessions checkpoints`
-   - `hive sessions inspect`
-   - `hive sessions resume`
+   - `teamagents sessions list`
+   - `teamagents sessions checkpoints`
+   - `teamagents sessions inspect`
+   - `teamagents sessions resume`
 
 3. **Update TUI**
    - Show resumable sessions in UI

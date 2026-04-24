@@ -20,12 +20,12 @@ _DEFAULT_SKILLS_DIR = Path(__file__).parent / "_default_skills"
 
 # Ordered list of default skills (name → directory)
 SKILL_REGISTRY: dict[str, str] = {
-    "hive.note-taking": "note-taking",
-    "hive.batch-ledger": "batch-ledger",
-    "hive.context-preservation": "context-preservation",
-    "hive.quality-monitor": "quality-monitor",
-    "hive.error-recovery": "error-recovery",
-    "hive.task-decomposition": "task-decomposition",
+    "teamagents.note-taking": "note-taking",
+    "teamagents.batch-ledger": "batch-ledger",
+    "teamagents.context-preservation": "context-preservation",
+    "teamagents.quality-monitor": "quality-monitor",
+    "teamagents.error-recovery": "error-recovery",
+    "teamagents.task-decomposition": "task-decomposition",
 }
 
 # All shared memory keys used by default skills (for permission auto-inclusion)
@@ -82,7 +82,7 @@ class DefaultSkillManager:
                     SkillErrorCode.SKILL_NOT_FOUND,
                     what=f"Default skill SKILL.md not found: '{skill_path}'",
                     why=f"The framework skill '{skill_name}' is missing its SKILL.md file.",
-                    fix="Reinstall the hive framework — this file is part of the package.",
+                    fix="Reinstall the teamagents framework — this file is part of the package.",
                 )
                 error_count += 1
                 continue
@@ -95,7 +95,7 @@ class DefaultSkillManager:
                     SkillErrorCode.SKILL_PARSE_ERROR,
                     what=f"Failed to parse default skill '{skill_name}'",
                     why=f"parse_skill_md returned None for '{skill_path}'.",
-                    fix="Reinstall the hive framework — this file may be corrupted.",
+                    fix="Reinstall the teamagents framework — this file may be corrupted.",
                 )
                 error_count += 1
                 continue

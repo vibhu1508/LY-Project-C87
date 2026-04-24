@@ -106,7 +106,7 @@ Get detailed information about a specific repository.
 
 **Example:**
 ```python
-result = github_get_repo(owner="adenhq", repo="hive")
+result = github_get_repo(owner="adenhq", repo="teamagents")
 print(f"Stars: {result['data']['stargazers_count']}")
 ```
 
@@ -184,7 +184,7 @@ List issues for a repository.
 **Example:**
 ```python
 # List open issues
-issues = github_list_issues(owner="adenhq", repo="hive", state="open")
+issues = github_list_issues(owner="adenhq", repo="teamagents", state="open")
 for issue in issues["data"]:
     print(f"#{issue['number']}: {issue['title']}")
 ```
@@ -217,7 +217,7 @@ Get a specific issue by number.
 
 **Example:**
 ```python
-issue = github_get_issue(owner="adenhq", repo="hive", issue_number=2805)
+issue = github_get_issue(owner="adenhq", repo="teamagents", issue_number=2805)
 print(issue["data"]["body"])
 ```
 
@@ -327,7 +327,7 @@ List pull requests for a repository.
 
 **Example:**
 ```python
-prs = github_list_pull_requests(owner="adenhq", repo="hive", state="open")
+prs = github_list_pull_requests(owner="adenhq", repo="teamagents", state="open")
 for pr in prs["data"]:
     print(f"PR #{pr['number']}: {pr['title']}")
 ```
@@ -360,7 +360,7 @@ Get a specific pull request.
 
 **Example:**
 ```python
-pr = github_get_pull_request(owner="adenhq", repo="hive", pull_number=2814)
+pr = github_get_pull_request(owner="adenhq", repo="teamagents", pull_number=2814)
 print(f"PR by {pr['data']['user']['login']}")
 ```
 
@@ -475,7 +475,7 @@ List branches for a repository.
 
 **Example:**
 ```python
-branches = github_list_branches(owner="adenhq", repo="hive")
+branches = github_list_branches(owner="adenhq", repo="teamagents")
 for branch in branches["data"]:
     print(f"Branch: {branch['name']}")
 ```
@@ -508,7 +508,7 @@ Get information about a specific branch.
 
 **Example:**
 ```python
-main_branch = github_get_branch(owner="adenhq", repo="hive", branch="main")
+main_branch = github_get_branch(owner="adenhq", repo="teamagents", branch="main")
 print(f"Latest commit: {main_branch['data']['commit']['sha']}")
 ```
 
@@ -568,9 +568,9 @@ github_create_pull_request(
 ### Repository Analytics
 ```python
 # Analyze repository activity
-repo = github_get_repo(owner="adenhq", repo="hive")
-issues = github_list_issues(owner="adenhq", repo="hive", state="open")
-prs = github_list_pull_requests(owner="adenhq", repo="hive", state="open")
+repo = github_get_repo(owner="adenhq", repo="teamagents")
+issues = github_list_issues(owner="adenhq", repo="teamagents", state="open")
+prs = github_list_pull_requests(owner="adenhq", repo="teamagents", state="open")
 
 print(f"Stars: {repo['data']['stargazers_count']}")
 print(f"Open Issues: {len(issues['data'])}")

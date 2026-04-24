@@ -78,7 +78,7 @@ def _patch_litellm_anthropic_oauth() -> None:
         )
         # Check both authorization header and x-api-key for OAuth tokens.
         # litellm's optionally_handle_anthropic_oauth only checks headers["authorization"],
-        # but hive passes OAuth tokens via api_key — so litellm puts them into x-api-key.
+        # but teamagents passes OAuth tokens via api_key — so litellm puts them into x-api-key.
         # Anthropic rejects OAuth tokens in x-api-key; they must go in Authorization: Bearer.
         auth = result.get("authorization", "")
         x_api_key = result.get("x-api-key", "")
@@ -253,9 +253,9 @@ OPENROUTER_TOOL_COMPAT_CACHE_TTL_SECONDS = 3600
 OPENROUTER_TOOL_COMPAT_MODEL_CACHE: dict[str, float] = {}
 
 # Directory for dumping failed requests
-FAILED_REQUESTS_DIR = Path.home() / ".hive" / "failed_requests"
+FAILED_REQUESTS_DIR = Path.home() / ".teamagents" / "failed_requests"
 
-# Maximum number of dump files to retain in ~/.hive/failed_requests/.
+# Maximum number of dump files to retain in ~/.teamagents/failed_requests/.
 # Older files are pruned automatically to prevent unbounded disk growth.
 MAX_FAILED_REQUEST_DUMPS = 50
 
@@ -506,8 +506,8 @@ class LiteLLMProvider(LLMProvider):
             # Strip a trailing /v1 in case the user's saved config has the old value.
             if api_base and api_base.rstrip("/").endswith("/v1"):
                 api_base = api_base.rstrip("/")[:-3]
-        elif model.lower().startswith("hive/"):
-            model = "anthropic/" + model[len("hive/") :]
+        elif model.lower().startswith("teamagents/"):
+            model = "anthropic/" + model[len("teamagents/") :]
             if api_base and api_base.rstrip("/").endswith("/v1"):
                 api_base = api_base.rstrip("/")[:-3]
         self.model = model
@@ -549,7 +549,7 @@ class LiteLLMProvider(LLMProvider):
             return OPENROUTER_API_BASE
         if model_lower.startswith("kimi/"):
             return KIMI_API_BASE
-        if model_lower.startswith("hive/"):
+        if model_lower.startswith("teamagents/"):
             return HIVE_API_BASE
         return None
 

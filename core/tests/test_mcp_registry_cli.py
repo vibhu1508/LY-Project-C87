@@ -1,4 +1,4 @@
-"""Integration tests for hive mcp CLI commands."""
+"""Integration tests for teamagents mcp CLI commands."""
 
 from __future__ import annotations
 
@@ -83,7 +83,7 @@ def sample_index(registry_home):
                     },
                 ],
                 "tags": ["project-management", "atlassian"],
-                "hive": {"profiles": ["productivity"], "min_version": "0.5.0"},
+                "teamagents": {"profiles": ["productivity"], "min_version": "0.5.0"},
             },
             "slack": {
                 "version": "2.0.0",
@@ -482,7 +482,7 @@ def test_info_not_found_fails(registry):
 
     assert rc == 1
     assert "not installed" in err
-    assert "hive mcp install" in err
+    assert "teamagents mcp install" in err
 
 
 # ── config ─────────────────────────────────────────────────────────
@@ -647,8 +647,8 @@ def test_update_pinned_server_fails_with_correct_remediation(registry, sample_in
 
     assert rc == 1
     assert "pinned" in err
-    assert "hive mcp remove" in err
-    assert "hive mcp install" in err
+    assert "teamagents mcp remove" in err
+    assert "teamagents mcp install" in err
     # Must NOT suggest config --set pinned=false (config only writes env/header overrides)
     assert "config" not in err
 
@@ -870,7 +870,7 @@ def test_update_nonexistent_server_fails(registry):
 
     assert rc == 1
     assert "not installed" in err
-    assert "hive mcp install" in err
+    assert "teamagents mcp install" in err
 
 
 # ── helper ────────────────────────────────────────────────────────
@@ -889,7 +889,7 @@ def _raise(exc):
 
 
 def test_main_dispatches_mcp_list_through_real_argparse(registry_home, monkeypatch):
-    """hive mcp list goes through main() -> register_mcp_commands -> cmd_mcp_list."""
+    """teamagents mcp list goes through main() -> register_mcp_commands -> cmd_mcp_list."""
     from framework.runner.mcp_registry import MCPRegistry
 
     reg = MCPRegistry(base_path=registry_home)
@@ -899,7 +899,7 @@ def test_main_dispatches_mcp_list_through_real_argparse(registry_home, monkeypat
         lambda base_path=None: reg,
     )
 
-    monkeypatch.setattr("sys.argv", ["hive", "mcp", "list"])
+    monkeypatch.setattr("sys.argv", ["teamagents", "mcp", "list"])
 
     from framework.cli import main
 
@@ -914,7 +914,7 @@ def test_main_dispatches_mcp_list_through_real_argparse(registry_home, monkeypat
 def test_main_dispatches_mcp_install_through_real_argparse(
     registry_home, sample_index, monkeypatch
 ):
-    """hive mcp install jira goes through main() -> real argparse -> cmd_mcp_install."""
+    """teamagents mcp install jira goes through main() -> real argparse -> cmd_mcp_install."""
     from framework.runner.mcp_registry import MCPRegistry
 
     reg = MCPRegistry(base_path=registry_home)
@@ -924,7 +924,7 @@ def test_main_dispatches_mcp_install_through_real_argparse(
         lambda base_path=None: reg,
     )
     monkeypatch.setattr("builtins.input", lambda prompt: "")
-    monkeypatch.setattr("sys.argv", ["hive", "mcp", "install", "jira"])
+    monkeypatch.setattr("sys.argv", ["teamagents", "mcp", "install", "jira"])
 
     from framework.cli import main
 
@@ -937,7 +937,7 @@ def test_main_dispatches_mcp_install_through_real_argparse(
 
 
 def test_main_dispatches_mcp_update_named_through_real_argparse(registry_home, monkeypatch):
-    """hive mcp update nonexistent goes through main() and returns error code 1."""
+    """teamagents mcp update nonexistent goes through main() and returns error code 1."""
     from framework.runner.mcp_registry import MCPRegistry
 
     reg = MCPRegistry(base_path=registry_home)
@@ -946,7 +946,7 @@ def test_main_dispatches_mcp_update_named_through_real_argparse(registry_home, m
         "framework.runner.mcp_registry_cli._get_registry",
         lambda base_path=None: reg,
     )
-    monkeypatch.setattr("sys.argv", ["hive", "mcp", "update", "nonexistent"])
+    monkeypatch.setattr("sys.argv", ["teamagents", "mcp", "update", "nonexistent"])
 
     from framework.cli import main
 

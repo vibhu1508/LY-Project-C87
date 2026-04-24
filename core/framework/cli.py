@@ -1,19 +1,19 @@
 """
-Command-line interface for Aden Hive.
+Command-line interface for Aden TeamAgents.
 
 Usage:
-    hive run exports/my-agent --input '{"key": "value"}'
-    hive info exports/my-agent
-    hive validate exports/my-agent
-    hive list exports/
-    hive dispatch exports/ --input '{"key": "value"}'
-    hive shell exports/my-agent
+    teamagents run exports/my-agent --input '{"key": "value"}'
+    teamagents info exports/my-agent
+    teamagents validate exports/my-agent
+    teamagents list exports/
+    teamagents dispatch exports/ --input '{"key": "value"}'
+    teamagents shell exports/my-agent
 
 Testing commands:
-    hive test-run <agent_path> --goal <goal_id>
-    hive test-debug <agent_path> <test_name>
-    hive test-list <agent_path>
-    hive test-stats <agent_path>
+    teamagents test-run <agent_path> --goal <goal_id>
+    teamagents test-debug <agent_path> <test_name>
+    teamagents test-list <agent_path>
+    teamagents test-stats <agent_path>
 """
 
 import argparse
@@ -68,8 +68,8 @@ def main():
     _configure_paths()
 
     parser = argparse.ArgumentParser(
-        prog="hive",
-        description="Aden Hive - Build and run goal-driven agents",
+        prog="teamagents",
+        description="Aden TeamAgents - Build and run goal-driven agents",
     )
     parser.add_argument(
         "--model",

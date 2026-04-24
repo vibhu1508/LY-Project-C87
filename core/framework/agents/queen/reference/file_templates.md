@@ -1,6 +1,6 @@
 # Agent File Templates
 
-Complete code templates for each file in a Hive agent package.
+Complete code templates for each file in a TeamAgents agent package.
 
 ## config.py
 
@@ -13,8 +13,8 @@ from pathlib import Path
 
 
 def _load_preferred_model() -> str:
-    """Load preferred model from ~/.hive/configuration.json."""
-    config_path = Path.home() / ".hive" / "configuration.json"
+    """Load preferred model from ~/.teamagents/configuration.json."""
+    config_path = Path.home() / ".teamagents" / "configuration.json"
     if config_path.exists():
         try:
             with open(config_path) as f:
@@ -217,7 +217,7 @@ class MyAgent:
         )
 
     def _setup(self):
-        self._storage_path = Path.home() / ".hive" / "agents" / "my_agent"
+        self._storage_path = Path.home() / ".teamagents" / "agents" / "my_agent"
         self._storage_path.mkdir(parents=True, exist_ok=True)
         self._tool_registry = ToolRegistry()
         mcp_config = Path(__file__).parent / "mcp_servers.json"
@@ -466,7 +466,7 @@ def tui():
     async def run_tui():
         agent = MyAgent()
         agent._tool_registry = ToolRegistry()
-        storage = Path.home() / ".hive" / "agents" / "my_agent"
+        storage = Path.home() / ".teamagents" / "agents" / "my_agent"
         storage.mkdir(parents=True, exist_ok=True)
         mcp_cfg = Path(__file__).parent / "mcp_servers.json"
         if mcp_cfg.exists(): agent._tool_registry.load_mcp_config(mcp_cfg)
@@ -509,17 +509,17 @@ if __name__ == "__main__":
 
 ## mcp_servers.json
 
-> **Auto-generated.** `initialize_and_build_agent` creates this file with hive-tools
+> **Auto-generated.** `initialize_and_build_agent` creates this file with teamagents-tools
 > as the default. Only edit manually to add additional MCP servers.
 
 ```json
 {
-  "hive-tools": {
+  "teamagents-tools": {
     "transport": "stdio",
     "command": "uv",
     "args": ["run", "python", "mcp_server.py", "--stdio"],
     "cwd": "../../tools",
-    "description": "Hive tools MCP server"
+    "description": "TeamAgents tools MCP server"
   }
 }
 ```

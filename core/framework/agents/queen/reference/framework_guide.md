@@ -1,4 +1,4 @@
-# Hive Agent Framework — Condensed Reference
+# TeamAgents Agent Framework — Condensed Reference
 
 ## Architecture
 
@@ -43,7 +43,7 @@ These are always correct because the constructor references agent.py's module
 vars directly. But `AgentRunner.load()` reads from the PACKAGE (`__init__.py`),
 not the class. So `validate()` passes while `AgentRunner.load()` fails.
 Always test with `AgentRunner.load("exports/{name}")` — this is the same
-code path the TUI and `hive run` use.
+code path the TUI and `teamagents run` use.
 
 ## Goal
 

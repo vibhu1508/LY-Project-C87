@@ -1,4 +1,4 @@
-# Common Mistakes When Building Hive Agents
+# Common Mistakes When Building TeamAgents Agents
 
 ## Critical Errors
 1. **Using tools that don't exist** — Always verify tools via `list_agent_tools()` before designing. Common hallucinations: `csv_read`, `csv_write`, `file_upload`, `database_query`, `bulk_fetch_emails`.
@@ -14,7 +14,7 @@
 
 ## File Template Errors
 7. **Wrong import paths** — Use `from framework.graph import ...`, NOT `from core.framework.graph import ...`.
-8. **Missing storage path** — Agent class must set `self._storage_path = Path.home() / ".hive" / "agents" / "agent_name"`.
+8. **Missing storage path** — Agent class must set `self._storage_path = Path.home() / ".teamagents" / "agents" / "agent_name"`.
 9. **Missing mcp_servers.json** — Without this, the agent has no tools at runtime.
 10. **Bare `python` command** — Use `"command": "uv"` with args `["run", "python", ...]`.
 

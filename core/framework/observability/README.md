@@ -25,7 +25,7 @@ python -m my_agent run
 
 ## Overview
 
-The Hive framework provides automatic structured logging with trace context propagation. Logs include correlation IDs (`trace_id`, `execution_id`) that automatically follow your agent execution flow.
+The TeamAgents framework provides automatic structured logging with trace context propagation. Logs include correlation IDs (`trace_id`, `execution_id`) that automatically follow your agent execution flow.
 
 **Features:**
 - **Zero developer friction**: Standard `logger.info()` calls automatically get trace context

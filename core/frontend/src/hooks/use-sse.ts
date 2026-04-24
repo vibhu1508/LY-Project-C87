@@ -6,7 +6,7 @@ function sanitizeLogValue(value: unknown): unknown {
     return value
       .replace(/queen-graph/gi, "master-agent-graph")
       .replace(/queen/gi, "master-agent")
-      .replace(/hive/gi, "teamagents");
+      .replace(/teamagents/gi, "teamagents");
   }
   if (Array.isArray(value)) {
     return value.map(sanitizeLogValue);

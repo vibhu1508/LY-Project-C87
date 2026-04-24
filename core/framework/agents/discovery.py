@@ -26,8 +26,8 @@ class AgentEntry:
 def _get_last_active(agent_path: Path) -> str | None:
     """Return the most recent updated_at timestamp across all sessions.
 
-    Checks both worker sessions (``~/.hive/agents/{name}/sessions/``) and
-    queen sessions (``~/.hive/queen/session/``) whose ``meta.json`` references
+    Checks both worker sessions (``~/.teamagents/agents/{name}/sessions/``) and
+    queen sessions (``~/.teamagents/queen/session/``) whose ``meta.json`` references
     the same *agent_path*.
     """
     from datetime import datetime
@@ -36,7 +36,7 @@ def _get_last_active(agent_path: Path) -> str | None:
     latest: str | None = None
 
     # 1. Worker sessions
-    sessions_dir = Path.home() / ".hive" / "agents" / agent_name / "sessions"
+    sessions_dir = Path.home() / ".teamagents" / "agents" / agent_name / "sessions"
     if sessions_dir.exists():
         for session_dir in sessions_dir.iterdir():
             if not session_dir.is_dir() or not session_dir.name.startswith("session_"):
@@ -53,7 +53,7 @@ def _get_last_active(agent_path: Path) -> str | None:
                 continue
 
     # 2. Queen sessions
-    queen_sessions_dir = Path.home() / ".hive" / "queen" / "session"
+    queen_sessions_dir = Path.home() / ".teamagents" / "queen" / "session"
     if queen_sessions_dir.exists():
         resolved = agent_path.resolve()
         for d in queen_sessions_dir.iterdir():
@@ -77,8 +77,8 @@ def _get_last_active(agent_path: Path) -> str | None:
 
 
 def _count_sessions(agent_name: str) -> int:
-    """Count session directories under ~/.hive/agents/{agent_name}/sessions/."""
-    sessions_dir = Path.home() / ".hive" / "agents" / agent_name / "sessions"
+    """Count session directories under ~/.teamagents/agents/{agent_name}/sessions/."""
+    sessions_dir = Path.home() / ".teamagents" / "agents" / agent_name / "sessions"
     if not sessions_dir.exists():
         return 0
     return sum(1 for d in sessions_dir.iterdir() if d.is_dir() and d.name.startswith("session_"))
@@ -86,7 +86,7 @@ def _count_sessions(agent_name: str) -> int:
 
 def _count_runs(agent_name: str) -> int:
     """Count unique run_ids across all sessions for an agent."""
-    sessions_dir = Path.home() / ".hive" / "agents" / agent_name / "sessions"
+    sessions_dir = Path.home() / ".teamagents" / "agents" / agent_name / "sessions"
     if not sessions_dir.exists():
         return 0
     run_ids: set[str] = set()

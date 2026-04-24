@@ -16,7 +16,7 @@ Read, modify, and manage Gmail messages using the Gmail API v1.
 
 Requires Google OAuth2 via Aden:
 
-1. Connect your Google account at [hive.adenhq.com](https://hive.adenhq.com)
+1. Connect your Google account at [teamagents.adenhq.com](https://teamagents.adenhq.com)
 2. The `GOOGLE_ACCESS_TOKEN` is managed automatically by the Aden credential system
 
 Required OAuth scopes (configured in Aden):
@@ -71,7 +71,7 @@ gmail_batch_modify_messages(
 
 All tools return error dicts on failure:
 ```python
-{"error": "Gmail token expired or invalid", "help": "Re-authorize via hive.adenhq.com"}
+{"error": "Gmail token expired or invalid", "help": "Re-authorize via teamagents.adenhq.com"}
 {"error": "Message not found"}
-{"error": "Gmail credentials not configured", "help": "Connect Gmail via hive.adenhq.com"}
+{"error": "Gmail credentials not configured", "help": "Connect Gmail via teamagents.adenhq.com"}
 ```

@@ -1,1 +1,1 @@
-"""HTTP API server for the Hive agent framework."""
+"""HTTP API server for the TeamAgents agent framework."""

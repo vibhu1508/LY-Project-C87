@@ -1,9 +1,9 @@
 """Queen global cross-session memory.
 
 Three-tier memory architecture:
-  ~/.hive/queen/MEMORY.md                            — semantic (who, what, why)
-  ~/.hive/queen/memories/MEMORY-YYYY-MM-DD.md        — episodic (daily journals)
-  ~/.hive/queen/session/{id}/data/adapt.md           — working (session-scoped)
+  ~/.teamagents/queen/MEMORY.md                            — semantic (who, what, why)
+  ~/.teamagents/queen/memories/MEMORY-YYYY-MM-DD.md        — episodic (daily journals)
+  ~/.teamagents/queen/session/{id}/data/adapt.md           — working (session-scoped)
 
 Semantic and episodic files are injected at queen session start.
 
@@ -28,7 +28,7 @@ logger = logging.getLogger(__name__)
 
 
 def _queen_dir() -> Path:
-    return Path.home() / ".hive" / "queen"
+    return Path.home() / ".teamagents" / "queen"
 
 
 def semantic_memory_path() -> Path:
@@ -313,7 +313,7 @@ async def consolidate_queen_memory(
 
     Args:
         session_id: The session ID (used for the adapt.md path reference).
-        session_dir: Path to the session directory (~/.hive/queen/session/{id}).
+        session_dir: Path to the session directory (~/.teamagents/queen/session/{id}).
         llm: LLMProvider instance (must support acomplete()).
     """
     try:

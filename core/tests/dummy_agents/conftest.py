@@ -76,7 +76,7 @@ def llm_provider():
 
 @pytest.fixture(scope="session")
 def tool_registry():
-    """Load hive-tools MCP server and return a ToolRegistry with real tools.
+    """Load teamagents-tools MCP server and return a ToolRegistry with real tools.
 
     Session-scoped so the MCP server is started once and reused across tests.
     """
@@ -88,12 +88,12 @@ def tool_registry():
     tools_dir = repo_root / "tools"
 
     mcp_config = {
-        "name": "hive-tools",
+        "name": "teamagents-tools",
         "transport": "stdio",
         "command": "uv",
         "args": ["run", "python", "mcp_server.py", "--stdio"],
         "cwd": str(tools_dir),
-        "description": "Hive tools MCP server",
+        "description": "TeamAgents tools MCP server",
     }
     registry.register_mcp_server(mcp_config)
     yield registry

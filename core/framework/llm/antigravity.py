@@ -8,7 +8,7 @@ Authentication uses Google OAuth2.  Token refresh is done directly with the
 OAuth client secret — no local proxy required.
 
 Credential sources (checked in order):
-  1. ``~/.hive/antigravity-accounts.json`` (native OAuth implementation)
+  1. ``~/.teamagents/antigravity-accounts.json`` (native OAuth implementation)
   2. Antigravity IDE SQLite state DB (macOS / Linux)
 """
 
@@ -50,8 +50,8 @@ _ENDPOINTS = [
 _DEFAULT_PROJECT_ID = "rising-fact-p41fc"
 _TOKEN_REFRESH_BUFFER_SECS = 60
 
-# Credentials file in ~/.hive/ (native implementation)
-_ACCOUNTS_FILE = Path.home() / ".hive" / "antigravity-accounts.json"
+# Credentials file in ~/.teamagents/ (native implementation)
+_ACCOUNTS_FILE = Path.home() / ".teamagents" / "antigravity-accounts.json"
 _IDE_STATE_DB_MAC = (
     Path.home()
     / "Library"
@@ -86,7 +86,7 @@ _BASE_HEADERS: dict[str, str] = {
 def _load_from_json_file() -> tuple[str | None, str | None, str, float]:
     """Read credentials from JSON accounts file.
 
-    Reads from ~/.hive/antigravity-accounts.json.
+    Reads from ~/.teamagents/antigravity-accounts.json.
 
     Returns ``(access_token | None, refresh_token | None, project_id, expires_at)``.
     ``expires_at`` is a Unix timestamp (seconds); 0.0 means unknown.

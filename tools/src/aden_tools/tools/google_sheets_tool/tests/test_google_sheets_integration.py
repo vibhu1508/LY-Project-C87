@@ -71,7 +71,7 @@ def client() -> _GoogleSheetsClient:
 def spreadsheet(client: _GoogleSheetsClient):
     """Create a temporary spreadsheet and delete it after the test."""
     unique = uuid.uuid4().hex[:8]
-    title = f"hive-integration-test-{unique}"
+    title = f"teamagents-integration-test-{unique}"
     result = client.create_spreadsheet(title, sheet_titles=["Data", "Extra"])
     assert "error" not in result, f"Failed to create spreadsheet: {result}"
     spreadsheet_id = result["spreadsheetId"]
@@ -244,7 +244,7 @@ class TestMCPToolRegistration:
         )
 
         unique = uuid.uuid4().hex[:8]
-        result = create_fn(title=f"hive-mcp-test-{unique}")
+        result = create_fn(title=f"teamagents-mcp-test-{unique}")
         assert "error" not in result, f"MCP create failed: {result}"
 
         spreadsheet_id = result["spreadsheetId"]

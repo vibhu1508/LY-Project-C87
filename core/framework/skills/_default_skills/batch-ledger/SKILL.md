@@ -1,8 +1,8 @@
 ---
-name: hive.batch-ledger
+name: teamagents.batch-ledger
 description: Track per-item status when processing collections to prevent skipped or duplicated items.
 metadata:
-  author: hive
+  author: teamagents
   type: default-skill
 ---
 

@@ -65,7 +65,7 @@ Validate credentials and list registered devices.
 # Send a simple notification
 pushover_send_notification(
     message="Agent task completed successfully!",
-    title="Hive Agent",
+    title="TeamAgents Agent",
     priority=0,
 )
 
@@ -74,6 +74,6 @@ pushover_send_notification_with_url(
     message="Your report is ready",
     url="https://example.com/report",
     url_title="View Report",
-    title="Hive Agent",
+    title="TeamAgents Agent",
 )
 ```

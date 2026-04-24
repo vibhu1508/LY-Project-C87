@@ -11,7 +11,7 @@ from framework.llm.litellm import LiteLLMProvider
 from framework.llm.provider import LLMProvider
 from framework.runner.orchestrator import AgentOrchestrator
 
-# Patch config helpers so tests don't depend on local ~/.hive/configuration.json
+# Patch config helpers so tests don't depend on local ~/.teamagents/configuration.json
 _CONFIG_PATCHES = {
     "framework.config.get_api_key": lambda: None,
     "framework.config.get_api_base": lambda: None,

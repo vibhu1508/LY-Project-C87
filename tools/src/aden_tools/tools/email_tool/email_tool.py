@@ -98,7 +98,7 @@ def register_tools(
         if response.status_code == 401:
             return {
                 "error": "Gmail token expired or invalid",
-                "help": "Re-authorize via hive.adenhq.com",
+                "help": "Re-authorize via teamagents.adenhq.com",
             }
         if response.status_code != 200:
             return {
@@ -193,7 +193,7 @@ def register_tools(
             if provider == "gmail":
                 return {
                     "error": "Gmail credentials not configured",
-                    "help": "Connect Gmail via hive.adenhq.com",
+                    "help": "Connect Gmail via teamagents.adenhq.com",
                 }
             return {
                 "error": "Resend credentials not configured",
@@ -265,7 +265,7 @@ def register_tools(
         if response.status_code == 401:
             return {
                 "error": "Gmail token expired or invalid",
-                "help": "Re-authorize via hive.adenhq.com",
+                "help": "Re-authorize via teamagents.adenhq.com",
             }
         if response.status_code == 404:
             return {"error": f"Original message not found: {message_id}"}
@@ -349,7 +349,7 @@ def register_tools(
         if not credential:
             return {
                 "error": "Gmail credentials not configured",
-                "help": "Connect Gmail via hive.adenhq.com",
+                "help": "Connect Gmail via teamagents.adenhq.com",
             }
 
         # Fetch original message for threading info
@@ -432,7 +432,7 @@ def register_tools(
         if response.status_code == 401:
             return {
                 "error": "Gmail token expired or invalid",
-                "help": "Re-authorize via hive.adenhq.com",
+                "help": "Re-authorize via teamagents.adenhq.com",
             }
         if response.status_code != 200:
             return {

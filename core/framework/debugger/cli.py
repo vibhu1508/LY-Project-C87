@@ -9,13 +9,13 @@ _SCRIPT = Path(__file__).resolve().parents[3] / "scripts" / "llm_debug_log_visua
 
 
 def register_debugger_commands(subparsers: argparse._SubParsersAction) -> None:
-    """Register the ``hive debugger`` command."""
+    """Register the ``teamagents debugger`` command."""
     parser = subparsers.add_parser(
         "debugger",
         help="Open the LLM debug log viewer",
         description=(
             "Start a local server that lets you browse LLM debug sessions "
-            "recorded in ~/.hive/llm_logs. Sessions are loaded on demand so "
+            "recorded in ~/.teamagents/llm_logs. Sessions are loaded on demand so "
             "the browser stays responsive."
         ),
     )
@@ -31,7 +31,7 @@ def register_debugger_commands(subparsers: argparse._SubParsersAction) -> None:
     )
     parser.add_argument(
         "--logs-dir",
-        help="Directory containing JSONL log files (default: ~/.hive/llm_logs).",
+        help="Directory containing JSONL log files (default: ~/.teamagents/llm_logs).",
     )
     parser.add_argument(
         "--limit-files",

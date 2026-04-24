@@ -1,7 +1,7 @@
 -- ============================================================================
 -- AdenTestDB Database Initialization Script
 -- ============================================================================
--- Purpose: Create a professional testing database for Aden Hive MSSQL tool
+-- Purpose: Create a professional testing database for Aden TeamAgents MSSQL tool
 -- Author: Database Architect
 -- Date: 2026-02-08
 -- ============================================================================

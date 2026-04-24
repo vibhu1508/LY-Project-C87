@@ -1,5 +1,5 @@
 """
-Comprehensive tests for the Hive HTTP API server.
+Comprehensive tests for the TeamAgents HTTP API server.
 
 Uses aiohttp TestClient with mocked sessions to test all endpoints
 without requiring actual LLM calls or agent loading.
@@ -207,7 +207,7 @@ def tmp_agent_dir(tmp_path, monkeypatch):
     """
     monkeypatch.setattr(Path, "home", classmethod(lambda cls: tmp_path))
     agent_name = "test_agent"
-    base = tmp_path / ".hive" / "agents" / agent_name
+    base = tmp_path / ".teamagents" / "agents" / agent_name
     sessions_dir = base / "sessions"
     sessions_dir.mkdir(parents=True)
     return tmp_path, agent_name, base
@@ -704,7 +704,7 @@ class TestResume:
         session_id, session_dir, state = sample_session
         tmp_path, agent_name, base = tmp_agent_dir
 
-        session = _make_session(tmp_dir=tmp_path / ".hive" / "agents" / agent_name)
+        session = _make_session(tmp_dir=tmp_path / ".teamagents" / "agents" / agent_name)
         app = _make_app_with_session(session)
 
         async with TestClient(TestServer(app)) as client:
@@ -724,7 +724,7 @@ class TestResume:
         session_id, session_dir, state = sample_session
         tmp_path, agent_name, base = tmp_agent_dir
 
-        session = _make_session(tmp_dir=tmp_path / ".hive" / "agents" / agent_name)
+        session = _make_session(tmp_dir=tmp_path / ".teamagents" / "agents" / agent_name)
         app = _make_app_with_session(session)
 
         async with TestClient(TestServer(app)) as client:
@@ -807,7 +807,7 @@ class TestReplay:
         session_id, session_dir, state = sample_session
         tmp_path, agent_name, base = tmp_agent_dir
 
-        session = _make_session(tmp_dir=tmp_path / ".hive" / "agents" / agent_name)
+        session = _make_session(tmp_dir=tmp_path / ".teamagents" / "agents" / agent_name)
         app = _make_app_with_session(session)
 
         async with TestClient(TestServer(app)) as client:
@@ -845,7 +845,7 @@ class TestReplay:
         session_id, session_dir, state = sample_session
         tmp_path, agent_name, base = tmp_agent_dir
 
-        session = _make_session(tmp_dir=tmp_path / ".hive" / "agents" / agent_name)
+        session = _make_session(tmp_dir=tmp_path / ".teamagents" / "agents" / agent_name)
         app = _make_app_with_session(session)
 
         async with TestClient(TestServer(app)) as client:
@@ -865,7 +865,7 @@ class TestWorkerSessions:
         session_id, session_dir, state = sample_session
         tmp_path, agent_name, base = tmp_agent_dir
 
-        session = _make_session(tmp_dir=tmp_path / ".hive" / "agents" / agent_name)
+        session = _make_session(tmp_dir=tmp_path / ".teamagents" / "agents" / agent_name)
         app = _make_app_with_session(session)
 
         async with TestClient(TestServer(app)) as client:
@@ -882,7 +882,7 @@ class TestWorkerSessions:
         session_id, session_dir, state = custom_id_session
         tmp_path, agent_name, base = tmp_agent_dir
 
-        session = _make_session(tmp_dir=tmp_path / ".hive" / "agents" / agent_name)
+        session = _make_session(tmp_dir=tmp_path / ".teamagents" / "agents" / agent_name)
         app = _make_app_with_session(session)
 
         async with TestClient(TestServer(app)) as client:
@@ -896,7 +896,7 @@ class TestWorkerSessions:
     @pytest.mark.asyncio
     async def test_list_sessions_empty(self, tmp_agent_dir):
         tmp_path, agent_name, base = tmp_agent_dir
-        session = _make_session(tmp_dir=tmp_path / ".hive" / "agents" / agent_name)
+        session = _make_session(tmp_dir=tmp_path / ".teamagents" / "agents" / agent_name)
         app = _make_app_with_session(session)
 
         async with TestClient(TestServer(app)) as client:
@@ -910,7 +910,7 @@ class TestWorkerSessions:
         session_id, session_dir, state = sample_session
         tmp_path, agent_name, base = tmp_agent_dir
 
-        session = _make_session(tmp_dir=tmp_path / ".hive" / "agents" / agent_name)
+        session = _make_session(tmp_dir=tmp_path / ".teamagents" / "agents" / agent_name)
         app = _make_app_with_session(session)
 
         async with TestClient(TestServer(app)) as client:
@@ -923,7 +923,7 @@ class TestWorkerSessions:
     @pytest.mark.asyncio
     async def test_get_session_not_found(self, tmp_agent_dir):
         tmp_path, agent_name, base = tmp_agent_dir
-        session = _make_session(tmp_dir=tmp_path / ".hive" / "agents" / agent_name)
+        session = _make_session(tmp_dir=tmp_path / ".teamagents" / "agents" / agent_name)
         app = _make_app_with_session(session)
 
         async with TestClient(TestServer(app)) as client:
@@ -935,7 +935,7 @@ class TestWorkerSessions:
         session_id, session_dir, state = sample_session
         tmp_path, agent_name, base = tmp_agent_dir
 
-        session = _make_session(tmp_dir=tmp_path / ".hive" / "agents" / agent_name)
+        session = _make_session(tmp_dir=tmp_path / ".teamagents" / "agents" / agent_name)
         app = _make_app_with_session(session)
 
         async with TestClient(TestServer(app)) as client:
@@ -950,7 +950,7 @@ class TestWorkerSessions:
     @pytest.mark.asyncio
     async def test_delete_session_not_found(self, tmp_agent_dir):
         tmp_path, agent_name, base = tmp_agent_dir
-        session = _make_session(tmp_dir=tmp_path / ".hive" / "agents" / agent_name)
+        session = _make_session(tmp_dir=tmp_path / ".teamagents" / "agents" / agent_name)
         app = _make_app_with_session(session)
 
         async with TestClient(TestServer(app)) as client:
@@ -962,7 +962,7 @@ class TestWorkerSessions:
         session_id, session_dir, state = sample_session
         tmp_path, agent_name, base = tmp_agent_dir
 
-        session = _make_session(tmp_dir=tmp_path / ".hive" / "agents" / agent_name)
+        session = _make_session(tmp_dir=tmp_path / ".teamagents" / "agents" / agent_name)
         app = _make_app_with_session(session)
 
         async with TestClient(TestServer(app)) as client:
@@ -982,7 +982,7 @@ class TestWorkerSessions:
         session_id, session_dir, state = sample_session
         tmp_path, agent_name, base = tmp_agent_dir
 
-        session = _make_session(tmp_dir=tmp_path / ".hive" / "agents" / agent_name)
+        session = _make_session(tmp_dir=tmp_path / ".teamagents" / "agents" / agent_name)
         app = _make_app_with_session(session)
 
         async with TestClient(TestServer(app)) as client:
@@ -1001,7 +1001,7 @@ class TestWorkerSessions:
         session_id, session_dir, state = sample_session
         tmp_path, agent_name, base = tmp_agent_dir
 
-        session = _make_session(tmp_dir=tmp_path / ".hive" / "agents" / agent_name)
+        session = _make_session(tmp_dir=tmp_path / ".teamagents" / "agents" / agent_name)
         app = _make_app_with_session(session)
 
         async with TestClient(TestServer(app)) as client:
@@ -1017,7 +1017,7 @@ class TestMessages:
         session_id, session_dir, state = sample_session
         tmp_path, agent_name, base = tmp_agent_dir
 
-        session = _make_session(tmp_dir=tmp_path / ".hive" / "agents" / agent_name)
+        session = _make_session(tmp_dir=tmp_path / ".teamagents" / "agents" / agent_name)
         app = _make_app_with_session(session)
 
         async with TestClient(TestServer(app)) as client:
@@ -1042,7 +1042,7 @@ class TestMessages:
         session_id, session_dir, state = sample_session
         tmp_path, agent_name, base = tmp_agent_dir
 
-        session = _make_session(tmp_dir=tmp_path / ".hive" / "agents" / agent_name)
+        session = _make_session(tmp_dir=tmp_path / ".teamagents" / "agents" / agent_name)
         app = _make_app_with_session(session)
 
         async with TestClient(TestServer(app)) as client:
@@ -1064,7 +1064,7 @@ class TestMessages:
         session_dir.mkdir(parents=True)
         (session_dir / "state.json").write_text(json.dumps({"status": "completed"}))
 
-        session = _make_session(tmp_dir=tmp_path / ".hive" / "agents" / agent_name)
+        session = _make_session(tmp_dir=tmp_path / ".teamagents" / "agents" / agent_name)
         app = _make_app_with_session(session)
 
         async with TestClient(TestServer(app)) as client:
@@ -1131,7 +1131,7 @@ class TestMessages:
             MockNodeSpec(id="chat_node", name="Chat", client_facing=True),
         ]
         session = _make_session(
-            tmp_dir=tmp_path / ".hive" / "agents" / agent_name,
+            tmp_dir=tmp_path / ".teamagents" / "agents" / agent_name,
             nodes=nodes,
         )
         session.runner.graph = MockGraphSpec(nodes=nodes)
@@ -1168,7 +1168,7 @@ class TestMessages:
             json.dumps({"seq": 2, "role": "assistant", "content": "response"})
         )
 
-        session = _make_session(tmp_dir=tmp_path / ".hive" / "agents" / agent_name)
+        session = _make_session(tmp_dir=tmp_path / ".teamagents" / "agents" / agent_name)
         session.runner = None  # Simulate runner not available
         app = _make_app_with_session(session)
 
@@ -1234,7 +1234,7 @@ class TestGraphNodes:
         nodes, edges = nodes_and_edges
 
         session = _make_session(
-            tmp_dir=tmp_path / ".hive" / "agents" / agent_name,
+            tmp_dir=tmp_path / ".teamagents" / "agents" / agent_name,
             nodes=nodes,
             edges=edges,
         )
@@ -1343,7 +1343,7 @@ class TestNodeCriteria:
         log_store = RuntimeLogStore(base)
 
         session = _make_session(
-            tmp_dir=tmp_path / ".hive" / "agents" / agent_name,
+            tmp_dir=tmp_path / ".teamagents" / "agents" / agent_name,
             nodes=nodes,
             edges=edges,
             log_store=log_store,
@@ -1397,7 +1397,7 @@ class TestLogs:
 
         log_store = RuntimeLogStore(base)
         session = _make_session(
-            tmp_dir=tmp_path / ".hive" / "agents" / agent_name,
+            tmp_dir=tmp_path / ".teamagents" / "agents" / agent_name,
             log_store=log_store,
         )
         app = _make_app_with_session(session)
@@ -1419,7 +1419,7 @@ class TestLogs:
 
         log_store = RuntimeLogStore(base)
         session = _make_session(
-            tmp_dir=tmp_path / ".hive" / "agents" / agent_name,
+            tmp_dir=tmp_path / ".teamagents" / "agents" / agent_name,
             log_store=log_store,
         )
         app = _make_app_with_session(session)
@@ -1441,7 +1441,7 @@ class TestLogs:
 
         log_store = RuntimeLogStore(base)
         session = _make_session(
-            tmp_dir=tmp_path / ".hive" / "agents" / agent_name,
+            tmp_dir=tmp_path / ".teamagents" / "agents" / agent_name,
             log_store=log_store,
         )
         app = _make_app_with_session(session)
@@ -1464,7 +1464,7 @@ class TestLogs:
 
         log_store = RuntimeLogStore(base)
         session = _make_session(
-            tmp_dir=tmp_path / ".hive" / "agents" / agent_name,
+            tmp_dir=tmp_path / ".teamagents" / "agents" / agent_name,
             log_store=log_store,
         )
         app = _make_app_with_session(session)
@@ -1488,7 +1488,7 @@ class TestLogs:
 
         log_store = RuntimeLogStore(base)
         session = _make_session(
-            tmp_dir=tmp_path / ".hive" / "agents" / agent_name,
+            tmp_dir=tmp_path / ".teamagents" / "agents" / agent_name,
             log_store=log_store,
         )
         app = _make_app_with_session(session)
@@ -1514,7 +1514,7 @@ class TestNodeLogs:
 
         log_store = RuntimeLogStore(base)
         session = _make_session(
-            tmp_dir=tmp_path / ".hive" / "agents" / agent_name,
+            tmp_dir=tmp_path / ".teamagents" / "agents" / agent_name,
             nodes=nodes,
             edges=edges,
             log_store=log_store,
@@ -1733,7 +1733,7 @@ class TestCleanupStaleActiveSessions:
         """Truly stale active sessions (no live tracking, no PID) get cancelled."""
         monkeypatch.setattr(Path, "home", lambda: tmp_path)
         agent_path = Path("my_agent")
-        sessions_dir = tmp_path / ".hive" / "agents" / "my_agent" / "sessions"
+        sessions_dir = tmp_path / ".teamagents" / "agents" / "my_agent" / "sessions"
         session_dir = sessions_dir / "session_stale_001"
 
         self._write_state(session_dir, "active")
@@ -1749,7 +1749,7 @@ class TestCleanupStaleActiveSessions:
         """Sessions tracked in self._sessions must NOT be cancelled (Layer 1)."""
         monkeypatch.setattr(Path, "home", lambda: tmp_path)
         agent_path = Path("my_agent")
-        sessions_dir = tmp_path / ".hive" / "agents" / "my_agent" / "sessions"
+        sessions_dir = tmp_path / ".teamagents" / "agents" / "my_agent" / "sessions"
         session_dir = sessions_dir / "session_live_002"
 
         self._write_state(session_dir, "active")
@@ -1769,7 +1769,7 @@ class TestCleanupStaleActiveSessions:
 
         monkeypatch.setattr(Path, "home", lambda: tmp_path)
         agent_path = Path("my_agent")
-        sessions_dir = tmp_path / ".hive" / "agents" / "my_agent" / "sessions"
+        sessions_dir = tmp_path / ".teamagents" / "agents" / "my_agent" / "sessions"
         session_dir = sessions_dir / "session_pid_003"
 
         # Use the current process PID — guaranteed to be alive
@@ -1785,7 +1785,7 @@ class TestCleanupStaleActiveSessions:
         """Sessions whose owning PID is dead should be cancelled."""
         monkeypatch.setattr(Path, "home", lambda: tmp_path)
         agent_path = Path("my_agent")
-        sessions_dir = tmp_path / ".hive" / "agents" / "my_agent" / "sessions"
+        sessions_dir = tmp_path / ".teamagents" / "agents" / "my_agent" / "sessions"
         session_dir = sessions_dir / "session_dead_004"
 
         # Use a PID that is almost certainly not running
@@ -1802,7 +1802,7 @@ class TestCleanupStaleActiveSessions:
         """Paused sessions should remain intact regardless of PID or tracking."""
         monkeypatch.setattr(Path, "home", lambda: tmp_path)
         agent_path = Path("my_agent")
-        sessions_dir = tmp_path / ".hive" / "agents" / "my_agent" / "sessions"
+        sessions_dir = tmp_path / ".teamagents" / "agents" / "my_agent" / "sessions"
         session_dir = sessions_dir / "session_paused_005"
 
         self._write_state(session_dir, "paused")

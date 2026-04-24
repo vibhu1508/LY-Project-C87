@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="TeamAgents Hexagon Favicon">
+  <rect width="64" height="64" rx="12" fill="#07110B"/>
+  <polygon
+    points="32,10 49,20 49,40 32,50 15,40 15,20"
+    fill="none"
+    stroke="#2FEC8F"
+    stroke-width="4"
+    stroke-linejoin="round"
+  />
+</svg>

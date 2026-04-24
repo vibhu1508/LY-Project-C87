@@ -202,7 +202,7 @@ async def launch_chrome(
 
     temp_dir: tempfile.TemporaryDirectory[str] | None = None
     if user_data_dir is None:
-        temp_dir = tempfile.TemporaryDirectory(prefix="hive-browser-")
+        temp_dir = tempfile.TemporaryDirectory(prefix="teamagents-browser-")
         user_data_dir = Path(temp_dir.name)
 
     _clear_session_restore(user_data_dir)

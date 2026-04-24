@@ -158,7 +158,7 @@ async def handle_check_agent(request: web.Request) -> web.Response:
                 "credential_id": "aden_api_key",
                 "env_var": "ADEN_API_KEY",
                 "description": "API key from the Developers tab in Settings",
-                "help_url": "https://hive.adenhq.com/",
+                "help_url": "https://teamagents.adenhq.com/",
                 "tools": [],
                 "node_types": [],
                 "available": result.has_aden_key,

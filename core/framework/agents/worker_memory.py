@@ -1,7 +1,7 @@
 """Worker per-run digest (run diary).
 
 Storage layout:
-    ~/.hive/agents/{agent_name}/runs/{run_id}/digest.md
+    ~/.teamagents/agents/{agent_name}/runs/{run_id}/digest.md
 
 Each completed or failed worker run gets one digest file.  The queen reads
 these via get_worker_status(focus='diary') before digging into live runtime
@@ -40,7 +40,7 @@ Output only the digest prose — no headings, no code fences.
 
 
 def _worker_runs_dir(agent_name: str) -> Path:
-    return Path.home() / ".hive" / "agents" / agent_name / "runs"
+    return Path.home() / ".teamagents" / "agents" / agent_name / "runs"
 
 
 def digest_path(agent_name: str, run_id: str) -> Path:

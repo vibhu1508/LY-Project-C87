@@ -1,8 +1,8 @@
 ---
-name: hive.context-preservation
+name: teamagents.context-preservation
 description: Proactively preserve critical information before automatic context pruning destroys it.
 metadata:
-  author: hive
+  author: teamagents
   type: default-skill
 ---
 

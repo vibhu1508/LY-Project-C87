@@ -106,7 +106,7 @@ class SessionManager:
             if resolved_id in self._sessions:
                 raise ValueError(f"Session '{resolved_id}' already exists")
 
-        # Load LLM config from ~/.hive/configuration.json
+        # Load LLM config from ~/.teamagents/configuration.json
         rc = RuntimeConfig(model=model or self._model or RuntimeConfig().model)
 
         # Session owns these — shared with queen and worker
@@ -192,7 +192,7 @@ class SessionManager:
         if queen_resume_from:
             _resume_phase = None
             _meta_path = (
-                Path.home() / ".hive" / "queen" / "session" / queen_resume_from / "meta.json"
+                Path.home() / ".teamagents" / "queen" / "session" / queen_resume_from / "meta.json"
             )
             if _meta_path.exists():
                 try:
@@ -415,7 +415,7 @@ class SessionManager:
            that process is still running on the host. If it is, the session is
            owned by another healthy worker process, so leave it alone.
         """
-        sessions_path = Path.home() / ".hive" / "agents" / agent_path.name / "sessions"
+        sessions_path = Path.home() / ".teamagents" / "agents" / agent_path.name / "sessions"
         if not sessions_path.exists():
             return
 
@@ -564,7 +564,7 @@ class SessionManager:
 
         # Update meta.json so cold-restore can discover this session by agent_path
         storage_session_id = session.queen_resume_from or session.id
-        meta_path = Path.home() / ".hive" / "queen" / "session" / storage_session_id / "meta.json"
+        meta_path = Path.home() / ".teamagents" / "queen" / "session" / storage_session_id / "meta.json"
         try:
             _agent_name = (
                 session.worker_info.name
@@ -659,7 +659,7 @@ class SessionManager:
         # Capture session data for memory consolidation before teardown
         _llm = getattr(session, "llm", None)
         _storage_id = getattr(session, "queen_resume_from", None) or session_id
-        _session_dir = Path.home() / ".hive" / "queen" / "session" / _storage_id
+        _session_dir = Path.home() / ".teamagents" / "queen" / "session" / _storage_id
 
         if session.worker_handoff_sub is not None:
             try:
@@ -918,7 +918,7 @@ class SessionManager:
         """
         from framework.server.queen_orchestrator import create_queen
 
-        hive_home = Path.home() / ".hive"
+        hive_home = Path.home() / ".teamagents"
 
         # Determine which session directory to use for queen storage.
         # When queen_resume_from is set we write to the ORIGINAL session's
@@ -1248,10 +1248,10 @@ class SessionManager:
         """Return disk metadata for a session that is no longer live in memory.
 
         Checks whether queen conversation files exist at
-        ~/.hive/queen/session/{session_id}/conversations/.  Returns None when
+        ~/.teamagents/queen/session/{session_id}/conversations/.  Returns None when
         no data is found so callers can fall through to a 404.
         """
-        queen_dir = Path.home() / ".hive" / "queen" / "session" / session_id
+        queen_dir = Path.home() / ".teamagents" / "queen" / "session" / session_id
         convs_dir = queen_dir / "conversations"
         if not convs_dir.exists():
             return None
@@ -1306,7 +1306,7 @@ class SessionManager:
     @staticmethod
     def list_cold_sessions() -> list[dict]:
         """Return metadata for every queen session directory on disk, newest first."""
-        queen_sessions_dir = Path.home() / ".hive" / "queen" / "session"
+        queen_sessions_dir = Path.home() / ".teamagents" / "queen" / "session"
         if not queen_sessions_dir.exists():
             return []
 

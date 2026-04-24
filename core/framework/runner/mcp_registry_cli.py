@@ -1,18 +1,18 @@
 """CLI commands for MCP server registry management.
 
 Commands:
-    hive mcp install <name>           Install a server from the registry
-    hive mcp add                      Register a local/running MCP server
-    hive mcp remove <name>            Remove an installed server
-    hive mcp enable <name>            Enable a server
-    hive mcp disable <name>           Disable a server
-    hive mcp list                     List installed servers
-    hive mcp info <name>              Show server details
-    hive mcp config <name>            Set env/header overrides
-    hive mcp search <query>           Search the registry index
-    hive mcp health [name]            Check server health
-    hive mcp update                   Refresh index and update installed servers
-    hive mcp update <name>            Update a single installed server
+    teamagents mcp install <name>           Install a server from the registry
+    teamagents mcp add                      Register a local/running MCP server
+    teamagents mcp remove <name>            Remove an installed server
+    teamagents mcp enable <name>            Enable a server
+    teamagents mcp disable <name>           Disable a server
+    teamagents mcp list                     List installed servers
+    teamagents mcp info <name>              Show server details
+    teamagents mcp config <name>            Set env/header overrides
+    teamagents mcp search <query>           Search the registry index
+    teamagents mcp health [name]            Check server health
+    teamagents mcp update                   Refresh index and update installed servers
+    teamagents mcp update <name>            Update a single installed server
 """
 
 from __future__ import annotations
@@ -64,7 +64,7 @@ def _ensure_index_available(registry) -> bool:
                 return True
             print(
                 f"Error: no registry index available and refresh failed: {exc}\n"
-                "Check your network connection and try: hive mcp update",
+                "Check your network connection and try: teamagents mcp update",
                 file=sys.stderr,
             )
             return False
@@ -74,7 +74,7 @@ def _ensure_index_available(registry) -> bool:
 
 _SECURITY_NOTICE = (
     "Registry servers run code on your machine. Only install servers you trust.\n"
-    "Learn more: https://github.com/aden-hive/hive-mcp-registry"
+    "Learn more: https://github.com/aden-teamagents/teamagents-mcp-registry"
 )
 _NOTICE_SENTINEL = ".security_notice_shown"
 
@@ -169,7 +169,7 @@ def _find_agents_using_server(registry, name: str) -> list[str]:
     so results stay consistent with runtime behavior.
     """
     agent_dirs: list[Path] = []
-    # parents: [0]=runner, [1]=framework, [2]=core, [3]=hive (project root)
+    # parents: [0]=runner, [1]=framework, [2]=core, [3]=teamagents (project root)
     # NOTE: This path arithmetic assumes running from the source tree layout.
     # It will not resolve correctly if installed via pip into site-packages.
     project_root = Path(__file__).resolve().parents[3]
@@ -206,7 +206,7 @@ def _render_installed_table(entries: list[dict]) -> None:
     """Render installed servers as a formatted table."""
     if not entries:
         print("No servers installed.")
-        print("Run 'hive mcp install <name>' or 'hive mcp add' to get started.")
+        print("Run 'teamagents mcp install <name>' or 'teamagents mcp add' to get started.")
         return
 
     # Column widths
@@ -250,7 +250,7 @@ def _render_available_table(entries: list[dict]) -> None:
     """Render available registry servers as a formatted table."""
     if not entries:
         print("No servers in registry index.")
-        print("Run 'hive mcp update' to refresh the index.")
+        print("Run 'teamagents mcp update' to refresh the index.")
         return
 
     name_w = max(len(e["name"]) for e in entries)
@@ -293,7 +293,7 @@ def _emit_json(data: Any) -> None:
 
 
 def register_mcp_commands(subparsers) -> None:
-    """Register the ``hive mcp`` subcommand group."""
+    """Register the ``teamagents mcp`` subcommand group."""
     mcp_parser = subparsers.add_parser("mcp", help="Manage MCP servers")
     mcp_sub = mcp_parser.add_subparsers(dest="mcp_command", required=True)
 
@@ -425,8 +425,8 @@ def cmd_mcp_install(args) -> int:
     _prompt_for_missing_credentials(registry, args.name, manifest)
 
     print("\nNext steps:")
-    print(f"  hive mcp health {args.name}    Check that the server is reachable")
-    print(f"  hive mcp info {args.name}      View server details")
+    print(f"  teamagents mcp health {args.name}    Check that the server is reachable")
+    print(f"  teamagents mcp info {args.name}      View server details")
     return 0
 
 
@@ -441,8 +441,8 @@ def cmd_mcp_add(args) -> int:
     if not args.name:
         print(
             "Error: --name is required.\n"
-            "Usage: hive mcp add --name my-server --transport http --url http://localhost:8080\n"
-            "   or: hive mcp add --from manifest.json",
+            "Usage: teamagents mcp add --name my-server --transport http --url http://localhost:8080\n"
+            "   or: teamagents mcp add --from manifest.json",
             file=sys.stderr,
         )
         return 1
@@ -451,7 +451,7 @@ def cmd_mcp_add(args) -> int:
         print(
             f"Error: --transport is required.\n"
             f"Supported transports: stdio, http, unix, sse\n"
-            f"Example: hive mcp add --name {args.name} --transport http --url http://localhost:8080",
+            f"Example: teamagents mcp add --name {args.name} --transport http --url http://localhost:8080",
             file=sys.stderr,
         )
         return 1
@@ -586,8 +586,8 @@ def cmd_mcp_info(args) -> int:
     if server is None:
         print(
             f"Error: server '{args.name}' is not installed.\n"
-            f"Run 'hive mcp list' to see installed servers.\n"
-            f"Run 'hive mcp install {args.name}' to install from registry.",
+            f"Run 'teamagents mcp list' to see installed servers.\n"
+            f"Run 'teamagents mcp install {args.name}' to install from registry.",
             file=sys.stderr,
         )
         return 1
@@ -607,7 +607,7 @@ def cmd_mcp_info(args) -> int:
     overrides = _mask_overrides(server.get("overrides", {}))
     tools = manifest.get("tools", [])
     status = manifest.get("status", "community")
-    hive_block = manifest.get("hive", {})
+    hive_block = manifest.get("teamagents", {})
 
     print(f"{server['name']}")
     print("=" * 50)
@@ -657,14 +657,14 @@ def cmd_mcp_info(args) -> int:
         for key in header_overrides:
             print(f"    header.{key} = <set>")
 
-    # Hive block
+    # TeamAgents block
     if hive_block:
         profiles = hive_block.get("profiles", [])
         if profiles:
             print(f"\n  Profiles: {', '.join(profiles)}")
         min_ver = hive_block.get("min_version")
         if min_ver:
-            print(f"  Min Hive version: {min_ver}")
+            print(f"  Min TeamAgents version: {min_ver}")
 
     # Agent usage
     if agents:
@@ -689,7 +689,7 @@ def cmd_mcp_config(args) -> int:
         if server is None:
             print(
                 f"Error: server '{args.name}' is not installed.\n"
-                f"Run 'hive mcp list' to see installed servers.",
+                f"Run 'teamagents mcp list' to see installed servers.",
                 file=sys.stderr,
             )
             return 1
@@ -698,7 +698,7 @@ def cmd_mcp_config(args) -> int:
         header_o = masked.get("headers", {})
         if not env_o and not header_o:
             print(f"No overrides set for {args.name}.")
-            print(f"Set one with: hive mcp config {args.name} --set KEY=VALUE")
+            print(f"Set one with: teamagents mcp config {args.name} --set KEY=VALUE")
         else:
             print(f"Overrides for {args.name}:")
             for key in env_o:
@@ -839,7 +839,7 @@ def _cmd_mcp_update_server(name: str, registry=None) -> int:
     if server is None:
         print(
             f"Error: server '{name}' is not installed.\n"
-            f"Run 'hive mcp install {name}' to install it.",
+            f"Run 'teamagents mcp install {name}' to install it.",
             file=sys.stderr,
         )
         return 1
@@ -847,7 +847,7 @@ def _cmd_mcp_update_server(name: str, registry=None) -> int:
     if server.get("source") != "registry":
         print(
             f"Error: '{name}' is a local server and cannot be updated from the registry.\n"
-            f"Use 'hive mcp remove {name}' and 'hive mcp add' to re-register it.",
+            f"Use 'teamagents mcp remove {name}' and 'teamagents mcp add' to re-register it.",
             file=sys.stderr,
         )
         return 1
@@ -856,7 +856,7 @@ def _cmd_mcp_update_server(name: str, registry=None) -> int:
         print(
             f"Error: '{name}' is pinned to v{server.get('manifest_version', '?')}.\n"
             f"To update a pinned server, remove and reinstall:\n"
-            f"  hive mcp remove {name} && hive mcp install {name}",
+            f"  teamagents mcp remove {name} && teamagents mcp install {name}",
             file=sys.stderr,
         )
         return 1

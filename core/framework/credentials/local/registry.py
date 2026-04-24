@@ -291,7 +291,7 @@ class LocalCredentialRegistry:
 
     @classmethod
     def default(cls) -> LocalCredentialRegistry:
-        """Create a registry using the default encrypted storage at ~/.hive/credentials."""
+        """Create a registry using the default encrypted storage at ~/.teamagents/credentials."""
         return cls(EncryptedFileStorage())
 
     @classmethod

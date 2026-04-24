@@ -23,7 +23,7 @@ Add to your MCP client configuration (e.g., Claude Desktop):
     "coder-tools": {
       "command": "uv",
       "args": ["run", "coder_tools_server.py", "--stdio"],
-      "cwd": "/path/to/hive/tools"
+      "cwd": "/path/to/teamagents/tools"
     }
   }
 }

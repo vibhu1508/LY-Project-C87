@@ -3,7 +3,7 @@
 Run: .venv/bin/python core/tests/test_antigravity_eventloop.py
 
 Requires:
-  - ~/.hive/antigravity-accounts.json with valid credentials
+  - ~/.teamagents/antigravity-accounts.json with valid credentials
     (run 'uv run python core/antigravity_auth.py auth account add' to authenticate)
 """
 
@@ -30,7 +30,7 @@ def make_provider() -> LiteLLMProvider:
         print("ERROR: No Antigravity token found.")
         print("  1. Run 'antigravity-auth accounts add' to authenticate.")
         print("  2. Run 'antigravity-auth serve' to start the local proxy.")
-        print("  3. Configure Hive: run quickstart.sh and select option 7 (Antigravity).")
+        print("  3. Configure TeamAgents: run quickstart.sh and select option 7 (Antigravity).")
         sys.exit(1)
     print(f"Model       : {cfg.model}")
     print(f"Base        : {cfg.api_base}")

@@ -31,9 +31,9 @@ def _setup_registry_with_servers(tmp_path: Path) -> MCPRegistry:
     data["servers"]["jira"]["manifest"]["tags"] = ["productivity", "pm"]
     data["servers"]["slack"]["manifest"]["tags"] = ["productivity", "messaging"]
     data["servers"]["github"]["manifest"]["tags"] = ["dev"]
-    data["servers"]["jira"]["manifest"]["hive"] = {"profiles": ["productivity"]}
-    data["servers"]["slack"]["manifest"]["hive"] = {"profiles": ["productivity"]}
-    data["servers"]["github"]["manifest"]["hive"] = {"profiles": ["developer"]}
+    data["servers"]["jira"]["manifest"]["teamagents"] = {"profiles": ["productivity"]}
+    data["servers"]["slack"]["manifest"]["teamagents"] = {"profiles": ["productivity"]}
+    data["servers"]["github"]["manifest"]["teamagents"] = {"profiles": ["developer"]}
     registry._write_installed(data)
     return registry
 

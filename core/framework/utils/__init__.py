@@ -1,4 +1,4 @@
-"""Utility functions for the Hive framework."""
+"""Utility functions for the TeamAgents framework."""
 
 from framework.utils.io import atomic_write
 

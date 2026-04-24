@@ -1,4 +1,4 @@
-#Requires -Version 5.1
+﻿#Requires -Version 5.1
 <#
 .SYNOPSIS
     setup_worker_model.ps1 - Configure a separate LLM model for worker agents
@@ -6,7 +6,7 @@
 .DESCRIPTION
     Worker agents can use a different (e.g. cheaper/faster) model than the
     queen agent.  This script writes a "worker_llm" section to
-    ~/.hive/configuration.json.  If no worker model is configured, workers
+    ~/.teamagents/configuration.json.  If no worker model is configured, workers
     fall back to the default (queen) model.
 
 .NOTES
@@ -17,9 +17,9 @@ $ErrorActionPreference = "Continue"
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Definition
 $ProjectDir = Split-Path -Parent $ScriptDir
 $UvHelperPath = Join-Path $ScriptDir "uv-discovery.ps1"
-$HiveConfigDir = Join-Path $env:USERPROFILE ".hive"
-$HiveConfigFile = Join-Path $HiveConfigDir "configuration.json"
-$HiveLlmEndpoint = "https://api.adenhq.com"
+$TeamAgentsConfigDir = Join-Path $env:USERPROFILE ".teamagents"
+$TeamAgentsConfigFile = Join-Path $TeamAgentsConfigDir "configuration.json"
+$TeamAgentsLlmEndpoint = "https://api.adenhq.com"
 
 . $UvHelperPath
 
@@ -251,7 +251,7 @@ Write-Color -Text "Worker agents will use this model instead of the default quee
 Write-Host ""
 
 # Show current configuration
-if (Test-Path $HiveConfigFile) {
+if (Test-Path $TeamAgentsConfigFile) {
     try {
         Push-Location $ProjectDir
         $currentConfig = & $UvCmd run python -c "
@@ -311,17 +311,17 @@ $kimiKey = [System.Environment]::GetEnvironmentVariable("KIMI_API_KEY", "User")
 if (-not $kimiKey) { $kimiKey = $env:KIMI_API_KEY }
 if ($kimiKey) { $KimiCredDetected = $true }
 
-$HiveCredDetected = $false
-$hiveKey = [System.Environment]::GetEnvironmentVariable("HIVE_API_KEY", "User")
-if (-not $hiveKey) { $hiveKey = $env:HIVE_API_KEY }
-if ($hiveKey) { $HiveCredDetected = $true }
+$TeamAgentsCredDetected = $false
+$teamAgentsKey = [System.Environment]::GetEnvironmentVariable("HIVE_API_KEY", "User")
+if (-not $teamAgentsKey) { $teamAgentsKey = $env:HIVE_API_KEY }
+if ($teamAgentsKey) { $TeamAgentsCredDetected = $true }
 
 $AntigravityCredDetected = $false
 # Check native Antigravity IDE (Windows) SQLite state DB
 $antigravityVscdbPath = Join-Path $env:APPDATA "Antigravity\User\globalStorage\state.vscdb"
 if (Test-Path $antigravityVscdbPath) { $AntigravityCredDetected = $true }
 # Native OAuth credentials
-$antigravityAccountsPath = Join-Path $env:USERPROFILE ".hive\antigravity-accounts.json"
+$antigravityAccountsPath = Join-Path $env:USERPROFILE ".teamagents\antigravity-accounts.json"
 if (Test-Path $antigravityAccountsPath) { $AntigravityCredDetected = $true }
 
 # Detect API key providers
@@ -342,9 +342,9 @@ $PrevProvider = ""
 $PrevModel = ""
 $PrevEnvVar = ""
 $PrevSubMode = ""
-if (Test-Path $HiveConfigFile) {
+if (Test-Path $TeamAgentsConfigFile) {
     try {
-        $prevConfig = Get-Content -Path $HiveConfigFile -Raw | ConvertFrom-Json
+        $prevConfig = Get-Content -Path $TeamAgentsConfigFile -Raw | ConvertFrom-Json
         $prevLlm = $prevConfig.worker_llm
         if ($prevLlm) {
             $PrevProvider = if ($prevLlm.provider) { $prevLlm.provider } else { "" }
@@ -357,7 +357,7 @@ if (Test-Path $HiveConfigFile) {
             elseif ($prevLlm.provider -eq "minimax" -or ($prevLlm.api_base -and $prevLlm.api_base -like "*api.minimax.io*")) { $PrevSubMode = "minimax_code" }
             elseif ($prevLlm.api_base -and $prevLlm.api_base -like "*api.z.ai*") { $PrevSubMode = "zai_code" }
             elseif ($prevLlm.api_base -and $prevLlm.api_base -like "*api.kimi.com*") { $PrevSubMode = "kimi_code" }
-            elseif ($prevLlm.provider -eq "hive" -or ($prevLlm.api_base -and $prevLlm.api_base -like "*adenhq.com*")) { $PrevSubMode = "hive_llm" }
+            elseif ($prevLlm.provider -eq "teamagents" -or ($prevLlm.api_base -and $prevLlm.api_base -like "*adenhq.com*")) { $PrevSubMode = "teamagents_llm" }
         }
     } catch { }
 }
@@ -372,7 +372,7 @@ if ($PrevSubMode -or $PrevProvider) {
         "codex"         { if ($CodexCredDetected)       { $prevCredValid = $true } }
         "minimax_code"  { if ($MinimaxCredDetected)     { $prevCredValid = $true } }
         "kimi_code"     { if ($KimiCredDetected)        { $prevCredValid = $true } }
-        "hive_llm"      { if ($HiveCredDetected)        { $prevCredValid = $true } }
+        "teamagents_llm"      { if ($TeamAgentsCredDetected)        { $prevCredValid = $true } }
         "antigravity"   { if ($AntigravityCredDetected) { $prevCredValid = $true } }
         default {
             if ($PrevEnvVar) {
@@ -389,7 +389,7 @@ if ($PrevSubMode -or $PrevProvider) {
             "codex"         { $DefaultChoice = "3" }
             "minimax_code"  { $DefaultChoice = "4" }
             "kimi_code"     { $DefaultChoice = "5" }
-            "hive_llm"      { $DefaultChoice = "6" }
+            "teamagents_llm"      { $DefaultChoice = "6" }
             "antigravity"   { $DefaultChoice = "7" }
         }
         if (-not $DefaultChoice) {
@@ -402,81 +402,44 @@ if ($PrevSubMode -or $PrevProvider) {
                 "openrouter" { $DefaultChoice = "13" }
                 "minimax"    { $DefaultChoice = "4" }
                 "kimi"       { $DefaultChoice = "5" }
-                "hive"       { $DefaultChoice = "6" }
+                "teamagents"       { $DefaultChoice = "6" }
             }
         }
     }
 }
 
+# Enforce allowlist in menu defaults (Gemini, Groq, OpenRouter only)
+$AllowedDefaultChoices = @{
+    "gemini" = "1"
+    "groq" = "2"
+    "openrouter" = "3"
+}
+if ($PrevProvider -and $AllowedDefaultChoices.ContainsKey($PrevProvider)) {
+    $DefaultChoice = $AllowedDefaultChoices[$PrevProvider]
+} else {
+    $DefaultChoice = ""
+}
+
 # -- Show unified provider selection menu ---------------------
 Write-Color -Text "Select your worker LLM provider:" -Color White
 Write-Host ""
-Write-Color -Text "  Subscription modes (no API key purchase needed):" -Color Cyan
+Write-Color -Text "  Allowed API key providers:" -Color Cyan
 
-# 1) Claude Code
-Write-Host "  " -NoNewline
-Write-Color -Text "1" -Color Cyan -NoNewline
-Write-Host ") Claude Code Subscription  " -NoNewline
-Write-Color -Text "(use your Claude Max/Pro plan)" -Color DarkGray -NoNewline
-if ($ClaudeCredDetected) { Write-Color -Text "  (credential detected)" -Color Green } else { Write-Host "" }
-
-# 2) ZAI Code
-Write-Host "  " -NoNewline
-Write-Color -Text "2" -Color Cyan -NoNewline
-Write-Host ") ZAI Code Subscription     " -NoNewline
-Write-Color -Text "(use your ZAI Code plan)" -Color DarkGray -NoNewline
-if ($ZaiCredDetected) { Write-Color -Text "  (credential detected)" -Color Green } else { Write-Host "" }
-
-# 3) Codex
-Write-Host "  " -NoNewline
-Write-Color -Text "3" -Color Cyan -NoNewline
-Write-Host ") OpenAI Codex Subscription  " -NoNewline
-Write-Color -Text "(use your Codex/ChatGPT Plus plan)" -Color DarkGray -NoNewline
-if ($CodexCredDetected) { Write-Color -Text "  (credential detected)" -Color Green } else { Write-Host "" }
-
-# 4) MiniMax Coding Key
-Write-Host "  " -NoNewline
-Write-Color -Text "4" -Color Cyan -NoNewline
-Write-Host ") MiniMax Coding Key         " -NoNewline
-Write-Color -Text "(use your MiniMax coding key)" -Color DarkGray -NoNewline
-if ($MinimaxCredDetected) { Write-Color -Text "  (credential detected)" -Color Green } else { Write-Host "" }
-
-# 5) Kimi Code
-Write-Host "  " -NoNewline
-Write-Color -Text "5" -Color Cyan -NoNewline
-Write-Host ") Kimi Code Subscription     " -NoNewline
-Write-Color -Text "(use your Kimi Code plan)" -Color DarkGray -NoNewline
-if ($KimiCredDetected) { Write-Color -Text "  (credential detected)" -Color Green } else { Write-Host "" }
-
-# 6) Hive LLM
-Write-Host "  " -NoNewline
-Write-Color -Text "6" -Color Cyan -NoNewline
-Write-Host ") Hive LLM                   " -NoNewline
-Write-Color -Text "(use your Hive API key)" -Color DarkGray -NoNewline
-if ($HiveCredDetected) { Write-Color -Text "  (credential detected)" -Color Green } else { Write-Host "" }
-
-# 7) Antigravity Subscription
-Write-Host "  " -NoNewline
-Write-Color -Text "7" -Color Cyan -NoNewline
-Write-Host ") Antigravity Subscription  " -NoNewline
-Write-Color -Text "(use your Google/Gemini plan)" -Color DarkGray -NoNewline
-if ($AntigravityCredDetected) { Write-Color -Text "  (credential detected)" -Color Green } else { Write-Host "" }
-
-Write-Host ""
-Write-Color -Text "  API key providers:" -Color Cyan
-
-# 8-13) API key providers
-for ($idx = 0; $idx -lt $ProviderMenuEnvVars.Count; $idx++) {
-    $num = $idx + 8
-    $envVal = [System.Environment]::GetEnvironmentVariable($ProviderMenuEnvVars[$idx], "Process")
-    if (-not $envVal) { $envVal = [System.Environment]::GetEnvironmentVariable($ProviderMenuEnvVars[$idx], "User") }
+$AllowedProviders = @(
+    @{ Label = "Google Gemini"; MenuNum = 1; InternalNum = 10; Env = "GEMINI_API_KEY" },
+    @{ Label = "Groq"; MenuNum = 2; InternalNum = 11; Env = "GROQ_API_KEY" },
+    @{ Label = "OpenRouter"; MenuNum = 3; InternalNum = 13; Env = "OPENROUTER_API_KEY" }
+)
+foreach ($item in $AllowedProviders) {
+    $envVal = [System.Environment]::GetEnvironmentVariable($item.Env, "Process")
+    if (-not $envVal) { $envVal = [System.Environment]::GetEnvironmentVariable($item.Env, "User") }
     Write-Host "  " -NoNewline
-    Write-Color -Text "$num" -Color Cyan -NoNewline
-    Write-Host ") $($ProviderMenuNames[$idx])" -NoNewline
+    Write-Color -Text "$($item.MenuNum)" -Color Cyan -NoNewline
+    Write-Host ") $($item.Label)" -NoNewline
     if ($envVal) { Write-Color -Text "  (credential detected)" -Color Green } else { Write-Host "" }
 }
 
-$SkipChoice = 8 + $ProviderMenuEnvVars.Count
+$SkipChoice = 4
 Write-Host "  " -NoNewline
 Write-Color -Text "$SkipChoice" -Color Cyan -NoNewline
 Write-Host ") Skip for now"
@@ -499,6 +462,19 @@ while ($true) {
         if ($num -ge 1 -and $num -le $SkipChoice) { break }
     }
     Write-Color -Text "Invalid choice. Please enter 1-$SkipChoice" -Color Red
+}
+
+# Map allowlist menu choices to existing internal switch numbers.
+if ($num -eq 1) {
+    $num = 10  # Gemini
+} elseif ($num -eq 2) {
+    $num = 11  # Groq
+} elseif ($num -eq 3) {
+    $num = 13  # OpenRouter
+}
+$SkipChoiceInternal = 199
+if ($num -eq $SkipChoice) {
+    $num = $SkipChoiceInternal
 }
 
 switch ($num) {
@@ -575,7 +551,7 @@ switch ($num) {
         $SelectedProviderId      = "minimax"
         $SelectedModel           = "MiniMax-M2.5"
         $SelectedMaxTokens       = 32768
-        $SelectedMaxContextTokens = 900000  # MiniMax M2.5 — 1M context window
+        $SelectedMaxContextTokens = 900000  # MiniMax M2.5 â€” 1M context window
         $SelectedApiBase         = "https://api.minimax.io/v1"
         Write-Host ""
         Write-Ok "Using MiniMax coding key"
@@ -594,28 +570,28 @@ switch ($num) {
         Write-Color -Text "  Model: kimi-k2.5 | API: api.kimi.com/coding" -Color DarkGray
     }
     6 {
-        # Hive LLM
-        $SubscriptionMode        = "hive_llm"
-        $SelectedProviderId      = "hive"
+        # TeamAgents LLM
+        $SubscriptionMode        = "teamagents_llm"
+        $SelectedProviderId      = "teamagents"
         $SelectedEnvVar          = "HIVE_API_KEY"
         $SelectedMaxTokens       = 32768
         $SelectedMaxContextTokens = 120000
         Write-Host ""
-        Write-Ok "Using Hive LLM"
+        Write-Ok "Using TeamAgents LLM"
         Write-Host ""
         Write-Host "  Select a model:"
-        Write-Host "  " -NoNewline; Write-Color -Text "1)" -Color Cyan -NoNewline; Write-Host " queen              " -NoNewline; Write-Color -Text "(default - Hive flagship)" -Color DarkGray
+        Write-Host "  " -NoNewline; Write-Color -Text "1)" -Color Cyan -NoNewline; Write-Host " queen              " -NoNewline; Write-Color -Text "(default - TeamAgents flagship)" -Color DarkGray
         Write-Host "  " -NoNewline; Write-Color -Text "2)" -Color Cyan -NoNewline; Write-Host " kimi-2.5"
         Write-Host "  " -NoNewline; Write-Color -Text "3)" -Color Cyan -NoNewline; Write-Host " GLM-5"
         Write-Host ""
-        $hiveModelChoice = Read-Host "  Enter model choice (1-3) [1]"
-        if (-not $hiveModelChoice) { $hiveModelChoice = "1" }
-        switch ($hiveModelChoice) {
+        $teamAgentsModelChoice = Read-Host "  Enter model choice (1-3) [1]"
+        if (-not $teamAgentsModelChoice) { $teamAgentsModelChoice = "1" }
+        switch ($teamAgentsModelChoice) {
             "2" { $SelectedModel = "kimi-2.5" }
             "3" { $SelectedModel = "GLM-5" }
             default { $SelectedModel = "queen" }
         }
-        Write-Color -Text "  Model: $SelectedModel | API: $HiveLlmEndpoint" -Color DarkGray
+        Write-Color -Text "  Model: $SelectedModel | API: $TeamAgentsLlmEndpoint" -Color DarkGray
     }
     7 {
         # Antigravity Subscription
@@ -633,7 +609,7 @@ switch ($num) {
                 & $UvCmd run python (Join-Path $ProjectDir "core\antigravity_auth.py") auth account add 2>&1
                 Pop-Location
                 # Re-detect credentials
-                $antigravityAccountsPath = Join-Path $env:USERPROFILE ".hive\antigravity-accounts.json"
+                $antigravityAccountsPath = Join-Path $env:USERPROFILE ".teamagents\antigravity-accounts.json"
                 if (Test-Path $antigravityAccountsPath) {
                     $AntigravityCredDetected = $true
                 }
@@ -654,7 +630,7 @@ switch ($num) {
             $SelectedProviderId       = "openai"
             $SelectedModel            = "gemini-3-flash"
             $SelectedMaxTokens        = 32768
-            $SelectedMaxContextTokens = 1000000  # Gemini 3 Flash — 1M context window
+            $SelectedMaxContextTokens = 1000000  # Gemini 3 Flash â€” 1M context window
             Write-Host ""
             Write-Warn "Using Antigravity can technically cause your account suspension. Please use at your own risk."
             Write-Host ""
@@ -747,7 +723,7 @@ switch ($num) {
             }
         }
     }
-    { $_ -eq $SkipChoice } {
+    { $_ -eq $SkipChoiceInternal } {
         Write-Host ""
         Write-Warn "Skipped. A worker LLM provider is required for worker agents."
         Write-Host "  Run this script again when ready."
@@ -959,37 +935,37 @@ if ($SubscriptionMode -eq "kimi_code") {
     }
 }
 
-# For Hive LLM: prompt for API key with verification + retry
-if ($SubscriptionMode -eq "hive_llm") {
+# For TeamAgents LLM: prompt for API key with verification + retry
+if ($SubscriptionMode -eq "teamagents_llm") {
     while ($true) {
-        $existingHive = [System.Environment]::GetEnvironmentVariable("HIVE_API_KEY", "User")
-        if (-not $existingHive) { $existingHive = $env:HIVE_API_KEY }
+        $existingTeamAgents = [System.Environment]::GetEnvironmentVariable("HIVE_API_KEY", "User")
+        if (-not $existingTeamAgents) { $existingTeamAgents = $env:HIVE_API_KEY }
 
-        if ($existingHive) {
-            $masked = $existingHive.Substring(0, [Math]::Min(4, $existingHive.Length)) + "..." + $existingHive.Substring([Math]::Max(0, $existingHive.Length - 4))
+        if ($existingTeamAgents) {
+            $masked = $existingTeamAgents.Substring(0, [Math]::Min(4, $existingTeamAgents.Length)) + "..." + $existingTeamAgents.Substring([Math]::Max(0, $existingTeamAgents.Length - 4))
             Write-Host ""
-            Write-Color -Text "  $([char]0x2B22) Current Hive key: $masked" -Color Green
+            Write-Color -Text "  $([char]0x2B22) Current TeamAgents key: $masked" -Color Green
             Write-Host ""
-            $apiKey = Read-Host "Paste a new Hive API key (or press Enter to keep current)"
+            $apiKey = Read-Host "Paste a new TeamAgents API key (or press Enter to keep current)"
         } else {
             Write-Host ""
             Write-Host "  Get your API key from: " -NoNewline
             Write-Color -Text "https://discord.com/invite/hQdU7QDkgR" -Color Cyan
             Write-Host ""
-            $apiKey = Read-Host "Paste your Hive API key (or press Enter to skip)"
+            $apiKey = Read-Host "Paste your TeamAgents API key (or press Enter to skip)"
         }
 
         if ($apiKey) {
             [System.Environment]::SetEnvironmentVariable("HIVE_API_KEY", $apiKey, "User")
             $env:HIVE_API_KEY = $apiKey
             Write-Host ""
-            Write-Ok "Hive API key saved as User environment variable"
+            Write-Ok "TeamAgents API key saved as User environment variable"
 
             # Health check the new key
-            Write-Host "  Verifying Hive API key... " -NoNewline
+            Write-Host "  Verifying TeamAgents API key... " -NoNewline
             try {
                 Push-Location $ProjectDir
-                $hcResult = & $UvCmd run python (Join-Path $ProjectDir "scripts/check_llm_key.py") "hive" $apiKey "$HiveLlmEndpoint" 2>$null
+                $hcResult = & $UvCmd run python (Join-Path $ProjectDir "scripts/check_llm_key.py") "teamagents" $apiKey "$TeamAgentsLlmEndpoint" 2>$null
                 Pop-Location
                 $hcJson = $hcResult | ConvertFrom-Json
                 if ($hcJson.valid -eq $true) {
@@ -1012,9 +988,9 @@ if ($SubscriptionMode -eq "hive_llm") {
                 Write-Color -Text "--" -Color Yellow
                 break
             }
-        } elseif (-not $existingHive) {
+        } elseif (-not $existingTeamAgents) {
             Write-Host ""
-            Write-Warn "Skipped. Add your Hive API key later:"
+            Write-Warn "Skipped. Add your TeamAgents API key later:"
             Write-Color -Text "  [System.Environment]::SetEnvironmentVariable('HIVE_API_KEY', 'your-key', 'User')" -Color Cyan
             $SelectedEnvVar     = ""
             $SelectedProviderId = ""
@@ -1045,13 +1021,13 @@ if ($SelectedProviderId) {
     Write-Host ""
     Write-Host "  Saving worker model configuration... " -NoNewline
 
-    if (-not (Test-Path $HiveConfigDir)) {
-        New-Item -ItemType Directory -Path $HiveConfigDir -Force | Out-Null
+    if (-not (Test-Path $TeamAgentsConfigDir)) {
+        New-Item -ItemType Directory -Path $TeamAgentsConfigDir -Force | Out-Null
     }
 
     try {
-        if (Test-Path $HiveConfigFile) {
-            $config = Get-Content -Path $HiveConfigFile -Raw | ConvertFrom-Json
+        if (Test-Path $TeamAgentsConfigFile) {
+            $config = Get-Content -Path $TeamAgentsConfigFile -Raw | ConvertFrom-Json
         } else {
             $config = @{}
         }
@@ -1088,8 +1064,8 @@ if ($SelectedProviderId) {
     } elseif ($SubscriptionMode -eq "kimi_code") {
         $workerLlm["api_base"] = "https://api.kimi.com/coding"
         $workerLlm["api_key_env_var"] = $SelectedEnvVar
-    } elseif ($SubscriptionMode -eq "hive_llm") {
-        $workerLlm["api_base"] = $HiveLlmEndpoint
+    } elseif ($SubscriptionMode -eq "teamagents_llm") {
+        $workerLlm["api_base"] = $TeamAgentsLlmEndpoint
         $workerLlm["api_key_env_var"] = $SelectedEnvVar
     } elseif ($SelectedProviderId -eq "openrouter") {
         $workerLlm["api_base"] = "https://openrouter.ai/api/v1"
@@ -1099,14 +1075,15 @@ if ($SelectedProviderId) {
     }
 
     $config | Add-Member -NotePropertyName "worker_llm" -NotePropertyValue $workerLlm -Force
-    $config | ConvertTo-Json -Depth 4 | Set-Content -Path $HiveConfigFile -Encoding UTF8
+    $config | ConvertTo-Json -Depth 4 | Set-Content -Path $TeamAgentsConfigFile -Encoding UTF8
     Write-Ok "done"
-    Write-Color -Text "  ~/.hive/configuration.json (worker_llm section)" -Color DarkGray
+    Write-Color -Text "  ~/.teamagents/configuration.json (worker_llm section)" -Color DarkGray
 
     Write-Host ""
     Write-Ok "Worker model configured successfully."
     Write-Color -Text "  Worker agents will now use: $SelectedProviderId/$SelectedModel" -Color DarkGray
     Write-Color -Text "  Run this script again to change, or remove the worker_llm section" -Color DarkGray
-    Write-Color -Text "  from ~/.hive/configuration.json to revert to the default." -Color DarkGray
+    Write-Color -Text "  from ~/.teamagents/configuration.json to revert to the default." -Color DarkGray
     Write-Host ""
 }
+

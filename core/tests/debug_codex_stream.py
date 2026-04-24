@@ -26,7 +26,7 @@ async def test_codex_stream():
     extra_kwargs = get_llm_extra_kwargs()
 
     if not api_key or not api_base:
-        print("ERROR: No Codex subscription configured in ~/.hive/configuration.json")
+        print("ERROR: No Codex subscription configured in ~/.teamagents/configuration.json")
         return
 
     print(f"api_base: {api_base}")

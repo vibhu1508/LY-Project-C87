@@ -52,7 +52,7 @@ def register_worker_monitoring_tools(
         registry: ToolRegistry to register tools on.
         event_bus: The shared EventBus for the worker runtime.
         storage_path: Root storage path of the worker runtime
-                      (e.g. ``~/.hive/agents/{name}``).
+                      (e.g. ``~/.teamagents/agents/{name}``).
         stream_id: Stream ID used when emitting events.
         worker_graph_id: The primary worker graph's ID. Included in health summary
                          so the judge can populate ticket identity fields accurately.
@@ -70,7 +70,7 @@ def register_worker_monitoring_tools(
 
     storage_path = Path(storage_path)
     # Derive agent identity from storage path for ticket fields.
-    # storage_path is ~/.hive/agents/{agent_name} — the name is the last component.
+    # storage_path is ~/.teamagents/agents/{agent_name} — the name is the last component.
     _worker_agent_id: str = storage_path.name
     _worker_graph_id: str = worker_graph_id or storage_path.name
     tools_registered = 0

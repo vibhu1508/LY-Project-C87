@@ -29,7 +29,7 @@ async def main():
     extra_kwargs = get_llm_extra_kwargs()
 
     if not api_key or not api_base:
-        print("ERROR: No Codex config in ~/.hive/configuration.json")
+        print("ERROR: No Codex config in ~/.teamagents/configuration.json")
         return
 
     provider = LiteLLMProvider(

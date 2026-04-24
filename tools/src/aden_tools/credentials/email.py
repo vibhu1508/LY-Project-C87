@@ -21,7 +21,7 @@ EMAIL_CREDENTIALS = {
 1. Go to https://resend.com and create an account (or sign in)
 2. Navigate to API Keys in the dashboard
 3. Click "Create API Key"
-4. Give it a name (e.g., "Hive Agent") and choose permissions:
+4. Give it a name (e.g., "TeamAgents Agent") and choose permissions:
    - "Sending access" is sufficient for most use cases
    - "Full access" if you also need to manage domains
 5. Copy the API key (starts with re_)
@@ -85,14 +85,14 @@ EMAIL_CREDENTIALS = {
         node_types=[],
         required=True,
         startup_required=False,
-        help_url="https://hive.adenhq.com",
+        help_url="https://teamagents.adenhq.com",
         description=(
             "Google OAuth2 access token (via Aden) - used for Gmail, Calendar, Sheets, and Docs"
         ),
         aden_supported=True,
         aden_provider_name="google",
         direct_api_key_supported=False,
-        api_key_instructions="Google OAuth requires OAuth2. Connect via hive.adenhq.com",
+        api_key_instructions="Google OAuth requires OAuth2. Connect via teamagents.adenhq.com",
         health_check_endpoint="https://gmail.googleapis.com/gmail/v1/users/me/profile",
         health_check_method="GET",
         credential_id="google",

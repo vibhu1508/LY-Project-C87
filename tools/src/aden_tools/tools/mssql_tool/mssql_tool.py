@@ -1,5 +1,5 @@
 """
-MSSQL Tool - Professional SQL Server database operations for Aden Hive.
+MSSQL Tool - Professional SQL Server database operations for Aden TeamAgents.
 
 Provides tools for:
 - Executing SELECT queries

@@ -1,8 +1,8 @@
 {
-  "name": "hive",
+  "name": "teamagents",
   "version": "0.1.0",
   "private": true,
-  "description": "Hive - Aden Agent Framework - Build goal-driven, self-improving AI agents",
+  "description": "TeamAgents - Master Agent Education Automation Framework - Build tools for students, teachers, and school management",
   "repository": {
     "type": "git",
     "url": "https://github.com/adenhq/hive.git"

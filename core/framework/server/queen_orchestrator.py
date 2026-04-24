@@ -72,7 +72,7 @@ async def create_queen(
     )
     from framework.tools.queen_memory_tools import register_queen_memory_tools
 
-    hive_home = Path.home() / ".hive"
+    hive_home = Path.home() / ".teamagents"
 
     # ---- Tool registry ------------------------------------------------
     queen_registry = ToolRegistry()

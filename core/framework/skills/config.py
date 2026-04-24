@@ -35,13 +35,13 @@ class SkillsConfig:
 
         # Default skill configuration
         default_skills = {
-            "hive.note-taking": {"enabled": True},
-            "hive.batch-ledger": {"enabled": True, "checkpoint_every_n": 10},
-            "hive.quality-monitor": {"enabled": False},
+            "teamagents.note-taking": {"enabled": True},
+            "teamagents.batch-ledger": {"enabled": True, "checkpoint_every_n": 10},
+            "teamagents.quality-monitor": {"enabled": False},
         }
     """
 
-    # Per-default-skill config, keyed by skill name (e.g. "hive.note-taking")
+    # Per-default-skill config, keyed by skill name (e.g. "teamagents.note-taking")
     default_skills: dict[str, DefaultSkillConfig] = field(default_factory=dict)
 
     # Pre-activated community skills (by name)
@@ -76,7 +76,7 @@ class SkillsConfig:
 
         Args:
             default_skills: Dict from agent module, e.g.
-                ``{"hive.note-taking": {"enabled": True}}``
+                ``{"teamagents.note-taking": {"enabled": True}}``
             skills: List of pre-activated skill names from agent module
         """
         all_disabled = False

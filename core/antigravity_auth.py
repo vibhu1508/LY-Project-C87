@@ -2,7 +2,7 @@
 """Antigravity authentication CLI.
 
 Implements OAuth2 flow for Google's Antigravity Code Assist gateway.
-Credentials are stored in ~/.hive/antigravity-accounts.json.
+Credentials are stored in ~/.teamagents/antigravity-accounts.json.
 
 Usage:
     python -m antigravity_auth auth account add
@@ -41,8 +41,8 @@ _OAUTH_SCOPES = [
     "https://www.googleapis.com/auth/userinfo.profile",
 ]
 
-# Credentials file path in ~/.hive/
-_ACCOUNTS_FILE = Path.home() / ".hive" / "antigravity-accounts.json"
+# Credentials file path in ~/.teamagents/
+_ACCOUNTS_FILE = Path.home() / ".teamagents" / "antigravity-accounts.json"
 
 # Default project ID
 _DEFAULT_PROJECT_ID = "rising-fact-p41fc"
@@ -69,7 +69,7 @@ def _fetch_credentials_from_public_source() -> tuple[str | None, str | None]:
 
     try:
         req = urllib.request.Request(
-            _CREDENTIALS_URL, headers={"User-Agent": "Hive-Antigravity-Auth/1.0"}
+            _CREDENTIALS_URL, headers={"User-Agent": "TeamAgents-Antigravity-Auth/1.0"}
         )
         with urllib.request.urlopen(req, timeout=10) as resp:
             content = resp.read().decode("utf-8")
@@ -93,8 +93,8 @@ def get_client_id() -> str:
     if env_id:
         return env_id
 
-    # Try hive config
-    hive_cfg = Path.home() / ".hive" / "configuration.json"
+    # Try teamagents config
+    hive_cfg = Path.home() / ".teamagents" / "configuration.json"
     if hive_cfg.exists():
         try:
             with open(hive_cfg) as f:
@@ -119,8 +119,8 @@ def get_client_secret() -> str | None:
     if secret:
         return secret
 
-    # Try to read from hive config
-    hive_cfg = Path.home() / ".hive" / "configuration.json"
+    # Try to read from teamagents config
+    hive_cfg = Path.home() / ".teamagents" / "configuration.json"
     if hive_cfg.exists():
         try:
             with open(hive_cfg) as f:
@@ -410,7 +410,7 @@ def cmd_account_add(args: argparse.Namespace) -> int:
         logger.warning(
             "No client secret configured. Token refresh may fail.\n"
             "Set ANTIGRAVITY_CLIENT_SECRET env var or add "
-            "'antigravity_client_secret' to ~/.hive/configuration.json"
+            "'antigravity_client_secret' to ~/.teamagents/configuration.json"
         )
 
     # Use fixed port and path matching Google's expected OAuth redirect URI

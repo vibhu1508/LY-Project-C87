@@ -45,7 +45,7 @@ class CredentialStore:
     Usage:
         # Basic usage
         store = CredentialStore(
-            storage=EncryptedFileStorage("~/.hive/credentials"),
+            storage=EncryptedFileStorage("~/.teamagents/credentials"),
             providers=[OAuth2Provider(), StaticProvider()]
         )
 
@@ -631,7 +631,7 @@ class CredentialStore:
         Create a credential store with encrypted file storage.
 
         Args:
-            base_path: Directory for credential files. Defaults to ~/.hive/credentials.
+            base_path: Directory for credential files. Defaults to ~/.teamagents/credentials.
             providers: List of credential providers
             **kwargs: Additional arguments passed to CredentialStore
 
@@ -689,7 +689,7 @@ class CredentialStore:
         Args:
             base_url: Aden server URL (default: https://api.adenhq.com)
             cache_ttl_seconds: How long to cache credentials locally (default: 5 min)
-            local_path: Path for local credential storage (default: ~/.hive/credentials)
+            local_path: Path for local credential storage (default: ~/.teamagents/credentials)
             auto_sync: Whether to sync all credentials on startup (default: True)
             **kwargs: Additional arguments passed to CredentialStore
 
@@ -710,7 +710,7 @@ class CredentialStore:
 
         # Determine local storage path
         if local_path is None:
-            local_path = str(Path.home() / ".hive" / "credentials")
+            local_path = str(Path.home() / ".teamagents" / "credentials")
 
         local_storage = EncryptedFileStorage(base_path=local_path)
 

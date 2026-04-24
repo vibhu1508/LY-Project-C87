@@ -269,7 +269,7 @@ class CredentialSetupSession:
         try:
             generate_and_save_credential_key()
             self._print(
-                f"{Colors.GREEN}✓ Encryption key saved to ~/.hive/secrets/credential_key{Colors.NC}"
+                f"{Colors.GREEN}✓ Encryption key saved to ~/.teamagents/secrets/credential_key{Colors.NC}"
             )
             return True
         except Exception as e:
@@ -317,7 +317,7 @@ class CredentialSetupSession:
                 (
                     "aden",
                     "Use Aden Platform (OAuth)",
-                    "Secure OAuth2 flow via hive.adenhq.com",
+                    "Secure OAuth2 flow via teamagents.adenhq.com",
                 )
             )
 
@@ -404,7 +404,7 @@ class CredentialSetupSession:
         aden_key = os.environ.get("ADEN_API_KEY")
         if not aden_key:
             self._print("You need an Aden API key to use this method.")
-            self._print(f"{Colors.CYAN}Get one at:{Colors.NC} https://hive.adenhq.com")
+            self._print(f"{Colors.CYAN}Get one at:{Colors.NC} https://teamagents.adenhq.com")
             self._print("")
 
             try:
@@ -452,7 +452,7 @@ class CredentialSetupSession:
                 self._print(
                     f"{Colors.YELLOW}⚠ {cred.credential_name} not found in Aden account.{Colors.NC}"
                 )
-                self._print("Please connect this integration on https://hive.adenhq.com first.")
+                self._print("Please connect this integration on https://teamagents.adenhq.com first.")
                 return False
         except Exception as e:
             self._print(f"{Colors.RED}Failed to sync from Aden: {e}{Colors.NC}")
@@ -493,7 +493,7 @@ class CredentialSetupSession:
                 keys={key_name: CredentialKey(name=key_name, value=SecretStr(value))},
             )
             store.save_credential(cred_obj)
-            self._print(f"{Colors.GREEN}✓ Stored in ~/.hive/credentials/{Colors.NC}")
+            self._print(f"{Colors.GREEN}✓ Stored in ~/.teamagents/credentials/{Colors.NC}")
         except Exception as e:
             self._print(f"{Colors.YELLOW}⚠ Could not store in credential store: {e}{Colors.NC}")
 
@@ -620,7 +620,7 @@ def run_credential_setup_cli(agent_path: str | Path | None = None) -> int:
     Standalone CLI entry point for credential setup.
 
     Can be called from:
-    - `hive setup-credentials <agent>`
+    - `teamagents setup-credentials <agent>`
     - After CredentialError in runner CLI
     - From coding agent CLI
 
@@ -634,7 +634,7 @@ def run_credential_setup_cli(agent_path: str | Path | None = None) -> int:
         session = CredentialSetupSession.from_agent_path(agent_path)
     else:
         # No agent specified - detect from current context or show error
-        print("Usage: hive setup-credentials <agent_path>")
+        print("Usage: teamagents setup-credentials <agent_path>")
         return 1
 
     result = session.run_interactive()

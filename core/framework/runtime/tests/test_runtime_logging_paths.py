@@ -18,7 +18,7 @@ def test_graph_executor_uses_custom_session_dir_name_for_runtime_logs():
 
 
 def test_runtime_logger_creates_session_log_dir_for_custom_session_id(tmp_path):
-    base = tmp_path / ".hive" / "agents" / "test_agent"
+    base = tmp_path / ".teamagents" / "agents" / "test_agent"
     base.mkdir(parents=True)
     store = RuntimeLogStore(base)
     logger = RuntimeLogger(store=store, agent_id="test-agent")

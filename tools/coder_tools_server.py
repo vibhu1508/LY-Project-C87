@@ -372,7 +372,7 @@ def list_agent_tools(
 
     Args:
         server_config_path: Path to mcp_servers.json. Default: tools/mcp_servers.json
-            (the standard hive-tools server). Can also point to an agent's config
+            (the standard teamagents-tools server). Can also point to an agent's config
             to see what tools that specific agent has access to.
         output_schema: Controls verbosity of the response.
             "summary" (default) — provider list with tool counts + credential status. Very compact.
@@ -773,7 +773,7 @@ def _validate_agent_tools_impl(agent_path: str) -> dict:
     except ValueError:
         return {
             "error": "agent_path must be inside an allowed directory "
-            "(exports/, examples/, or ~/.hive/agents/)"
+            "(exports/, examples/, or ~/.teamagents/agents/)"
         }
 
     if not os.path.isdir(resolved):
@@ -904,15 +904,15 @@ def validate_agent_tools(agent_path: str) -> str:
 
 @mcp.tool()
 def list_agents() -> str:
-    """List all Hive agent packages with runtime session info.
+    """List all TeamAgents agent packages with runtime session info.
 
     Scans exports/ for user agents and core/framework/agents/ for framework
-    agents. Checks ~/.hive/agents/ for runtime data (session counts).
+    agents. Checks ~/.teamagents/agents/ for runtime data (session counts).
 
     Returns:
         JSON list of agents with names, descriptions, source, and session counts
     """
-    hive_agents_dir = Path.home() / ".hive" / "agents"
+    hive_agents_dir = Path.home() / ".teamagents" / "agents"
     agents = []
     skip = {"__pycache__", "__init__.py", ".git"}
 
@@ -993,8 +993,8 @@ _MAX_TRUNCATE_LEN = 500
 
 
 def _resolve_hive_agent_path(agent_name: str) -> Path:
-    """Resolve agent_name to ~/.hive/agents/{agent_name}/."""
-    return Path.home() / ".hive" / "agents" / agent_name
+    """Resolve agent_name to ~/.teamagents/agents/{agent_name}/."""
+    return Path.home() / ".teamagents" / "agents" / agent_name
 
 
 def _read_session_json(path: Path) -> dict | None:
@@ -1263,7 +1263,7 @@ def _run_agent_tests_impl(
         return {
             "error": (
                 "pytest is not installed or not on PATH. "
-                "Hive's test runner requires pytest at runtime. "
+                "TeamAgents's test runner requires pytest at runtime. "
                 "Install it with: pip install 'framework[testing]' "
                 "or: uv pip install 'framework[testing]'"
             ),
@@ -1776,8 +1776,8 @@ from pathlib import Path
 
 
 def _load_preferred_model() -> str:
-    """Load preferred model from ~/.hive/configuration.json."""
-    config_path = Path.home() / ".hive" / "configuration.json"
+    """Load preferred model from ~/.teamagents/configuration.json."""
+    config_path = Path.home() / ".teamagents" / "configuration.json"
     if config_path.exists():
         try:
             with open(config_path) as f:
@@ -2039,7 +2039,7 @@ class {class_name}:
         )
 
     def _setup(self):
-        self._storage_path = Path.home() / ".hive" / "agents" / "{agent_name}"
+        self._storage_path = Path.home() / ".teamagents" / "agents" / "{agent_name}"
         self._storage_path.mkdir(parents=True, exist_ok=True)
         self._tool_registry = ToolRegistry()
         mcp_config = Path(__file__).parent / "mcp_servers.json"
@@ -2277,12 +2277,12 @@ if __name__ == "__main__":
 
     # -- mcp_servers.json --
     mcp_config: dict = {
-        "hive-tools": {
+        "teamagents-tools": {
             "transport": "stdio",
             "command": "uv",
             "args": ["run", "python", "mcp_server.py", "--stdio"],
             "cwd": "../../tools",
-            "description": "Hive tools MCP server",
+            "description": "TeamAgents tools MCP server",
         },
         "gcu-tools": {
             "transport": "stdio",
@@ -2395,7 +2395,7 @@ def main() -> None:
     PROJECT_ROOT = os.path.abspath(args.project_root) if args.project_root else _find_project_root()
     SNAPSHOT_DIR = os.path.join(
         os.path.expanduser("~"),
-        ".hive",
+        ".teamagents",
         "snapshots",
         os.path.basename(PROJECT_ROOT),
     )

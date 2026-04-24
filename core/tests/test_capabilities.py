@@ -27,7 +27,7 @@ class TestSupportsImageToolResults:
             "fireworks_ai/llama-v3-70b",
             "azure/gpt-4o",
             "kimi/claude-sonnet-4-20250514",
-            "hive/claude-sonnet-4-20250514",
+            "teamagents/claude-sonnet-4-20250514",
         ],
     )
     def test_supported_models(self, model: str):

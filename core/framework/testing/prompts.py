@@ -104,9 +104,9 @@ def mock_mode():
 async def runner(tmp_path_factory, mock_mode):
     """Create an AgentRunner using the canonical runtime path.
 
-    Uses tmp_path_factory for storage so tests don't pollute ~/.hive/agents/.
+    Uses tmp_path_factory for storage so tests don't pollute ~/.teamagents/agents/.
     Goes through AgentRunner.load() -> _setup() -> AgentRuntime, the same
-    path as ``hive run``.
+    path as ``teamagents run``.
     """
     storage = tmp_path_factory.mktemp("agent_storage")
     r = AgentRunner.load(

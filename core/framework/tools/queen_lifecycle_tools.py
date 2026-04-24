@@ -735,7 +735,7 @@ def _update_meta_json(session_manager, manager_session_id, updates: dict) -> Non
     if not srv_session:
         return
     storage_sid = getattr(srv_session, "queen_resume_from", None) or srv_session.id
-    meta_path = Path.home() / ".hive" / "queen" / "session" / storage_sid / "meta.json"
+    meta_path = Path.home() / ".teamagents" / "queen" / "session" / storage_sid / "meta.json"
     try:
         existing = {}
         if meta_path.exists():
@@ -3351,7 +3351,7 @@ def register_queen_lifecycle_tools(
                 {
                     "count": len(credentials),
                     "credentials": credentials,
-                    "location": "~/.hive/credentials",
+                    "location": "~/.teamagents/credentials",
                 },
                 default=str,
             )

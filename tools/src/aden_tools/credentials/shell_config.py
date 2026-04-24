@@ -106,7 +106,7 @@ def add_env_var_to_shell_config(
     env_var: str,
     value: str,
     shell_type: ShellType | None = None,
-    comment: str = "Added by Hive credential setup",
+    comment: str = "Added by TeamAgents credential setup",
 ) -> tuple[bool, str]:
     """
     Add an environment variable export to shell config.
@@ -188,7 +188,7 @@ def remove_env_var_from_shell_config(
             stripped = line.strip()
 
             # Skip comment lines that precede the export
-            if stripped.startswith("# Added by Hive"):
+            if stripped.startswith("# Added by TeamAgents"):
                 # Check if next non-empty line is the export
                 for j in range(i + 1, len(lines)):
                     next_line = lines[j].strip()

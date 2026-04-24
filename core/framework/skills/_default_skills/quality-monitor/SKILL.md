@@ -1,8 +1,8 @@
 ---
-name: hive.quality-monitor
+name: teamagents.quality-monitor
 description: Periodically self-assess output quality to catch degradation before the judge does.
 metadata:
-  author: hive
+  author: teamagents
   type: default-skill
 ---
 

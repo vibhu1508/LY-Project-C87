@@ -1,6 +1,6 @@
 # Agent Runtime
 
-Unified execution system for all Hive agents. Every agent — single-entry or multi-entry, headless or TUI — runs through the same runtime stack.
+Unified execution system for all TeamAgents agents. Every agent — single-entry or multi-entry, headless or TUI — runs through the same runtime stack.
 
 ## Topology
 
@@ -77,7 +77,7 @@ from framework.runtime.execution_stream import EntryPointSpec
 runtime = create_agent_runtime(
     graph=graph,
     goal=goal,
-    storage_path=Path("~/.hive/agents/my_agent"),
+    storage_path=Path("~/.teamagents/agents/my_agent"),
     entry_points=[
         EntryPointSpec(id="default", name="Default", entry_node="start", trigger_type="manual"),
     ],
@@ -159,7 +159,7 @@ In headless mode, `AgentRunner` subscribes to `CLIENT_OUTPUT_DELTA` and `CLIENT_
 ## Storage Layout
 
 ```
-~/.hive/agents/{agent_name}/
+~/.teamagents/agents/{agent_name}/
   sessions/
     session_YYYYMMDD_HHMMSS_{uuid}/
       state.json              # Session state (status, memory, progress)

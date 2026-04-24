@@ -28,7 +28,7 @@ def open_browser(url: str) -> tuple[bool, str]:
         Tuple of (success, message)
 
     Example:
-        >>> success, msg = open_browser("https://hive.adenhq.com/connect/hubspot")
+        >>> success, msg = open_browser("https://teamagents.adenhq.com/connect/hubspot")
         >>> if success:
         ...     print("Browser opened!")
     """
@@ -77,7 +77,7 @@ def open_browser(url: str) -> tuple[bool, str]:
         return False, f"Failed to open browser: {e}"
 
 
-def get_aden_auth_url(provider_name: str, base_url: str = "https://hive.adenhq.com") -> str:
+def get_aden_auth_url(provider_name: str, base_url: str = "https://teamagents.adenhq.com") -> str:
     """
     Get the Aden authorization URL for a provider.
 
@@ -91,7 +91,7 @@ def get_aden_auth_url(provider_name: str, base_url: str = "https://hive.adenhq.c
     return f"{base_url}/connect/{provider_name}"
 
 
-def get_aden_setup_url(base_url: str = "https://hive.adenhq.com") -> str:
+def get_aden_setup_url(base_url: str = "https://teamagents.adenhq.com") -> str:
     """
     Get the Aden setup URL for creating an API key.
 

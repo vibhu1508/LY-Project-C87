@@ -26,7 +26,7 @@ def _check_pytest_available() -> bool:
     if shutil.which("pytest") is None:
         print(
             "Error: pytest is not installed or not on PATH.\n"
-            "Hive's testing commands require pytest at runtime.\n"
+            "TeamAgents's testing commands require pytest at runtime.\n"
             "Install it with:\n"
             "\n"
             "  pip install 'framework[testing]'\n"

@@ -69,7 +69,7 @@ SEARCH_CREDENTIALS = {
 1. Go to https://programmablesearchengine.google.com/controlpanel/all
 2. Click "Add" to create a new search engine
 3. Under "What to search", select "Search the entire web"
-4. Give your search engine a name (e.g., "Hive Agent Search")
+4. Give your search engine a name (e.g., "TeamAgents Agent Search")
 5. Click "Create"
 6. Copy the Search Engine ID (cx value) from the overview page""",
         # Health check configuration
@@ -102,7 +102,7 @@ SEARCH_CREDENTIALS = {
 2. Sign up for an Exa account (or sign in)
 3. Navigate to "API Keys" in the dashboard
 4. Click "Create new API key"
-5. Give your API key a name (e.g., "Hive Agent")
+5. Give your API key a name (e.g., "TeamAgents Agent")
 6. Copy the API key and store it securely
 Note: Free tier includes 1,000 searches/month.""",
         # Health check configuration

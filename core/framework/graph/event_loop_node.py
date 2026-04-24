@@ -4498,7 +4498,7 @@ class EventLoopNode(NodeProtocol):
         # Emit post-compaction usage update
         await self._publish_context_usage(ctx, conversation, "post_compaction")
 
-        # Write detailed debug log to ~/.hive/compaction_log/ when enabled
+        # Write detailed debug log to ~/.teamagents/compaction_log/ when enabled
         if _os.environ.get("HIVE_COMPACTION_DEBUG"):
             self._write_compaction_debug_log(ctx, before_pct, after_pct, level, pre_inventory)
 
@@ -4510,8 +4510,8 @@ class EventLoopNode(NodeProtocol):
         level: str,
         inventory: list[dict[str, Any]] | None,
     ) -> None:
-        """Write detailed compaction analysis to ~/.hive/compaction_log/."""
-        log_dir = Path.home() / ".hive" / "compaction_log"
+        """Write detailed compaction analysis to ~/.teamagents/compaction_log/."""
+        log_dir = Path.home() / ".teamagents" / "compaction_log"
         log_dir.mkdir(parents=True, exist_ok=True)
 
         ts = datetime.now(UTC).strftime("%Y%m%dT%H%M%S_%f")

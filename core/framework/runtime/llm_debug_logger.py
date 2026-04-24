@@ -1,4 +1,4 @@
-"""Write every LLM turn to ~/.hive/llm_logs/<ts>.jsonl for replay/debugging.
+"""Write every LLM turn to ~/.teamagents/llm_logs/<ts>.jsonl for replay/debugging.
 
 Each line is a JSON object with the full LLM turn: the request payload
 (system prompt + messages), assistant text, tool calls, tool results, and
@@ -15,7 +15,7 @@ from typing import IO, Any
 
 logger = logging.getLogger(__name__)
 
-_LLM_DEBUG_DIR = Path.home() / ".hive" / "llm_logs"
+_LLM_DEBUG_DIR = Path.home() / ".teamagents" / "llm_logs"
 
 _log_file: IO[str] | None = None
 _log_ready = False  # lazy init guard

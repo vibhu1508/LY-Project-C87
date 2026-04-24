@@ -1,4 +1,4 @@
-"""Tests for framework/config.py - Hive configuration loading."""
+"""Tests for framework/config.py - TeamAgents configuration loading."""
 
 import logging
 
@@ -19,7 +19,7 @@ class TestGetHiveConfig:
             result = get_hive_config()
 
         assert result == {}
-        assert "Failed to load Hive config" in caplog.text
+        assert "Failed to load TeamAgents config" in caplog.text
         assert str(config_file) in caplog.text
 
 

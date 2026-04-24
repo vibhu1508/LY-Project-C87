@@ -4,7 +4,7 @@ Project-level skills from untrusted repositories require explicit user consent
 before their instructions are loaded into the agent's system prompt.
 Framework and user-scope skills are always trusted.
 
-Trusted repos are persisted at ~/.hive/trusted_repos.json.
+Trusted repos are persisted at ~/.teamagents/trusted_repos.json.
 """
 
 from __future__ import annotations
@@ -30,8 +30,8 @@ _ENV_TRUST_ALL = "HIVE_TRUST_PROJECT_SKILLS"
 # Env var for comma-separated own-remote glob patterns (e.g. "github.com/myorg/*").
 _ENV_OWN_REMOTES = "HIVE_OWN_REMOTES"
 
-_TRUSTED_REPOS_PATH = Path.home() / ".hive" / "trusted_repos.json"
-_NOTICE_SENTINEL_PATH = Path.home() / ".hive" / ".skill_trust_notice_shown"
+_TRUSTED_REPOS_PATH = Path.home() / ".teamagents" / "trusted_repos.json"
+_NOTICE_SENTINEL_PATH = Path.home() / ".teamagents" / ".skill_trust_notice_shown"
 
 
 # ---------------------------------------------------------------------------
@@ -47,7 +47,7 @@ class TrustedRepoEntry:
 
 
 class TrustedRepoStore:
-    """Persists permanently-trusted repo keys to ~/.hive/trusted_repos.json."""
+    """Persists permanently-trusted repo keys to ~/.teamagents/trusted_repos.json."""
 
     def __init__(self, path: Path | None = None) -> None:
         self._path = path or _TRUSTED_REPOS_PATH
@@ -150,7 +150,7 @@ class ProjectTrustDetector:
     3. No remote 'origin'           → ALWAYS_TRUSTED (local-only repo)
     4. Remote URL → repo_key; in TrustedRepoStore → TRUSTED_BY_USER
     5. Localhost remote             → ALWAYS_TRUSTED
-    6. ~/.hive/own_remotes match    → ALWAYS_TRUSTED
+    6. ~/.teamagents/own_remotes match    → ALWAYS_TRUSTED
     7. HIVE_OWN_REMOTES env match   → ALWAYS_TRUSTED
     8. None of the above            → UNTRUSTED
     """
@@ -223,8 +223,8 @@ class ProjectTrustDetector:
         if raw:
             patterns.extend(p.strip() for p in raw.split(",") if p.strip())
 
-        # From ~/.hive/own_remotes file
-        own_remotes_file = Path.home() / ".hive" / "own_remotes"
+        # From ~/.teamagents/own_remotes file
+        own_remotes_file = Path.home() / ".teamagents" / "own_remotes"
         if own_remotes_file.is_file():
             try:
                 for line in own_remotes_file.read_text(encoding="utf-8").splitlines():
@@ -358,7 +358,7 @@ class TrustGate:
             logger.warning(
                 "skill_trust: skipping %d project-scope skill(s) from untrusted repo "
                 "'%s' (non-interactive mode). "
-                "To trust permanently run: hive skill trust %s",
+                "To trust permanently run: teamagents skill trust %s",
                 len(project_skills),
                 repo_key,
                 project_dir or ".",

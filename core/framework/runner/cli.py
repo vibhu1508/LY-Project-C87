@@ -251,7 +251,7 @@ def register_commands(subparsers: argparse._SubParsersAction) -> None:
     open_parser = subparsers.add_parser(
         "open",
         help="Start HTTP server and open dashboard in browser",
-        description="Shortcut for 'hive serve --open'. "
+        description="Shortcut for 'teamagents serve --open'. "
         "Starts the HTTP server and opens the dashboard.",
     )
     open_parser.add_argument(
@@ -301,7 +301,7 @@ def _load_resume_state(
         session_state dict for executor, or None if not found
     """
     agent_name = Path(agent_path).name
-    agent_work_dir = Path.home() / ".hive" / "agents" / agent_name
+    agent_work_dir = Path.home() / ".teamagents" / "agents" / agent_name
     session_dir = agent_work_dir / "sessions" / session_id
 
     if not session_dir.exists():
@@ -1521,11 +1521,11 @@ def cmd_setup_credentials(args: argparse.Namespace) -> int:
         session = CredentialSetupSession.from_agent_path(agent_path)
     else:
         # No agent specified - show usage
-        print("Usage: hive setup-credentials <agent_path>")
+        print("Usage: teamagents setup-credentials <agent_path>")
         print()
         print("Examples:")
-        print("  hive setup-credentials exports/my-agent")
-        print("  hive setup-credentials examples/templates/deep_research_agent")
+        print("  teamagents setup-credentials exports/my-agent")
+        print("  teamagents setup-credentials examples/templates/deep_research_agent")
         return 1
 
     result = session.run_interactive()

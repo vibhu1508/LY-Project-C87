@@ -32,7 +32,7 @@ def register_lifecycle_tools(mcp: FastMCP) -> None:
         Start the browser with a persistent profile.
 
         Browser data (cookies, localStorage, logins) persists at
-        ~/.hive/agents/{agent}/browser/{profile}/
+        ~/.teamagents/agents/{agent}/browser/{profile}/
         A CDP debugging port is allocated in range 18800-18899.
 
         Args:

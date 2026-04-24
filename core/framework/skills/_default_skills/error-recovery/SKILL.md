@@ -1,8 +1,8 @@
 ---
-name: hive.error-recovery
+name: teamagents.error-recovery
 description: Follow a structured recovery protocol when tool calls fail instead of blindly retrying or giving up.
 metadata:
-  author: hive
+  author: teamagents
   type: default-skill
 ---
 

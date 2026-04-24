@@ -1,7 +1,7 @@
 """
 Manual test script for browser highlight animations.
 
-Launches a visible browser, goes to Google, searches "aden hive",
+Launches a visible browser, goes to Google, searches "aden teamagents",
 and clicks the first result — with highlight animations on each action.
 
 Usage:
@@ -47,8 +47,8 @@ async def main() -> None:
         await step(f"Highlighting search bar: {selector}")
         await highlight_element(page, selector)
 
-        await step("Filling search bar with 'aden hive'")
-        await page.fill(selector, "aden hive")
+        await step("Filling search bar with 'aden teamagents'")
+        await page.fill(selector, "aden teamagents")
         await asyncio.sleep(0.5)
 
         # 4. Press Enter to search

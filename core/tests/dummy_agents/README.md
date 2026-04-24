@@ -40,5 +40,5 @@ uv run python tests/dummy_agents/run_all.py --verbose
 ## Notes
 
 - Tests are **auto-skipped** in regular `pytest` runs (no LLM configured)
-- Worker tests start the `hive-tools` MCP server as a subprocess
+- Worker tests start the `teamagents-tools` MCP server as a subprocess
 - Typical runtime: ~1-3 min depending on provider

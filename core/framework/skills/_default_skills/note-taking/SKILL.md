@@ -1,8 +1,8 @@
 ---
-name: hive.note-taking
+name: teamagents.note-taking
 description: Maintain structured working notes throughout execution to prevent information loss during context pruning.
 metadata:
-  author: hive
+  author: teamagents
   type: default-skill
 ---
 

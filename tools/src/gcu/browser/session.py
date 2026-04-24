@@ -81,12 +81,12 @@ Object.defineProperty(navigator, 'languages', {
 });
 """
 
-# Branded start page HTML with Hive theme
+# Branded start page HTML with TeamAgents theme
 HIVE_START_PAGE = """
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Hive Browser</title>
+    <title>TeamAgents Browser</title>
     <style>
         :root {
             --primary: #FAC43B;
@@ -149,7 +149,7 @@ HIVE_START_PAGE = """
 </head>
 <body>
     <div class="logo">🐝</div>
-    <h1>Hive Browser</h1>
+    <h1>TeamAgents Browser</h1>
     <p>Ready for automation</p>
     <div class="status">
         <span class="dot"></span>
@@ -343,7 +343,7 @@ class BrowserSession:
     - Console message capture per tab
 
     When persistent=True, the browser profile is stored at:
-    ~/.hive/agents/{agent_name}/browser/{profile}/
+    ~/.teamagents/agents/{agent_name}/browser/{profile}/
     """
 
     profile: str
@@ -457,7 +457,7 @@ class BrowserSession:
         Args:
             headless: Run browser in headless mode (default: True)
             persistent: Use persistent profile for cookies/storage (default: True)
-                When True, browser data persists at ~/.hive/agents/{agent}/browser/{profile}/
+                When True, browser data persists at ~/.teamagents/agents/{agent}/browser/{profile}/
 
         Returns:
             Dict with start status, including user_data_dir and cdp_port when persistent
@@ -487,9 +487,9 @@ class BrowserSession:
                 if storage_path_str:
                     self.user_data_dir = Path(storage_path_str) / "browser" / self.profile
                 else:
-                    # Fallback to ~/.hive/agents/{agent}/browser/{profile}
+                    # Fallback to ~/.teamagents/agents/{agent}/browser/{profile}
                     self.user_data_dir = (
-                        Path.home() / ".hive" / "agents" / agent_name / "browser" / self.profile
+                        Path.home() / ".teamagents" / "agents" / agent_name / "browser" / self.profile
                     )
 
                 self.user_data_dir.mkdir(parents=True, exist_ok=True)
@@ -559,8 +559,8 @@ class BrowserSession:
             target_id = f"tab_{id(first_page)}"
             self._register_page(first_page, target_id, origin="startup")
 
-            # Set branded Hive start page on the initial tab
-            logger.info("start(): setting Hive start page content...")
+            # Set branded TeamAgents start page on the initial tab
+            logger.info("start(): setting TeamAgents start page content...")
             await first_page.set_content(HIVE_START_PAGE)
 
             # Auto-track pages opened by popups / target="_blank" links

@@ -1,4 +1,4 @@
-"""Structured error codes and diagnostics for the Hive skill system.
+"""Structured error codes and diagnostics for the TeamAgents skill system.
 
 Implements DX-1 (structured error codes) and DX-2 (what/why/fix format)
 from the skill system PRD §7.5.

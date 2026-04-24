@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 # HIVE_DEBUG_EVENTS — write every published event to a JSONL file.
 #
 # Set the env var to any truthy value to enable:
-#   HIVE_DEBUG_EVENTS=1          → writes to ~/.hive/event_logs/<ts>.jsonl
+#   HIVE_DEBUG_EVENTS=1          → writes to ~/.teamagents/event_logs/<ts>.jsonl
 #   HIVE_DEBUG_EVENTS=/tmp/ev    → writes to that exact directory
 #
 # Each line is a full JSON serialisation of the AgentEvent.
@@ -42,7 +42,7 @@ def _open_event_log() -> IO[str] | None:
         return None
     raw = _DEBUG_EVENTS_RAW
     if raw.lower() in ("1", "true", "full"):
-        log_dir = Path.home() / ".hive" / "event_logs"
+        log_dir = Path.home() / ".teamagents" / "event_logs"
     else:
         log_dir = Path(raw)
     log_dir.mkdir(parents=True, exist_ok=True)

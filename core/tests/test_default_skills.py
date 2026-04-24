@@ -94,12 +94,12 @@ class TestDefaultSkillManager:
 
     def test_disable_single_skill(self):
         config = SkillsConfig.from_agent_vars(
-            default_skills={"hive.quality-monitor": {"enabled": False}}
+            default_skills={"teamagents.quality-monitor": {"enabled": False}}
         )
         manager = DefaultSkillManager(config)
         manager.load()
 
-        assert "hive.quality-monitor" not in manager.active_skill_names
+        assert "teamagents.quality-monitor" not in manager.active_skill_names
         assert len(manager.active_skill_names) == 5
 
     def test_disable_all_via_convention(self):
@@ -134,35 +134,35 @@ class TestDefaultSkillManager:
 class TestSkillsConfig:
     def test_default_is_enabled(self):
         config = SkillsConfig()
-        assert config.is_default_enabled("hive.note-taking") is True
+        assert config.is_default_enabled("teamagents.note-taking") is True
 
     def test_explicit_disable(self):
         config = SkillsConfig(
-            default_skills={"hive.note-taking": DefaultSkillConfig(enabled=False)}
+            default_skills={"teamagents.note-taking": DefaultSkillConfig(enabled=False)}
         )
-        assert config.is_default_enabled("hive.note-taking") is False
-        assert config.is_default_enabled("hive.batch-ledger") is True
+        assert config.is_default_enabled("teamagents.note-taking") is False
+        assert config.is_default_enabled("teamagents.batch-ledger") is True
 
     def test_all_disabled_flag(self):
         config = SkillsConfig(all_defaults_disabled=True)
-        assert config.is_default_enabled("hive.note-taking") is False
+        assert config.is_default_enabled("teamagents.note-taking") is False
         assert config.is_default_enabled("anything") is False
 
     def test_from_agent_vars_basic(self):
         config = SkillsConfig.from_agent_vars(
             default_skills={
-                "hive.note-taking": {"enabled": True},
-                "hive.quality-monitor": {"enabled": False},
+                "teamagents.note-taking": {"enabled": True},
+                "teamagents.quality-monitor": {"enabled": False},
             },
             skills=["deep-research"],
         )
-        assert config.is_default_enabled("hive.note-taking") is True
-        assert config.is_default_enabled("hive.quality-monitor") is False
+        assert config.is_default_enabled("teamagents.note-taking") is True
+        assert config.is_default_enabled("teamagents.quality-monitor") is False
         assert config.skills == ["deep-research"]
 
     def test_from_agent_vars_bool_shorthand(self):
-        config = SkillsConfig.from_agent_vars(default_skills={"hive.note-taking": False})
-        assert config.is_default_enabled("hive.note-taking") is False
+        config = SkillsConfig.from_agent_vars(default_skills={"teamagents.note-taking": False})
+        assert config.is_default_enabled("teamagents.note-taking") is False
 
     def test_from_agent_vars_all_disabled(self):
         config = SkillsConfig.from_agent_vars(default_skills={"_all": {"enabled": False}})
@@ -171,15 +171,15 @@ class TestSkillsConfig:
     def test_get_default_overrides(self):
         config = SkillsConfig.from_agent_vars(
             default_skills={
-                "hive.batch-ledger": {"enabled": True, "checkpoint_every_n": 10},
+                "teamagents.batch-ledger": {"enabled": True, "checkpoint_every_n": 10},
             }
         )
-        overrides = config.get_default_overrides("hive.batch-ledger")
+        overrides = config.get_default_overrides("teamagents.batch-ledger")
         assert overrides == {"checkpoint_every_n": 10}
 
     def test_get_default_overrides_empty(self):
         config = SkillsConfig()
-        assert config.get_default_overrides("hive.note-taking") == {}
+        assert config.get_default_overrides("teamagents.note-taking") == {}
 
     def test_from_agent_vars_none_inputs(self):
         config = SkillsConfig.from_agent_vars(default_skills=None, skills=None)

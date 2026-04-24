@@ -1,6 +1,6 @@
-"""Shared Hive configuration utilities.
+"""Shared TeamAgents configuration utilities.
 
-Centralises reading of ~/.hive/configuration.json so that the runner
+Centralises reading of ~/.teamagents/configuration.json so that the runner
 and every agent template share one implementation instead of copy-pasting
 helper functions.
 """
@@ -18,25 +18,66 @@ from framework.graph.edge import DEFAULT_MAX_TOKENS
 # Low-level config file access
 # ---------------------------------------------------------------------------
 
-HIVE_CONFIG_FILE = Path.home() / ".hive" / "configuration.json"
+TEAMAGENTS_CONFIG_FILE = Path.home() / ".teamagents" / "configuration.json"
 
-# Hive LLM router endpoint (Anthropic-compatible).
+# Backward-compat aliases for existing imports/tests that still reference Hive names.
+HIVE_CONFIG_FILE = TEAMAGENTS_CONFIG_FILE
+
+# TeamAgents LLM router endpoint (Anthropic-compatible).
 # litellm's Anthropic handler appends /v1/messages, so this is just the base host.
-HIVE_LLM_ENDPOINT = "https://api.adenhq.com"
+TEAMAGENTS_LLM_ENDPOINT = "https://api.adenhq.com"
+HIVE_LLM_ENDPOINT = TEAMAGENTS_LLM_ENDPOINT
 logger = logging.getLogger(__name__)
+
+ALLOWED_LLM_PROVIDERS = frozenset({"gemini", "groq", "openrouter", "ollama"})
+DEFAULT_ALLOWED_MODEL = "gemini/gemini-3-flash-preview"
+
+
+def _get_allowed_llm_section(section: str) -> dict[str, Any]:
+    """Return a sanitized llm/worker_llm section restricted to allowed providers."""
+    raw = get_hive_config().get(section, {})
+    if not isinstance(raw, dict):
+        return {}
+
+    # Block all subscription/proxy toggles so only direct Gemini/Groq/OpenRouter remain.
+    if any(
+        raw.get(flag)
+        for flag in (
+            "use_claude_code_subscription",
+            "use_codex_subscription",
+            "use_kimi_code_subscription",
+            "use_antigravity_subscription",
+        )
+    ):
+        logger.warning(
+            "Ignoring %s config: only Gemini, Groq, OpenRouter, and Ollama are allowed.",
+            section,
+        )
+        return {}
+
+    provider = str(raw.get("provider", "")).strip().lower()
+    if provider and provider not in ALLOWED_LLM_PROVIDERS:
+        logger.warning(
+            "Ignoring %s provider '%s': only Gemini, Groq, OpenRouter, and Ollama are allowed.",
+            section,
+            provider,
+        )
+        return {}
+
+    return raw
 
 
 def get_hive_config() -> dict[str, Any]:
-    """Load hive configuration from ~/.hive/configuration.json."""
-    if not HIVE_CONFIG_FILE.exists():
+    """Load teamagents configuration from ~/.teamagents/configuration.json."""
+    if not TEAMAGENTS_CONFIG_FILE.exists():
         return {}
     try:
-        with open(HIVE_CONFIG_FILE, encoding="utf-8-sig") as f:
+        with open(TEAMAGENTS_CONFIG_FILE, encoding="utf-8-sig") as f:
             return json.load(f)
     except (json.JSONDecodeError, OSError) as e:
         logger.warning(
-            "Failed to load Hive config %s: %s",
-            HIVE_CONFIG_FILE,
+            "Failed to load TeamAgents config %s: %s",
+            TEAMAGENTS_CONFIG_FILE,
             e,
         )
         return {}
@@ -49,7 +90,7 @@ def get_hive_config() -> dict[str, Any]:
 
 def get_preferred_model() -> str:
     """Return the user's preferred LLM model string (e.g. 'anthropic/claude-sonnet-4-20250514')."""
-    llm = get_hive_config().get("llm", {})
+    llm = _get_allowed_llm_section("llm")
     if llm.get("provider") and llm.get("model"):
         provider = str(llm["provider"])
         model = str(llm["model"]).strip()
@@ -58,17 +99,17 @@ def get_preferred_model() -> str:
             model = model[len("openrouter/") :]
         if model:
             return f"{provider}/{model}"
-    return "anthropic/claude-sonnet-4-20250514"
+    return DEFAULT_ALLOWED_MODEL
 
 
 def get_preferred_worker_model() -> str | None:
     """Return the user's preferred worker LLM model, or None if not configured.
 
-    Reads from the ``worker_llm`` section of ~/.hive/configuration.json.
+    Reads from the ``worker_llm`` section of ~/.teamagents/configuration.json.
     Returns None when no worker-specific model is set, so callers can
     fall back to the default (queen) model via ``get_preferred_model()``.
     """
-    worker_llm = get_hive_config().get("worker_llm", {})
+    worker_llm = _get_allowed_llm_section("worker_llm")
     if worker_llm.get("provider") and worker_llm.get("model"):
         provider = str(worker_llm["provider"])
         model = str(worker_llm["model"]).strip()
@@ -81,7 +122,7 @@ def get_preferred_worker_model() -> str | None:
 
 def get_worker_api_key() -> str | None:
     """Return the API key for the worker LLM, falling back to the default key."""
-    worker_llm = get_hive_config().get("worker_llm", {})
+    worker_llm = _get_allowed_llm_section("worker_llm")
     if not worker_llm:
         return get_api_key()
 
@@ -136,7 +177,7 @@ def get_worker_api_key() -> str | None:
 
 def get_worker_api_base() -> str | None:
     """Return the api_base for the worker LLM, falling back to the default."""
-    worker_llm = get_hive_config().get("worker_llm", {})
+    worker_llm = _get_allowed_llm_section("worker_llm")
     if not worker_llm:
         return get_api_base()
 
@@ -156,7 +197,7 @@ def get_worker_api_base() -> str | None:
 
 def get_worker_llm_extra_kwargs() -> dict[str, Any]:
     """Return extra kwargs for the worker LLM provider."""
-    worker_llm = get_hive_config().get("worker_llm", {})
+    worker_llm = _get_allowed_llm_section("worker_llm")
     if not worker_llm:
         return get_llm_extra_kwargs()
 
@@ -191,7 +232,7 @@ def get_worker_llm_extra_kwargs() -> dict[str, Any]:
 
 def get_worker_max_tokens() -> int:
     """Return max_tokens for the worker LLM, falling back to default."""
-    worker_llm = get_hive_config().get("worker_llm", {})
+    worker_llm = _get_allowed_llm_section("worker_llm")
     if worker_llm and "max_tokens" in worker_llm:
         return worker_llm["max_tokens"]
     return get_max_tokens()
@@ -199,7 +240,7 @@ def get_worker_max_tokens() -> int:
 
 def get_worker_max_context_tokens() -> int:
     """Return max_context_tokens for the worker LLM, falling back to default."""
-    worker_llm = get_hive_config().get("worker_llm", {})
+    worker_llm = _get_allowed_llm_section("worker_llm")
     if worker_llm and "max_context_tokens" in worker_llm:
         return worker_llm["max_context_tokens"]
     return get_max_context_tokens()
@@ -207,7 +248,7 @@ def get_worker_max_context_tokens() -> int:
 
 def get_max_tokens() -> int:
     """Return the configured max_tokens, falling back to DEFAULT_MAX_TOKENS."""
-    return get_hive_config().get("llm", {}).get("max_tokens", DEFAULT_MAX_TOKENS)
+    return _get_allowed_llm_section("llm").get("max_tokens", DEFAULT_MAX_TOKENS)
 
 
 DEFAULT_MAX_CONTEXT_TOKENS = 32_000
@@ -216,7 +257,9 @@ OPENROUTER_API_BASE = "https://openrouter.ai/api/v1"
 
 def get_max_context_tokens() -> int:
     """Return the configured max_context_tokens, falling back to DEFAULT_MAX_CONTEXT_TOKENS."""
-    return get_hive_config().get("llm", {}).get("max_context_tokens", DEFAULT_MAX_CONTEXT_TOKENS)
+    return _get_allowed_llm_section("llm").get(
+        "max_context_tokens", DEFAULT_MAX_CONTEXT_TOKENS
+    )
 
 
 def get_api_key() -> str | None:
@@ -229,7 +272,7 @@ def get_api_key() -> str | None:
        reads the OAuth token from macOS Keychain or ``~/.codex/auth.json``.
     3. Environment variable named in ``api_key_env_var``.
     """
-    llm = get_hive_config().get("llm", {})
+    llm = _get_allowed_llm_section("llm")
 
     # Claude Code subscription: read OAuth token directly
     if llm.get("use_claude_code_subscription"):
@@ -303,7 +346,7 @@ def _fetch_antigravity_credentials() -> tuple[str | None, str | None]:
 
     try:
         req = urllib.request.Request(
-            _ANTIGRAVITY_CREDENTIALS_URL, headers={"User-Agent": "Hive/1.0"}
+            _ANTIGRAVITY_CREDENTIALS_URL, headers={"User-Agent": "TeamAgents/1.0"}
         )
         with urllib.request.urlopen(req, timeout=10) as resp:
             content = resp.read().decode("utf-8")
@@ -324,7 +367,7 @@ def get_antigravity_client_id() -> str:
 
     Checked in order:
     1. ``ANTIGRAVITY_CLIENT_ID`` environment variable
-    2. ``llm.antigravity_client_id`` in ~/.hive/configuration.json
+    2. ``llm.antigravity_client_id`` in ~/.teamagents/configuration.json
     3. Fetch from public source (opencode-antigravity-auth project on GitHub)
     """
     env = os.environ.get("ANTIGRAVITY_CLIENT_ID")
@@ -345,7 +388,7 @@ def get_antigravity_client_secret() -> str | None:
 
     Checked in order:
     1. ``ANTIGRAVITY_CLIENT_SECRET`` environment variable
-    2. ``llm.antigravity_client_secret`` in ~/.hive/configuration.json
+    2. ``llm.antigravity_client_secret`` in ~/.teamagents/configuration.json
     3. Fetch from public source (opencode-antigravity-auth project on GitHub)
 
     Returns None when not found — token refresh will be skipped and
@@ -377,7 +420,7 @@ def get_gcu_viewport_scale() -> float:
 
 def get_api_base() -> str | None:
     """Return the api_base URL for OpenAI-compatible endpoints, if configured."""
-    llm = get_hive_config().get("llm", {})
+    llm = _get_allowed_llm_section("llm")
     if llm.get("use_codex_subscription"):
         # Codex subscription routes through the ChatGPT backend, not api.openai.com.
         return "https://chatgpt.com/backend-api/codex"
@@ -405,7 +448,7 @@ def get_llm_extra_kwargs() -> dict[str, Any]:
     ``extra_headers`` with the Bearer token, ``ChatGPT-Account-Id``,
     and ``store=False`` (required by the ChatGPT backend).
     """
-    llm = get_hive_config().get("llm", {})
+    llm = _get_allowed_llm_section("llm")
     if llm.get("use_claude_code_subscription"):
         api_key = get_api_key()
         if api_key:
@@ -442,7 +485,7 @@ def get_llm_extra_kwargs() -> dict[str, Any]:
 
 @dataclass
 class RuntimeConfig:
-    """Agent runtime configuration loaded from ~/.hive/configuration.json."""
+    """Agent runtime configuration loaded from ~/.teamagents/configuration.json."""
 
     model: str = field(default_factory=get_preferred_model)
     temperature: float = 0.7

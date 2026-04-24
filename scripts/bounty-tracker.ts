@@ -10,7 +10,7 @@
  * Environment:
  *   GITHUB_TOKEN               — GitHub API token
  *   GITHUB_REPOSITORY_OWNER    — e.g. "adenhq"
- *   GITHUB_REPOSITORY_NAME     — e.g. "hive"
+ *   GITHUB_REPOSITORY_NAME     — e.g. "teamagents"
  *   DISCORD_WEBHOOK_URL        — Discord webhook for #integrations-announcements
  *   MONGODB_URI                — MongoDB connection string (contributors collection)
  *   LURKR_API_KEY              — Lurkr Read/Write API key (for XP push)

@@ -1,4 +1,4 @@
-"""aiohttp Application factory for the Hive HTTP API server."""
+"""aiohttp Application factory for the TeamAgents HTTP API server."""
 
 import logging
 import os
@@ -31,7 +31,7 @@ def _get_allowed_agent_roots() -> tuple[Path, ...]:
         _ALLOWED_AGENT_ROOTS = (
             (_REPO_ROOT / "exports").resolve(),
             (_REPO_ROOT / "examples").resolve(),
-            (Path.home() / ".hive" / "agents").resolve(),
+            (Path.home() / ".teamagents" / "agents").resolve(),
         )
     return _ALLOWED_AGENT_ROOTS
 
@@ -41,7 +41,7 @@ def validate_agent_path(agent_path: str | Path) -> Path:
 
     Prevents arbitrary code execution via ``importlib.import_module`` by
     restricting agent loading to known safe directories: ``exports/``,
-    ``examples/``, and ``~/.hive/agents/``.
+    ``examples/``, and ``~/.teamagents/agents/``.
 
     Returns the resolved ``Path`` on success.
 
@@ -53,7 +53,7 @@ def validate_agent_path(agent_path: str | Path) -> Path:
         if resolved.is_relative_to(root) and resolved != root:
             return resolved
     raise ValueError(
-        "agent_path must be inside an allowed directory (exports/, examples/, or ~/.hive/agents/)"
+        "agent_path must be inside an allowed directory (exports/, examples/, or ~/.teamagents/agents/)"
     )
 
 
@@ -85,25 +85,25 @@ def resolve_session(request: web.Request):
 def sessions_dir(session: Session) -> Path:
     """Resolve the worker sessions directory for a session.
 
-    Storage layout: ~/.hive/agents/{agent_name}/sessions/
+    Storage layout: ~/.teamagents/agents/{agent_name}/sessions/
     Requires a worker to be loaded (worker_path must be set).
     """
     if session.worker_path is None:
         raise ValueError("No worker loaded — no worker sessions directory")
     agent_name = session.worker_path.name
-    return Path.home() / ".hive" / "agents" / agent_name / "sessions"
+    return Path.home() / ".teamagents" / "agents" / agent_name / "sessions"
 
 
 def cold_sessions_dir(session_id: str) -> Path | None:
     """Resolve the worker sessions directory from disk for a cold/stopped session.
 
     Reads agent_path from the queen session's meta.json to find the agent name,
-    then returns ~/.hive/agents/{agent_name}/sessions/.
+    then returns ~/.teamagents/agents/{agent_name}/sessions/.
     Returns None if meta.json is missing or has no agent_path.
     """
     import json
 
-    meta_path = Path.home() / ".hive" / "queen" / "session" / session_id / "meta.json"
+    meta_path = Path.home() / ".teamagents" / "queen" / "session" / session_id / "meta.json"
     if not meta_path.exists():
         return None
     try:
@@ -112,7 +112,7 @@ def cold_sessions_dir(session_id: str) -> Path | None:
         if not agent_path:
             return None
         agent_name = Path(agent_path).name
-        return Path.home() / ".hive" / "agents" / agent_name / "sessions"
+        return Path.home() / ".teamagents" / "agents" / agent_name / "sessions"
     except (json.JSONDecodeError, OSError):
         return None
 
@@ -215,7 +215,7 @@ def create_app(model: str | None = None) -> web.Application:
 
                 generate_and_save_credential_key()
                 logger.info(
-                    "Generated and persisted HIVE_CREDENTIAL_KEY to ~/.hive/secrets/credential_key"
+                    "Generated and persisted HIVE_CREDENTIAL_KEY to ~/.teamagents/secrets/credential_key"
                 )
             except Exception as exc:
                 logger.warning("Could not auto-persist HIVE_CREDENTIAL_KEY: %s", exc)

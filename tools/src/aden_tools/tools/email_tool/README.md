@@ -22,7 +22,7 @@ Send a general-purpose email.
 
 ### Gmail (via Aden OAuth2)
 
-Connect Gmail through hive.adenhq.com. The `GOOGLE_ACCESS_TOKEN` is provided automatically at runtime via the `CredentialStoreAdapter`.
+Connect Gmail through teamagents.adenhq.com. The `GOOGLE_ACCESS_TOKEN` is provided automatically at runtime via the `CredentialStoreAdapter`.
 
 ### Resend
 

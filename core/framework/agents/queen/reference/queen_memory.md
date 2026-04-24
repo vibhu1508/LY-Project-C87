@@ -1,7 +1,7 @@
 # Queen Memory — File System Structure
 
 ```
-~/.hive/
+~/.teamagents/
 ├── queen/
 │   ├── MEMORY.md                          ← Semantic memory
 │   ├── memories/

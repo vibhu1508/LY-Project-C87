@@ -271,7 +271,7 @@ class AdenCredentialClient:
             headers = {
                 "Authorization": f"Bearer {self.config.api_key}",
                 "Content-Type": "application/json",
-                "User-Agent": "hive-credential-store/1.0",
+                "User-Agent": "teamagents-credential-store/1.0",
             }
             if self.config.tenant_id:
                 headers["X-Tenant-ID"] = self.config.tenant_id

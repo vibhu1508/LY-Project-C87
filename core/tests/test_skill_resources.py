@@ -28,11 +28,11 @@ def _make_skill(
 class TestSkillResourceBaseDir:
     def test_base_dir_in_xml(self):
         """Each community skill entry should expose its base_dir in the catalog XML."""
-        skill = _make_skill("deploy", "/project/.hive/skills/deploy")
+        skill = _make_skill("deploy", "/project/.teamagents/skills/deploy")
         catalog = SkillCatalog([skill])
         prompt = catalog.to_prompt()
 
-        assert "<base_dir>/project/.hive/skills/deploy</base_dir>" in prompt
+        assert "<base_dir>/project/.teamagents/skills/deploy</base_dir>" in prompt
 
     def test_base_dir_xml_escaped(self):
         """base_dir with XML-special chars should be escaped."""
@@ -44,7 +44,7 @@ class TestSkillResourceBaseDir:
 
     def test_base_dir_absent_for_framework_skills(self):
         """Framework-scope skills are filtered from the catalog, so no base_dir either."""
-        skill = _make_skill("fw", "/hive/_default_skills/fw", source_scope="framework")
+        skill = _make_skill("fw", "/teamagents/_default_skills/fw", source_scope="framework")
         catalog = SkillCatalog([skill])
         assert catalog.to_prompt() == ""
 

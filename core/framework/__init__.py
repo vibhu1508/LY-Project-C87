@@ -1,5 +1,5 @@
 """
-Aden Hive Framework: A goal-driven agent runtime optimized for Builder observability.
+Aden TeamAgents Framework: A goal-driven agent runtime optimized for Builder observability.
 
 The runtime is designed around DECISIONS, not just actions. Every significant
 choice the agent makes is captured with:

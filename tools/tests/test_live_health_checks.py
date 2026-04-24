@@ -9,7 +9,7 @@ and never run in CI.  Run them manually::
     pytest -m live --tb=short -q                    # quick summary
 
 Prerequisites:
-    - Credentials available via env vars or ~/.hive/credentials/ encrypted store
+    - Credentials available via env vars or ~/.teamagents/credentials/ encrypted store
     - Tests skip gracefully when credentials are unavailable
     - Rate-limited responses (429) are treated as PASS (credential is valid)
 """

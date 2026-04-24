@@ -1,7 +1,7 @@
 """Worker agent: single-node event loop with real MCP tools.
 
 Tests the core worker pattern — a single EventLoopNode that uses real
-hive-tools (example_tool, get_current_time, save_data/load_data) to
+teamagents-tools (example_tool, get_current_time, save_data/load_data) to
 accomplish tasks, matching how real agents are structured.
 """
 

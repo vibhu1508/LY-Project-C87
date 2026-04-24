@@ -24,7 +24,7 @@ Set the environment variable:
 export TELEGRAM_BOT_TOKEN="your-bot-token-here"
 ```
 
-Or configure via the Hive credential store.
+Or configure via the TeamAgents credential store.
 
 ### 3. Get Your Chat ID
 
@@ -44,7 +44,7 @@ For groups: Add the bot to the group, then check getUpdates.
 ```python
 telegram_send_message(
     chat_id="123456789",
-    text="Hello from Hive! 🚀",
+    text="Hello from TeamAgents! 🚀",
     parse_mode="HTML"
 )
 ```

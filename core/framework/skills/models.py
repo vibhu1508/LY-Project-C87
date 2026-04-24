@@ -1,4 +1,4 @@
-"""Data models for the Hive skill system (Agent Skills standard)."""
+"""Data models for the TeamAgents skill system (Agent Skills standard)."""
 
 from __future__ import annotations
 

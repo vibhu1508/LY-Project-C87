@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Open a browser-based viewer for Hive LLM debug JSONL sessions.
+"""Open a browser-based viewer for TeamAgents LLM debug JSONL sessions.
 
 Starts a local HTTP server and loads session data on demand (one at a time).
 
@@ -41,8 +41,8 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--logs-dir",
         type=Path,
-        default=Path.home() / ".hive" / "llm_logs",
-        help="Directory containing Hive LLM debug JSONL files.",
+        default=Path.home() / ".teamagents" / "llm_logs",
+        help="Directory containing TeamAgents LLM debug JSONL files.",
     )
     parser.add_argument(
         "--session",
@@ -241,7 +241,7 @@ def _render_html(
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Hive LLM Debug Viewer</title>
+  <title>TeamAgents LLM Debug Viewer</title>
   <style>
     :root {{
       --bg: #efe6d8;
@@ -584,14 +584,14 @@ def _render_html(
   <div class="app">
     <aside class="sidebar">
       <div class="brand">
-        <h1>Hive Debug</h1>
+        <h1>TeamAgents Debug</h1>
         <p>Pick a session in the browser and inspect prompts, inputs, outputs, and tool activity turn by turn.</p>
       </div>
       <input id="sessionSearch" type="search" placeholder="Filter sessions">
       <div class="setup-note">
         <h3>Logging status</h3>
-        <p>LLM turn logging is always on. If this list is empty, run Hive once and refresh after the session produces turns.</p>
-        <pre>~/.hive/llm_logs</pre>
+        <p>LLM turn logging is always on. If this list is empty, run TeamAgents once and refresh after the session produces turns.</p>
+        <pre>~/.teamagents/llm_logs</pre>
       </div>
       <div class="session-list" id="sessionList"></div>
     </aside>

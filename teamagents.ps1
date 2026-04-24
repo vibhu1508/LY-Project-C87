@@ -1,6 +1,6 @@
 #!/usr/bin/env pwsh
-# Wrapper script for the Hive CLI (Windows).
-# Uses uv to run the hive command in the project's virtual environment.
+# Wrapper script for the TeamAgents CLI (Windows).
+# Uses uv to run the teamagents command in the project's virtual environment.
 #
 # On Windows, User-level environment variables (set via quickstart.ps1) are
 # stored in the registry but may not be loaded into the current terminal
@@ -17,12 +17,12 @@ $UvHelperPath = Join-Path $ScriptDir "scripts\uv-discovery.ps1"
 # ── Validate project directory ──────────────────────────────────────
 
 if ((Get-Location).Path -ne $ScriptDir) {
-    Write-Error "hive must be run from the project directory.`nCurrent directory: $(Get-Location)`nExpected directory: $ScriptDir`n`nRun: cd $ScriptDir"
+    Write-Error "teamagents must be run from the project directory.`nCurrent directory: $(Get-Location)`nExpected directory: $ScriptDir`n`nRun: cd $ScriptDir"
     exit 1
 }
 
 if (-not (Test-Path (Join-Path $ScriptDir "pyproject.toml")) -or -not (Test-Path (Join-Path $ScriptDir "core"))) {
-    Write-Error "Not a valid Hive project directory: $ScriptDir"
+    Write-Error "Not a valid TeamAgents project directory: $ScriptDir"
     exit 1
 }
 
@@ -45,7 +45,7 @@ $uvExe = $uvInfo.Path
 # sessions may not have them (especially VS Code integrated terminals).
 # Load them explicitly so agents can find their API keys.
 
-$configPath = Join-Path (Join-Path $env:USERPROFILE ".hive") "configuration.json"
+$configPath = Join-Path (Join-Path $env:USERPROFILE ".teamagents") "configuration.json"
 if (Test-Path $configPath) {
     try {
         $config = Get-Content $configPath -Raw | ConvertFrom-Json
@@ -69,14 +69,14 @@ if (-not $env:HIVE_CREDENTIAL_KEY) {
         $env:HIVE_CREDENTIAL_KEY = $credKey
     } else {
         # 2. File-based storage (new quickstart + matches quickstart.sh)
-        $credKeyFile = Join-Path $env:USERPROFILE ".hive\secrets\credential_key"
+        $credKeyFile = Join-Path $env:USERPROFILE ".teamagents\secrets\credential_key"
         if (Test-Path $credKeyFile) {
             $env:HIVE_CREDENTIAL_KEY = (Get-Content $credKeyFile -Raw).Trim()
         }
     }
 }
 
-# ── Run the Hive CLI ────────────────────────────────────────────────
+# ── Run the TeamAgents CLI ────────────────────────────────────────────────
 # PYTHONUTF8=1: use UTF-8 for default encoding (fixes charmap decode errors on Windows)
 $env:PYTHONUTF8 = "1"
-& $uvExe run hive @args
+& $uvExe run teamagents @args

@@ -573,7 +573,7 @@ ANTIGRAVITY_IDE_STATE_DB_LINUX = (
     Path.home() / ".config" / "Antigravity" / "User" / "globalStorage" / "state.vscdb"
 )
 # Antigravity credentials stored by native OAuth implementation
-ANTIGRAVITY_AUTH_FILE = Path.home() / ".hive" / "antigravity-accounts.json"
+ANTIGRAVITY_AUTH_FILE = Path.home() / ".teamagents" / "antigravity-accounts.json"
 
 ANTIGRAVITY_OAUTH_TOKEN_URL = "https://oauth2.googleapis.com/token"
 _ANTIGRAVITY_TOKEN_LIFETIME_SECS = 3600  # Google access tokens expire in 1 hour
@@ -661,7 +661,7 @@ def _read_antigravity_credentials() -> dict | None:
 
     Checks in order:
     1. Antigravity IDE SQLite state database (native macOS/Linux app)
-    2. Native OAuth credentials file (~/.hive/antigravity-accounts.json)
+    2. Native OAuth credentials file (~/.teamagents/antigravity-accounts.json)
 
     Returns:
         Auth data dict with an ``accounts`` list on success, None otherwise.
@@ -1021,7 +1021,7 @@ class AgentRunner:
 
     @staticmethod
     def _resolve_default_model() -> str:
-        """Resolve the default model from ~/.hive/configuration.json."""
+        """Resolve the default model from ~/.teamagents/configuration.json."""
         return get_preferred_model()
 
     def __init__(
@@ -1050,7 +1050,7 @@ class AgentRunner:
             goal: Loaded Goal object
             mock_mode: If True, use mock LLM responses
             storage_path: Path for runtime storage (defaults to temp)
-            model: Model to use (reads from agent config or ~/.hive/configuration.json if None)
+            model: Model to use (reads from agent config or ~/.teamagents/configuration.json if None)
             intro_message: Optional greeting shown to user on TUI load
             runtime_config: Optional AgentRuntimeConfig (webhook settings, etc.)
             interactive: If True (default), offer interactive credential setup on failure.
@@ -1080,9 +1080,9 @@ class AgentRunner:
             self._storage_path = storage_path
             self._temp_dir = None
         else:
-            # Use persistent storage in ~/.hive/agents/{agent_name}/ per RUNTIME_LOGGING.md spec
+            # Use persistent storage in ~/.teamagents/agents/{agent_name}/ per RUNTIME_LOGGING.md spec
             home = Path.home()
-            default_storage = home / ".hive" / "agents" / agent_path.name
+            default_storage = home / ".teamagents" / "agents" / agent_path.name
             default_storage.mkdir(parents=True, exist_ok=True)
             self._storage_path = default_storage
             self._temp_dir = None
@@ -1184,7 +1184,7 @@ class AgentRunner:
         Args:
             agent_path: Path to agent folder
             mock_mode: If True, use mock LLM responses
-            storage_path: Path for runtime storage (defaults to ~/.hive/agents/{name})
+            storage_path: Path for runtime storage (defaults to ~/.teamagents/agents/{name})
             model: LLM model to use (reads from agent's default_config if None)
             interactive: If True (default), offer interactive credential setup.
                 Set to False from TUI callers that handle setup via their own UI.
@@ -1782,7 +1782,7 @@ class AgentRunner:
             return "MINIMAX_API_KEY"
         elif model_lower.startswith("kimi/"):
             return "KIMI_API_KEY"
-        elif model_lower.startswith("hive/"):
+        elif model_lower.startswith("teamagents/"):
             return "HIVE_API_KEY"
         else:
             # Default: assume OpenAI-compatible
@@ -1806,8 +1806,8 @@ class AgentRunner:
             cred_id = "minimax"
         elif model_lower.startswith("kimi/"):
             cred_id = "kimi"
-        elif model_lower.startswith("hive/"):
-            cred_id = "hive"
+        elif model_lower.startswith("teamagents/"):
+            cred_id = "teamagents"
         # Add more mappings as providers are added to LLM_CREDENTIALS
 
         if cred_id is None:
@@ -1920,7 +1920,7 @@ class AgentRunner:
     # Execution modes
     #
     # run()              – One-shot, blocking execution for worker agents
-    #                      (headless CLI via ``hive run``). Validates, runs
+    #                      (headless CLI via ``teamagents run``). Validates, runs
     #                      the graph to completion, and returns the result.
     #
     # start() / trigger() – Long-lived runtime for the frontend (queen).
@@ -1938,7 +1938,7 @@ class AgentRunner:
         """One-shot execution for worker agents (headless CLI).
 
         Validates credentials, runs the graph to completion, and returns
-        the result. Used by ``hive run`` and programmatic callers.
+        the result. Used by ``teamagents run`` and programmatic callers.
 
         For the frontend (queen), use start() + trigger() instead.
 

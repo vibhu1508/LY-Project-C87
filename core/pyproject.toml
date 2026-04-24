@@ -1,7 +1,7 @@
 [project]
 name = "framework"
 version = "0.7.1"
-description = "Goal-driven agent runtime with Builder-friendly observability"
+description = "Master Agent Education Automation Framework"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
@@ -25,7 +25,7 @@ testing = [
 ]
 
 [project.scripts]
-hive = "framework.cli:main"
+teamagents = "framework.cli:main"
 
 [tool.uv.sources]
 tools = { workspace = true }

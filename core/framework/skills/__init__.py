@@ -1,4 +1,4 @@
-"""Hive Agent Skills — discovery, parsing, trust gating, and injection of SKILL.md packages.
+"""TeamAgents Agent Skills — discovery, parsing, trust gating, and injection of SKILL.md packages.
 
 Implements the open Agent Skills standard (agentskills.io) for portable
 skill discovery and activation, plus built-in default skills for runtime

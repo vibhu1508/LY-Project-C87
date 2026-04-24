@@ -27,7 +27,7 @@ function sanitizeLogValue(value: unknown): unknown {
     return value
       .replace(/queen-graph/gi, "master-agent-graph")
       .replace(/queen/gi, "master-agent")
-      .replace(/hive/gi, "teamagents");
+      .replace(/teamagents/gi, "teamagents");
   }
   if (Array.isArray(value)) {
     return value.map(sanitizeLogValue);
@@ -3239,7 +3239,7 @@ export default function Workspace() {
             {!activeAgentState?.loading && activeAgentState?.ready && !activeAgentState?.queenReady && (
               <div className="absolute top-0 left-0 right-0 z-10 px-4 py-2 bg-background border-b border-primary/20 flex items-center gap-2">
                 <Loader2 className="w-3.5 h-3.5 animate-spin text-primary/60" />
-                <span className="text-xs text-primary/80">Connecting to queen...</span>
+                <span className="text-xs text-primary/80">Connecting to Master Agent...</span>
               </div>
             )}
 

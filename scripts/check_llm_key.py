@@ -19,7 +19,7 @@ from difflib import get_close_matches
 
 import httpx
 
-from framework.config import HIVE_LLM_ENDPOINT
+from framework.config import TEAMAGENTS_LLM_ENDPOINT
 
 TIMEOUT = 10.0
 OPENROUTER_SEPARATOR_TRANSLATION = str.maketrans(
@@ -324,9 +324,9 @@ PROVIDERS = {
     "kimi": lambda key, **kw: check_anthropic_compatible(
         key, "https://api.kimi.com/coding/v1/messages", "Kimi"
     ),
-    # Hive LLM uses an Anthropic-compatible endpoint
-    "hive": lambda key, **kw: check_anthropic_compatible(
-        key, f"{HIVE_LLM_ENDPOINT}/v1/messages", "Hive"
+    # TeamAgents LLM uses an Anthropic-compatible endpoint
+    "teamagents": lambda key, **kw: check_anthropic_compatible(
+        key, f"{TEAMAGENTS_LLM_ENDPOINT}/v1/messages", "TeamAgents"
     ),
 }
 
@@ -364,9 +364,9 @@ def main() -> None:
             result = check_anthropic_compatible(
                 api_key, api_base.rstrip("/") + "/v1/messages", "Kimi"
             )
-        elif api_base and provider_id == "hive":
+        elif api_base and provider_id == "teamagents":
             result = check_anthropic_compatible(
-                api_key, api_base.rstrip("/") + "/v1/messages", "Hive"
+                api_key, api_base.rstrip("/") + "/v1/messages", "TeamAgents"
             )
         elif api_base:
             # Custom API base (ZAI or other OpenAI-compatible)

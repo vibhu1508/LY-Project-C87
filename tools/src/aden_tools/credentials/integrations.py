@@ -34,7 +34,7 @@ INTEGRATION_CREDENTIALS = {
         api_key_instructions="""To get a GitHub Personal Access Token:
 1. Go to GitHub Settings > Developer settings > Personal access tokens
 2. Click "Generate new token" > "Generate new token (classic)"
-3. Give your token a descriptive name (e.g., "Hive Agent")
+3. Give your token a descriptive name (e.g., "TeamAgents Agent")
 4. Select the following scopes:
    - repo (Full control of private repositories)
    - read:org (Read org and team membership - optional)
@@ -75,7 +75,7 @@ INTEGRATION_CREDENTIALS = {
         api_key_instructions="""To get a HubSpot Private App token:
 1. Go to HubSpot Settings > Integrations > Private Apps
 2. Click "Create a private app"
-3. Name your app (e.g., "Hive Agent")
+3. Name your app (e.g., "TeamAgents Agent")
 4. Go to the "Scopes" tab and enable:
    - crm.objects.contacts.read
    - crm.objects.contacts.write
@@ -124,7 +124,7 @@ INTEGRATION_CREDENTIALS = {
         api_key_instructions="""To get a Linear API key:
 1. Go to Linear Settings > API (https://linear.app/settings/api)
 2. Click "Create key" under "Personal API keys"
-3. Give your key a descriptive label (e.g., "Hive Agent")
+3. Give your key a descriptive label (e.g., "TeamAgents Agent")
 4. Copy the generated key (starts with 'lin_api_')
 5. Store it securely - you won't be able to see it again!
 
@@ -134,7 +134,7 @@ To create an OAuth application (for automatic token refresh via Aden):
 1. Go to Linear Settings > API (https://linear.app/settings/api)
 2. Click "New OAuth application"
 3. Fill in the required information:
-   - Application name (e.g., "Hive Agent")
+   - Application name (e.g., "TeamAgents Agent")
    - Developer name
    - Other required fields
 4. Click "Create"

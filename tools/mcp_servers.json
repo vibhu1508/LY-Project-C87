@@ -1,9 +1,9 @@
 {
-  "hive-tools": {
+  "teamagents-tools": {
     "transport": "stdio",
     "command": "uv",
     "args": ["run", "python", "mcp_server.py", "--stdio"],
     "cwd": ".",
-    "description": "Hive tools MCP server providing web_search, web_scrape, send_email, and data tools"
+    "description": "TeamAgents tools MCP server providing web_search, web_scrape, send_email, and data tools"
   }
 }

@@ -1,4 +1,4 @@
-"""Tests for the hive CLI entry point and path auto-configuration."""
+"""Tests for the teamagents CLI entry point and path auto-configuration."""
 
 import shutil
 import subprocess
@@ -72,7 +72,7 @@ class TestFrameworkModule:
             cwd=str(project_root / "core"),
         )
         assert result.returncode == 0
-        assert "hive" in result.stdout.lower() or "goal" in result.stdout.lower()
+        assert "teamagents" in result.stdout.lower() or "goal" in result.stdout.lower()
 
     def test_module_list_subcommand(self, project_root):
         """Verify ``python -m framework list --help`` registers the subcommand."""
@@ -88,22 +88,22 @@ class TestFrameworkModule:
 
 
 class TestHiveEntryPoint:
-    """Test the ``hive`` console_scripts entry point.
+    """Test the ``teamagents`` console_scripts entry point.
 
-    These tests verify the actual ``hive`` command installed by
+    These tests verify the actual ``teamagents`` command installed by
     ``pip install -e core/``. If the entry point is not installed,
     the tests are skipped gracefully.
     """
 
     @pytest.fixture(autouse=True)
     def _require_hive(self):
-        if shutil.which("hive") is None:
-            pytest.skip("'hive' entry point not installed (run: pip install -e core/)")
+        if shutil.which("teamagents") is None:
+            pytest.skip("'teamagents' entry point not installed (run: pip install -e core/)")
 
     def test_hive_help(self):
-        """Verify ``hive --help`` exits 0 and prints usage."""
+        """Verify ``teamagents --help`` exits 0 and prints usage."""
         result = subprocess.run(
-            ["hive", "--help"],
+            ["teamagents", "--help"],
             capture_output=True,
             text=True,
             encoding="utf-8",
@@ -113,9 +113,9 @@ class TestHiveEntryPoint:
         assert "validate" in result.stdout.lower()
 
     def test_hive_list_help(self):
-        """Verify ``hive list --help`` exits 0."""
+        """Verify ``teamagents list --help`` exits 0."""
         result = subprocess.run(
-            ["hive", "list", "--help"],
+            ["teamagents", "list", "--help"],
             capture_output=True,
             text=True,
             encoding="utf-8",
@@ -123,9 +123,9 @@ class TestHiveEntryPoint:
         assert result.returncode == 0
 
     def test_hive_run_missing_agent(self):
-        """Verify ``hive run`` with a non-existent agent prints an error."""
+        """Verify ``teamagents run`` with a non-existent agent prints an error."""
         result = subprocess.run(
-            ["hive", "run", "nonexistent_agent_xyz"],
+            ["teamagents", "run", "nonexistent_agent_xyz"],
             capture_output=True,
             text=True,
             encoding="utf-8",

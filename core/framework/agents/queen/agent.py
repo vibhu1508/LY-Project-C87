@@ -12,9 +12,9 @@ from .nodes import queen_node
 
 queen_goal = Goal(
     id="queen-manager",
-    name="Queen Manager",
+    name="Master Agent Manager",
     description=(
-        "Manage the worker agent lifecycle and serve as the user's primary interactive interface."
+        "Manage the education automation worker agents and serve as the student's or teacher's primary interactive interface."
     ),
     success_criteria=[],
     constraints=[],

@@ -1,6 +1,6 @@
 # MCP Integration Guide
 
-This guide explains how to integrate Model Context Protocol (MCP) servers with the Hive Core Framework, enabling agents to use tools from external MCP servers.
+This guide explains how to integrate Model Context Protocol (MCP) servers with the TeamAgents Core Framework, enabling agents to use tools from external MCP servers.
 
 ## Overview
 

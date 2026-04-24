@@ -82,7 +82,7 @@ def register_tools(
         if response.status_code == 401:
             return {
                 "error": "Gmail token expired or invalid",
-                "help": "Re-authorize via hive.adenhq.com",
+                "help": "Re-authorize via teamagents.adenhq.com",
             }
         if response.status_code == 404:
             return {"error": "Message not found"}
@@ -96,7 +96,7 @@ def register_tools(
         if not token:
             return {
                 "error": "Gmail credentials not configured",
-                "help": "Connect Gmail via hive.adenhq.com",
+                "help": "Connect Gmail via teamagents.adenhq.com",
             }
         return token
 

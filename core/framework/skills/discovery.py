@@ -1,6 +1,6 @@
 """Skill discovery — scan standard directories for SKILL.md files.
 
-Implements the Agent Skills standard discovery paths plus Hive-specific
+Implements the Agent Skills standard discovery paths plus TeamAgents-specific
 locations. Resolves name collisions deterministically.
 """
 
@@ -36,8 +36,8 @@ _SCOPE_PRIORITY = {
     "project": 2,
 }
 
-# Within the same scope, Hive-specific paths override cross-client paths.
-# We encode this by scanning cross-client first, then Hive-specific (later wins).
+# Within the same scope, TeamAgents-specific paths override cross-client paths.
+# We encode this by scanning cross-client first, then TeamAgents-specific (later wins).
 
 
 @dataclass
@@ -63,9 +63,9 @@ class SkillDiscovery:
         Scanning order (lowest to highest precedence):
         1. Framework defaults
         2. User cross-client (~/.agents/skills/)
-        3. User Hive-specific (~/.hive/skills/)
+        3. User TeamAgents-specific (~/.teamagents/skills/)
         4. Project cross-client (<project>/.agents/skills/)
-        5. Project Hive-specific (<project>/.hive/skills/)
+        5. Project TeamAgents-specific (<project>/.teamagents/skills/)
 
         Later entries override earlier ones on name collision.
         """
@@ -86,8 +86,8 @@ class SkillDiscovery:
             if user_agents.is_dir():
                 all_skills.extend(self._scan_scope(user_agents, "user"))
 
-            # Hive-specific (higher precedence within user scope)
-            user_hive = home / ".hive" / "skills"
+            # TeamAgents-specific (higher precedence within user scope)
+            user_hive = home / ".teamagents" / "skills"
             if user_hive.is_dir():
                 all_skills.extend(self._scan_scope(user_hive, "user"))
 
@@ -100,8 +100,8 @@ class SkillDiscovery:
             if project_agents.is_dir():
                 all_skills.extend(self._scan_scope(project_agents, "project"))
 
-            # Hive-specific
-            project_hive = root / ".hive" / "skills"
+            # TeamAgents-specific
+            project_hive = root / ".teamagents" / "skills"
             if project_hive.is_dir():
                 all_skills.extend(self._scan_scope(project_hive, "project"))
 

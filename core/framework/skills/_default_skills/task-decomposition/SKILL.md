@@ -1,8 +1,8 @@
 ---
-name: hive.task-decomposition
+name: teamagents.task-decomposition
 description: Decompose complex tasks into explicit subtasks before diving in.
 metadata:
-  author: hive
+  author: teamagents
   type: default-skill
 ---
 

@@ -20,7 +20,7 @@ from framework.runner.mcp_connection_manager import MCPConnectionManager
 logger = logging.getLogger(__name__)
 
 DEFAULT_INDEX_URL = (
-    "https://raw.githubusercontent.com/aden-hive/hive-mcp-registry/main/registry_index.json"
+    "https://raw.githubusercontent.com/aden-teamagents/teamagents-mcp-registry/main/registry_index.json"
 )
 DEFAULT_REFRESH_INTERVAL_HOURS = 24
 _LAST_FETCHED_FILENAME = "last_fetched"
@@ -33,10 +33,10 @@ _DEFAULT_CONFIG = {
 
 
 class MCPRegistry:
-    """Manages local MCP server state in ~/.hive/mcp_registry/."""
+    """Manages local MCP server state in ~/.teamagents/mcp_registry/."""
 
     def __init__(self, base_path: Path | None = None):
-        self._base = base_path or Path.home() / ".hive" / "mcp_registry"
+        self._base = base_path or Path.home() / ".teamagents" / "mcp_registry"
         self._installed_path = self._base / "installed.json"
         self._config_path = self._base / "config.json"
         self._cache_dir = self._base / "cache"
@@ -189,7 +189,7 @@ class MCPRegistry:
             source="local",
             manifest=manifest,
             transport=transport,
-            installed_by="hive mcp add",
+            installed_by="teamagents mcp add",
         )
 
         data["servers"][name] = entry
@@ -210,7 +210,7 @@ class MCPRegistry:
         if manifest is None:
             raise ValueError(
                 f"Server '{name}' not found in registry index. "
-                "Run 'hive mcp update' to refresh the index."
+                "Run 'teamagents mcp update' to refresh the index."
             )
 
         # Validate version if specified
@@ -222,7 +222,7 @@ class MCPRegistry:
                 raise ValueError(
                     f"Version mismatch for '{name}': requested {version}, "
                     f"index has {index_version}. "
-                    "Run 'hive mcp update' to refresh the index."
+                    "Run 'teamagents mcp update' to refresh the index."
                 )
 
         transport_config = manifest.get("transport", {})
@@ -240,7 +240,7 @@ class MCPRegistry:
             source="registry",
             manifest=self._make_registry_manifest_snapshot(name, manifest),
             transport=resolved_transport,
-            installed_by="hive mcp install",
+            installed_by="teamagents mcp install",
             pinned=version is not None,
             auto_update=version is None,
             resolved_package_version=manifest.get("version"),
@@ -484,7 +484,7 @@ class MCPRegistry:
                     profile_matched.append(name)
                 else:
                     manifest = self._get_effective_manifest(name, entry, cached_index)
-                    profiles = manifest.get("hive", {}).get("profiles", [])
+                    profiles = manifest.get("teamagents", {}).get("profiles", [])
                     if profile in profiles:
                         profile_matched.append(name)
 
@@ -527,7 +527,7 @@ class MCPRegistry:
             entry = servers.get(name)
             if entry is None:
                 logger.warning(
-                    "Server '%s' requested but not installed. Run: hive mcp install %s",
+                    "Server '%s' requested but not installed. Run: teamagents mcp install %s",
                     name,
                     name,
                 )
@@ -544,7 +544,7 @@ class MCPRegistry:
                 if installed_version != pinned_version:
                     logger.warning(
                         "Server '%s' version mismatch: installed=%s, pinned=%s. "
-                        "Run: hive mcp update %s",
+                        "Run: teamagents mcp update %s",
                         name,
                         installed_version,
                         pinned_version,
@@ -759,7 +759,7 @@ class MCPRegistry:
 
     @staticmethod
     def _get_hive_version() -> str:
-        """Get the current Hive version."""
+        """Get the current TeamAgents version."""
         try:
             return version("framework")
         except PackageNotFoundError:

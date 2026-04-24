@@ -1,6 +1,6 @@
-# Hive Server
+# TeamAgents Server
 
-HTTP API backend for the Hive agent framework. Built on **aiohttp**, fully async, serving the frontend workspace and external clients.
+HTTP API backend for the TeamAgents agent framework. Built on **aiohttp**, fully async, serving the frontend workspace and external clients.
 
 ## Architecture
 
@@ -332,7 +332,7 @@ When `verify: true`, runs health checks (lightweight HTTP calls) against each av
 ## Storage Paths
 
 ```
-~/.hive/
+~/.teamagents/
 ├── queen/session/{session_id}/       # Queen conversation state
 ├── judge/session/{session_id}/       # Judge state
 ├── agents/{agent_name}/sessions/     # Worker execution sessions

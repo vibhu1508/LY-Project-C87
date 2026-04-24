@@ -1,5 +1,5 @@
 """
-Queen — Native agent builder for the Hive framework.
+Queen — Native agent builder for the TeamAgents framework.
 
 Deeply understands the agent framework and produces complete Python packages
 with goals, nodes, edges, system prompts, MCP configuration, and tests

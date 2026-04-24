@@ -16,7 +16,7 @@ uv pip install -e "tools[dev]"
 
 ## Environment Setup
 
-Some tools require API keys to function. Credentials are managed through the encrypted credential store at `~/.hive/credentials`, which is configured automatically during initial setup:
+Some tools require API keys to function. Credentials are managed through the encrypted credential store at `~/.teamagents/credentials`, which is configured automatically during initial setup:
 
 ```bash
 ./quickstart.sh

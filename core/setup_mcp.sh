@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# Setup script for Aden Hive Framework MCP Server
+# Setup script for Aden TeamAgents Framework MCP Server
 # This script installs the framework and configures the MCP server
 
 set -e  # Exit on error
 
-echo "=== Aden Hive Framework MCP Server Setup ==="
+echo "=== Aden TeamAgents Framework MCP Server Setup ==="
 echo ""
 
 # Color codes for output

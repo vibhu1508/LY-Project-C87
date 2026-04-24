@@ -1,4 +1,4 @@
-"""Allow running as ``python -m framework``, which powers the ``hive`` console entry point."""
+"""Allow running as ``python -m framework``, which powers the ``teamagents`` console entry point."""
 
 from framework.cli import main
 

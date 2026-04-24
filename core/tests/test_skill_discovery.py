@@ -38,8 +38,8 @@ class TestSkillDiscovery:
         assert all(s.source_scope == "project" for s in skills)
 
     def test_hive_skills_path(self, tmp_path):
-        hive_skills = tmp_path / ".hive" / "skills"
-        _write_skill(hive_skills, "hive-skill")
+        hive_skills = tmp_path / ".teamagents" / "skills"
+        _write_skill(hive_skills, "teamagents-skill")
 
         discovery = SkillDiscovery(
             DiscoveryConfig(
@@ -51,7 +51,7 @@ class TestSkillDiscovery:
         skills = discovery.discover()
 
         assert len(skills) == 1
-        assert skills[0].name == "hive-skill"
+        assert skills[0].name == "teamagents-skill"
 
     def test_collision_project_overrides_user(self, tmp_path, monkeypatch):
         # User-level skill
@@ -81,9 +81,9 @@ class TestSkillDiscovery:
         agents_skills = tmp_path / ".agents" / "skills"
         _write_skill(agents_skills, "override-test", "Agents version")
 
-        # Hive-specific path (higher precedence)
-        hive_skills = tmp_path / ".hive" / "skills"
-        _write_skill(hive_skills, "override-test", "Hive version")
+        # TeamAgents-specific path (higher precedence)
+        hive_skills = tmp_path / ".teamagents" / "skills"
+        _write_skill(hive_skills, "override-test", "TeamAgents version")
 
         discovery = SkillDiscovery(
             DiscoveryConfig(
@@ -96,7 +96,7 @@ class TestSkillDiscovery:
 
         matching = [s for s in skills if s.name == "override-test"]
         assert len(matching) == 1
-        assert matching[0].description == "Hive version"
+        assert matching[0].description == "TeamAgents version"
 
     def test_skips_git_and_node_modules(self, tmp_path):
         skills_dir = tmp_path / ".agents" / "skills"
@@ -140,8 +140,8 @@ class TestSkillDiscovery:
 
         framework_skills = [s for s in skills if s.source_scope == "framework"]
         names = {s.name for s in framework_skills}
-        assert "hive.note-taking" in names
-        assert "hive.batch-ledger" in names
+        assert "teamagents.note-taking" in names
+        assert "teamagents.batch-ledger" in names
 
     def test_max_depth_limit(self, tmp_path):
         # Create a skill nested beyond max_depth

@@ -51,7 +51,7 @@ class ToolRegistry:
     CONTEXT_PARAMS = frozenset({"workspace_id", "agent_id", "session_id", "data_dir"})
 
     # Credential directory used for change detection
-    _CREDENTIAL_DIR = Path("~/.hive/credentials/credentials").expanduser()
+    _CREDENTIAL_DIR = Path("~/.teamagents/credentials/credentials").expanduser()
 
     def __init__(self):
         self._tools: dict[str, RegisteredTool] = {}
@@ -364,7 +364,7 @@ class ToolRegistry:
         """Resolve cwd and script paths for MCP stdio config (Windows compatibility).
 
         Use this when building MCPServerConfig from a config file (e.g. in
-        list_agent_tools, discover_mcp_tools) so hive-tools and other servers
+        list_agent_tools, discover_mcp_tools) so teamagents-tools and other servers
         work on Windows. Call with base_dir = directory containing the config.
         """
         registry = ToolRegistry()
@@ -377,7 +377,7 @@ class ToolRegistry:
 
         On Windows, passing cwd to subprocess can cause WinError 267. We use cwd=None
         and absolute script paths when the server runs a .py script from the tools dir.
-        If the resolved cwd doesn't exist (e.g. config from ~/.hive/agents/), fall back
+        If the resolved cwd doesn't exist (e.g. config from ~/.teamagents/agents/), fall back
         to Path.cwd() / "tools".
         """
         config = dict(server_config)

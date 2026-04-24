@@ -37,14 +37,14 @@ ANSI_ESCAPE_PATTERN = re.compile(r"\x1b\[[0-9;]*m|\033\[[0-9;]*m")
 
 
 def _rebrand_terms_text(text: str) -> str:
-    """Rewrite legacy Hive/Queen wording in emitted log text only."""
+    """Rewrite legacy TeamAgents/Queen wording in emitted log text only."""
     return (
         text.replace("Queen Bee", "Master Agent")
         .replace("queen bee", "master agent")
         .replace("Queen", "Master Agent")
         .replace("queen", "master-agent")
-        .replace("Hive", "TeamAgents")
-        .replace("hive", "teamagents")
+        .replace("TeamAgents", "TeamAgents")
+        .replace("teamagents", "teamagents")
     )
 
 

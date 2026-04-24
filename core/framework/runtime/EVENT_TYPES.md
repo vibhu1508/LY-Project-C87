@@ -1,6 +1,6 @@
 # Event Types and Schema Reference
 
-The Hive runtime uses a pub/sub `EventBus` for inter-component communication and observability. Every event is an `AgentEvent` dataclass published through `EventBus.publish()`.
+The TeamAgents runtime uses a pub/sub `EventBus` for inter-component communication and observability. Every event is an `AgentEvent` dataclass published through `EventBus.publish()`.
 
 ## Event Envelope (`AgentEvent`)
 
@@ -441,7 +441,7 @@ Note: `node_id` is not set on this event; `stream_id` is the webhook source ID.
 
 ### `escalation_requested`
 
-An agent has requested handoff to the Hive Coder (via the `escalate` synthetic tool).
+An agent has requested handoff to the TeamAgents Coder (via the `escalate` synthetic tool).
 
 | Data Field | Type  | Description                     |
 | ---------- | ----- | ------------------------------- |
@@ -531,7 +531,7 @@ bus.subscribe(
 
 ## Debug Event Logging
 
-Set `HIVE_DEBUG_EVENTS=1` to write every published event to a JSONL file at `~/.hive/event_logs/<timestamp>.jsonl`. Each line is the full JSON serialization of an `AgentEvent`:
+Set `HIVE_DEBUG_EVENTS=1` to write every published event to a JSONL file at `~/.teamagents/event_logs/<timestamp>.jsonl`. Each line is the full JSON serialization of an `AgentEvent`:
 
 ```json
 {

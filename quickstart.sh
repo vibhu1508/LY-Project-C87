@@ -32,7 +32,7 @@ NC='\033[0m' # No Color
 # Get the directory where this script is located
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-# Hive LLM router endpoint
+# TeamAgents LLM router endpoint
 HIVE_LLM_ENDPOINT="https://api.adenhq.com"
 
 # Helper function for prompts
@@ -656,7 +656,7 @@ else
 fi
 
 # Configuration directory
-HIVE_CONFIG_DIR="$HOME/.hive"
+HIVE_CONFIG_DIR="$HOME/.teamagents"
 HIVE_CONFIG_FILE="$HIVE_CONFIG_DIR/configuration.json"
 
 # Detect user's shell rc file
@@ -898,7 +898,7 @@ from pathlib import Path
     created_at,
 ) = sys.argv[1:11]
 
-cfg_path = Path.home() / ".hive" / "configuration.json"
+cfg_path = Path.home() / ".teamagents" / "configuration.json"
 cfg_path.parent.mkdir(parents=True, exist_ok=True)
 
 try:
@@ -1020,7 +1020,7 @@ if [ -f "$HOME/Library/Application Support/Antigravity/User/globalStorage/state.
 elif [ -f "$HOME/.config/Antigravity/User/globalStorage/state.vscdb" ]; then
     ANTIGRAVITY_CRED_DETECTED=true
 # Native OAuth credentials
-elif [ -f "$HOME/.hive/antigravity-accounts.json" ]; then
+elif [ -f "$HOME/.teamagents/antigravity-accounts.json" ]; then
     ANTIGRAVITY_CRED_DETECTED=true
 fi
 
@@ -1051,7 +1051,7 @@ if [ -f "$HIVE_CONFIG_FILE" ]; then
 import json
 from pathlib import Path
 
-cfg_path = Path.home() / ".hive" / "configuration.json"
+cfg_path = Path.home() / ".teamagents" / "configuration.json"
 try:
     with open(cfg_path, encoding="utf-8-sig") as f:
         c = json.load(f)
@@ -1070,7 +1070,7 @@ try:
         sub = "antigravity"
     elif llm.get("provider", "") == "minimax" or "api.minimax.io" in llm.get("api_base", ""):
         sub = "minimax_code"
-    elif llm.get("provider", "") == "hive" or "adenhq.com" in llm.get("api_base", ""):
+    elif llm.get("provider", "") == "teamagents" or "adenhq.com" in llm.get("api_base", ""):
         sub = "hive_llm"
     elif "api.z.ai" in llm.get("api_base", ""):
         sub = "zai_code"
@@ -1120,7 +1120,7 @@ if [ -n "$PREV_SUB_MODE" ] || [ -n "$PREV_PROVIDER" ]; then
                 openrouter) DEFAULT_CHOICE=13 ;;
                 minimax)   DEFAULT_CHOICE=4 ;;
                 kimi)      DEFAULT_CHOICE=5 ;;
-                hive)      DEFAULT_CHOICE=6 ;;
+                teamagents)      DEFAULT_CHOICE=6 ;;
             esac
         fi
     fi
@@ -1166,11 +1166,11 @@ else
     echo -e "  ${CYAN}5)${NC} Kimi Code Subscription     ${DIM}(use your Kimi Code plan)${NC}"
 fi
 
-# 6) Hive LLM
+# 6) TeamAgents LLM
 if [ "$HIVE_CRED_DETECTED" = true ]; then
-    echo -e "  ${CYAN}6)${NC} Hive LLM                   ${DIM}(use your Hive API key)${NC}  ${GREEN}(credential detected)${NC}"
+    echo -e "  ${CYAN}6)${NC} TeamAgents LLM                   ${DIM}(use your TeamAgents API key)${NC}  ${GREEN}(credential detected)${NC}"
 else
-    echo -e "  ${CYAN}6)${NC} Hive LLM                   ${DIM}(use your Hive API key)${NC}"
+    echo -e "  ${CYAN}6)${NC} TeamAgents LLM                   ${DIM}(use your TeamAgents API key)${NC}"
 fi
 
 # 7) Antigravity
@@ -1312,20 +1312,20 @@ case $choice in
         echo -e "  ${DIM}Model: kimi-k2.5 | API: api.kimi.com/coding${NC}"
         ;;
     6)
-        # Hive LLM
+        # TeamAgents LLM
         SUBSCRIPTION_MODE="hive_llm"
-        SELECTED_PROVIDER_ID="hive"
+        SELECTED_PROVIDER_ID="teamagents"
         SELECTED_ENV_VAR="HIVE_API_KEY"
         SELECTED_MAX_TOKENS=32768
         SELECTED_MAX_CONTEXT_TOKENS=180000
         SELECTED_API_BASE="$HIVE_LLM_ENDPOINT"
-        PROVIDER_NAME="Hive"
+        PROVIDER_NAME="TeamAgents"
         SIGNUP_URL="https://discord.com/invite/hQdU7QDkgR"
         echo ""
-        echo -e "${GREEN}⬢${NC} Using Hive LLM"
+        echo -e "${GREEN}⬢${NC} Using TeamAgents LLM"
         echo ""
         echo -e "  Select a model:"
-        echo -e "  ${CYAN}1)${NC} queen              ${DIM}(default — Hive flagship)${NC}"
+        echo -e "  ${CYAN}1)${NC} queen              ${DIM}(default — TeamAgents flagship)${NC}"
         echo -e "  ${CYAN}2)${NC} kimi-2.5"
         echo -e "  ${CYAN}3)${NC} GLM-5"
         echo ""
@@ -1351,7 +1351,7 @@ case $choice in
             # Run native OAuth flow
             if uv run python "$SCRIPT_DIR/core/antigravity_auth.py" auth account add; then
                 # Re-detect credentials
-                if [ -f "$HOME/.hive/antigravity-accounts.json" ]; then
+                if [ -f "$HOME/.teamagents/antigravity-accounts.json" ]; then
                     ANTIGRAVITY_CRED_DETECTED=true
                 fi
             fi
@@ -1448,7 +1448,7 @@ if { [ -z "$SUBSCRIPTION_MODE" ] || [ "$SUBSCRIPTION_MODE" = "minimax_code" ] ||
             # Remove old export line(s) for this env var from shell rc, then append new
             sed -i.bak "/^export ${SELECTED_ENV_VAR}=/d" "$SHELL_RC_FILE" && rm -f "${SHELL_RC_FILE}.bak"
             echo "" >> "$SHELL_RC_FILE"
-            echo "# Hive Agent Framework - $PROVIDER_NAME API key" >> "$SHELL_RC_FILE"
+            echo "# TeamAgents Agent Framework - $PROVIDER_NAME API key" >> "$SHELL_RC_FILE"
             echo "export $SELECTED_ENV_VAR=\"$API_KEY\"" >> "$SHELL_RC_FILE"
             export "$SELECTED_ENV_VAR=$API_KEY"
             echo ""
@@ -1471,7 +1471,7 @@ if { [ -z "$SUBSCRIPTION_MODE" ] || [ "$SUBSCRIPTION_MODE" = "minimax_code" ] ||
                 # Undo the save so the user can retry cleanly
                 sed -i.bak "/^export ${SELECTED_ENV_VAR}=/d" "$SHELL_RC_FILE" && rm -f "${SHELL_RC_FILE}.bak"
                 # Remove the comment line we just added
-                sed -i.bak "/^# Hive Agent Framework - $PROVIDER_NAME API key$/d" "$SHELL_RC_FILE" && rm -f "${SHELL_RC_FILE}.bak"
+                sed -i.bak "/^# TeamAgents Agent Framework - $PROVIDER_NAME API key$/d" "$SHELL_RC_FILE" && rm -f "${SHELL_RC_FILE}.bak"
                 unset "$SELECTED_ENV_VAR"
                 echo ""
                 read -r -p "  Press Enter to try again: " _
@@ -1513,7 +1513,7 @@ if [ "$SUBSCRIPTION_MODE" = "zai_code" ]; then
         if [ -n "$API_KEY" ]; then
             sed -i.bak "/^export ZAI_API_KEY=/d" "$SHELL_RC_FILE" && rm -f "${SHELL_RC_FILE}.bak"
             echo "" >> "$SHELL_RC_FILE"
-            echo "# Hive Agent Framework - ZAI Code subscription API key" >> "$SHELL_RC_FILE"
+            echo "# TeamAgents Agent Framework - ZAI Code subscription API key" >> "$SHELL_RC_FILE"
             echo "export ZAI_API_KEY=\"$API_KEY\"" >> "$SHELL_RC_FILE"
             export ZAI_API_KEY="$API_KEY"
             echo ""
@@ -1531,7 +1531,7 @@ if [ "$SUBSCRIPTION_MODE" = "zai_code" ]; then
                 echo -e "  ${YELLOW}⚠ $HC_MSG${NC}"
                 # Undo the save so the user can retry cleanly
                 sed -i.bak "/^export ZAI_API_KEY=/d" "$SHELL_RC_FILE" && rm -f "${SHELL_RC_FILE}.bak"
-                sed -i.bak "/^# Hive Agent Framework - ZAI Code subscription API key$/d" "$SHELL_RC_FILE" && rm -f "${SHELL_RC_FILE}.bak"
+                sed -i.bak "/^# TeamAgents Agent Framework - ZAI Code subscription API key$/d" "$SHELL_RC_FILE" && rm -f "${SHELL_RC_FILE}.bak"
                 unset ZAI_API_KEY
                 ZAI_CRED_DETECTED=false
                 echo ""
@@ -1589,11 +1589,11 @@ if [ -n "$SELECTED_PROVIDER_ID" ]; then
     fi
     if [ "$SAVE_OK" = false ]; then
         echo -e "${RED}failed${NC}"
-        echo -e "${YELLOW}  Could not write ~/.hive/configuration.json. Please rerun quickstart.${NC}"
+        echo -e "${YELLOW}  Could not write ~/.teamagents/configuration.json. Please rerun quickstart.${NC}"
         exit 1
     fi
     echo -e "${GREEN}⬢${NC}"
-    echo -e "  ${DIM}~/.hive/configuration.json${NC}"
+    echo -e "  ${DIM}~/.teamagents/configuration.json${NC}"
 fi
 
 echo ""
@@ -1610,7 +1610,7 @@ if [ -f "$HIVE_CONFIG_FILE" ]; then
 import json
 from pathlib import Path
 
-cfg_path = Path.home() / ".hive" / "configuration.json"
+cfg_path = Path.home() / ".teamagents" / "configuration.json"
 with open(cfg_path, encoding="utf-8-sig") as f:
     config = json.load(f)
 config["gcu_enabled"] = True
@@ -1621,7 +1621,7 @@ tmp_path.replace(cfg_path)
 PY
     then
         echo -e "${RED}failed${NC}"
-        echo -e "${YELLOW}  Could not update ~/.hive/configuration.json with browser automation settings.${NC}"
+        echo -e "${YELLOW}  Could not update ~/.teamagents/configuration.json with browser automation settings.${NC}"
         exit 1
     fi
 else
@@ -1630,7 +1630,7 @@ import json
 import sys
 from pathlib import Path
 
-cfg_path = Path.home() / ".hive" / "configuration.json"
+cfg_path = Path.home() / ".teamagents" / "configuration.json"
 cfg_path.parent.mkdir(parents=True, exist_ok=True)
 config = {
     "gcu_enabled": True,
@@ -1641,7 +1641,7 @@ with open(cfg_path, "w", encoding="utf-8") as f:
 PY
     then
         echo -e "${RED}failed${NC}"
-        echo -e "${YELLOW}  Could not create ~/.hive/configuration.json for browser automation settings.${NC}"
+        echo -e "${YELLOW}  Could not create ~/.teamagents/configuration.json for browser automation settings.${NC}"
         exit 1
     fi
 fi
@@ -1657,9 +1657,9 @@ echo ""
 echo -e "${DIM}The credential store encrypts API keys and secrets for your agents.${NC}"
 echo ""
 
-HIVE_CRED_DIR="$HOME/.hive/credentials"
+HIVE_CRED_DIR="$HOME/.teamagents/credentials"
 
-HIVE_KEY_FILE="$HOME/.hive/secrets/credential_key"
+HIVE_KEY_FILE="$HOME/.teamagents/secrets/credential_key"
 
 # Check if HIVE_CREDENTIAL_KEY already exists (from env, file, or shell rc)
 if [ -n "$HIVE_CREDENTIAL_KEY" ]; then
@@ -1701,7 +1701,7 @@ if [ -n "$HIVE_CREDENTIAL_KEY" ]; then
         echo '{"credentials": {}, "version": "1.0"}' > "$HIVE_CRED_DIR/metadata/index.json"
     fi
 
-    echo -e "${GREEN}  ✓ Credential store initialized at ~/.hive/credentials/${NC}"
+    echo -e "${GREEN}  ✓ Credential store initialized at ~/.teamagents/credentials/${NC}"
 
     # Verify the store works
     echo -n "  Verifying credential store... "
@@ -1761,7 +1761,7 @@ fi
 
 
 echo -n "  ⬡ credential store... "
-if [ -n "$HIVE_CREDENTIAL_KEY" ] && [ -d "$HOME/.hive/credentials/credentials" ]; then
+if [ -n "$HIVE_CREDENTIAL_KEY" ] && [ -d "$HOME/.teamagents/credentials/credentials" ]; then
     echo -e "${GREEN}ok${NC}"
 else
     echo -e "${YELLOW}--${NC}"
@@ -1783,10 +1783,10 @@ if [ $ERRORS -gt 0 ]; then
 fi
 
 # ============================================================
-# Step 6: Install hive CLI globally
+# Step 6: Install teamagents CLI globally
 # ============================================================
 
-echo -e "${YELLOW}⬢${NC} ${BLUE}${BOLD}Step 6: Installing hive CLI...${NC}"
+echo -e "${YELLOW}⬢${NC} ${BLUE}${BOLD}Step 6: Installing teamagents CLI...${NC}"
 echo ""
 
 # Ensure ~/.local/bin exists and is in PATH
@@ -1794,8 +1794,8 @@ mkdir -p "$HOME/.local/bin"
 
 # Git Bash on Windows may materialize `ln -s` as a plain file copy.
 # Use a launcher shim there, but prefer a real symlink on Linux/macOS.
-HIVE_SCRIPT="$SCRIPT_DIR/hive"
-HIVE_LINK="$HOME/.local/bin/hive"
+HIVE_SCRIPT="$SCRIPT_DIR/teamagents"
+HIVE_LINK="$HOME/.local/bin/teamagents"
 HIVE_SCRIPT_ESCAPED=$(printf '%q' "$HIVE_SCRIPT")
 
 if [ -L "$HIVE_LINK" ] || [ -e "$HIVE_LINK" ]; then
@@ -1813,7 +1813,7 @@ EOF
 else
     ln -s "$HIVE_SCRIPT" "$HIVE_LINK"
 fi
-echo -e "${GREEN}  ✓ hive CLI installed to ~/.local/bin/hive${NC}"
+echo -e "${GREEN}  ✓ teamagents CLI installed to ~/.local/bin/teamagents${NC}"
 
 # Check if ~/.local/bin is in PATH
 if echo "$PATH" | grep -q "$HOME/.local/bin"; then
@@ -1834,7 +1834,7 @@ clear
 echo ""
 echo -e "${GREEN}⬢${NC}${DIM}⬡${NC}${GREEN}⬢${NC}${DIM}⬡${NC}${GREEN}⬢${NC}${DIM}⬡${NC}${GREEN}⬢${NC}${DIM}⬡${NC}${GREEN}⬢${NC}${DIM}⬡${NC}${GREEN}⬢${NC}${DIM}⬡${NC}${GREEN}⬢${NC}${DIM}⬡${NC}${GREEN}⬢${NC}${DIM}⬡${NC}${GREEN}⬢${NC}${DIM}⬡${NC}${GREEN}⬢${NC}${DIM}⬡${NC}${GREEN}⬢${NC}${DIM}⬡${NC}${GREEN}⬢${NC}${DIM}⬡${NC}${GREEN}⬢${NC}"
 echo ""
-echo -e "${GREEN}${BOLD}        ADEN HIVE — READY${NC}"
+echo -e "${GREEN}${BOLD}        ADEN TEAMAGENTS — READY${NC}"
 echo ""
 echo -e "${GREEN}⬢${NC}${DIM}⬡${NC}${GREEN}⬢${NC}${DIM}⬡${NC}${GREEN}⬢${NC}${DIM}⬡${NC}${GREEN}⬢${NC}${DIM}⬡${NC}${GREEN}⬢${NC}${DIM}⬡${NC}${GREEN}⬢${NC}${DIM}⬡${NC}${GREEN}⬢${NC}${DIM}⬡${NC}${GREEN}⬢${NC}${DIM}⬡${NC}${GREEN}⬢${NC}${DIM}⬡${NC}${GREEN}⬢${NC}${DIM}⬡${NC}${GREEN}⬢${NC}${DIM}⬡${NC}${GREEN}⬢${NC}${DIM}⬡${NC}${GREEN}⬢${NC}"
 echo ""
@@ -1870,7 +1870,7 @@ fi
 # Show credential store status
 if [ -n "$HIVE_CREDENTIAL_KEY" ]; then
     echo -e "${BOLD}Credential Store:${NC}"
-    echo -e "  ${GREEN}⬢${NC} ${DIM}~/.hive/credentials/${NC}  (encrypted)"
+    echo -e "  ${GREEN}⬢${NC} ${DIM}~/.teamagents/credentials/${NC}  (encrypted)"
     echo ""
 fi
 
@@ -1898,23 +1898,23 @@ fi
 if [ "$CODEX_AVAILABLE" = true ]; then
     echo -e "${BOLD}Build a New Agent (Codex):${NC}"
     echo ""
-    echo -e "  Codex ${GREEN}${CODEX_VERSION}${NC} is available. To use it with Hive:"
+    echo -e "  Codex ${GREEN}${CODEX_VERSION}${NC} is available. To use it with TeamAgents:"
     echo -e "  1. Restart your terminal (or open a new one)"
     echo -e "  2. Run: ${CYAN}codex${NC}"
-    echo -e "  3. Type: ${CYAN}use hive${NC}"
+    echo -e "  3. Type: ${CYAN}use teamagents${NC}"
     echo ""
 fi
 
 echo -e "${DIM}API keys saved to ${CYAN}$SHELL_RC_FILE${NC}${DIM}. New terminals pick them up automatically.${NC}"
-echo -e "${DIM}Launch anytime from this project root with ${CYAN}./hive open${NC}${DIM}. Run ./quickstart.sh again to reconfigure.${NC}"
+echo -e "${DIM}Launch anytime from this project root with ${CYAN}./teamagents open${NC}${DIM}. Run ./quickstart.sh again to reconfigure.${NC}"
 echo ""
 
 if [ "$FRONTEND_BUILT" = true ]; then
     echo -e "${BOLD}Launching dashboard...${NC}"
     echo ""
-    "$SCRIPT_DIR/hive" open
+    "$SCRIPT_DIR/teamagents" open
 else
     echo -e "${YELLOW}Frontend build was skipped or failed.${NC} Launch manually when ready:"
-    echo -e "     ${CYAN}./hive open${NC}"
+    echo -e "     ${CYAN}./teamagents open${NC}"
     echo ""
 fi

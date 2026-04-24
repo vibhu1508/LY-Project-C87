@@ -4,7 +4,7 @@ Supports both Aden OAuth2-synced accounts AND locally-stored API key accounts.
 Aden accounts use account="alias" routing; local accounts inject the key into
 the session environment so tools read it without an account= parameter.
 
-When loaded via AgentRunner.load() (TUI picker, ``hive run``), the module-level
+When loaded via AgentRunner.load() (TUI picker, ``teamagents run``), the module-level
 ``nodes`` / ``edges`` variables provide a static graph.  The TUI detects
 ``requires_account_selection`` and shows an account picker *before* starting
 the agent.  ``configure_for_account()`` then scopes the node's tools to the
@@ -574,7 +574,7 @@ class CredentialTesterAgent:
         if self._selected_account is None:
             raise RuntimeError("No account selected. Call select_account() first.")
 
-        self._storage_path = Path.home() / ".hive" / "agents" / "credential_tester"
+        self._storage_path = Path.home() / ".teamagents" / "agents" / "credential_tester"
         self._storage_path.mkdir(parents=True, exist_ok=True)
 
         self._tool_registry = ToolRegistry()

@@ -1,8 +1,8 @@
-"""CLI commands for the Hive skill system.
+"""CLI commands for the TeamAgents skill system.
 
 Phase 1 commands (AS-13):
-  hive skill list             — list discovered skills across all scopes
-  hive skill trust <path>    — permanently trust a project repo's skills
+  teamagents skill list             — list discovered skills across all scopes
+  teamagents skill trust <path>    — permanently trust a project repo's skills
 
 Full CLI suite (CLI-1 through CLI-13) is Phase 2.
 """
@@ -15,11 +15,11 @@ from pathlib import Path
 
 
 def register_skill_commands(subparsers) -> None:
-    """Register the ``hive skill`` subcommand group."""
+    """Register the ``teamagents skill`` subcommand group."""
     skill_parser = subparsers.add_parser("skill", help="Manage skills")
     skill_sub = skill_parser.add_subparsers(dest="skill_command", required=True)
 
-    # hive skill list
+    # teamagents skill list
     list_parser = skill_sub.add_parser("list", help="List discovered skills across all scopes")
     list_parser.add_argument(
         "--project-dir",
@@ -29,7 +29,7 @@ def register_skill_commands(subparsers) -> None:
     )
     list_parser.set_defaults(func=cmd_skill_list)
 
-    # hive skill trust
+    # teamagents skill trust
     trust_parser = skill_sub.add_parser(
         "trust",
         help="Permanently trust a project repository so its skills load without prompting",
@@ -115,6 +115,6 @@ def cmd_skill_trust(args) -> int:
     store.trust(repo_key, project_path=str(project_path))
 
     print(f"✓ Trusted: {repo_key}")
-    print("  Stored in ~/.hive/trusted_repos.json")
+    print("  Stored in ~/.teamagents/trusted_repos.json")
     print("  Skills from this repository will load without prompting in future runs.")
     return 0

@@ -84,7 +84,7 @@ delegate_to_sub_agent(
 
 ```json
 {
-  "hive-tools": { ... },
+  "teamagents-tools": { ... },
   "gcu-tools": {
     "transport": "stdio",
     "command": "uv",
