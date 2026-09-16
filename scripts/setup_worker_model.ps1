@@ -67,6 +67,7 @@ $ProviderMap = [ordered]@{
     GROQ_API_KEY      = @{ Name = "Groq";               Id = "groq" }
     CEREBRAS_API_KEY  = @{ Name = "Cerebras";            Id = "cerebras" }
     OPENROUTER_API_KEY = @{ Name = "OpenRouter";          Id = "openrouter" }
+    NVIDIA_NIM_API_KEY = @{ Name = "NVIDIA NIM";          Id = "nvidia_nim" }
     MISTRAL_API_KEY   = @{ Name = "Mistral";             Id = "mistral" }
     TOGETHER_API_KEY  = @{ Name = "Together AI";         Id = "together" }
     DEEPSEEK_API_KEY  = @{ Name = "DeepSeek";            Id = "deepseek" }
@@ -78,6 +79,7 @@ $DefaultModels = @{
     gemini      = "gemini-3-flash-preview"
     groq        = "moonshotai/kimi-k2-instruct-0905"
     cerebras    = "zai-glm-4.7"
+    nvidia_nim  = "openai/gpt-oss-20b"
     mistral     = "mistral-large-latest"
     together_ai = "meta-llama/Llama-3.3-70B-Instruct-Turbo"
     deepseek    = "deepseek-chat"
@@ -107,6 +109,23 @@ $ModelChoices = @{
         @{ Id = "zai-glm-4.7";                    Label = "ZAI-GLM 4.7 - Best quality (recommended)"; MaxTokens = 8192; MaxContextTokens = 120000 },
         @{ Id = "qwen3-235b-a22b-instruct-2507";  Label = "Qwen3 235B - Frontier reasoning";          MaxTokens = 8192; MaxContextTokens = 120000 }
     )
+    nvidia_nim = @(
+        @{ Id = "openai/gpt-oss-20b";                     Label = "GPT-OSS 20B - Cheapest worker (recommended)"; MaxTokens = 8192; MaxContextTokens = 120000 },
+        @{ Id = "nvidia/nemotron-3.5-lightning-30b-a3b";  Label = "Nemotron 3.5 Lightning 30B - Small + fast";    MaxTokens = 8192; MaxContextTokens = 120000 },
+        @{ Id = "openai/gpt-oss-120b";                    Label = "GPT-OSS 120B - Strong tool use";              MaxTokens = 8192; MaxContextTokens = 120000 },
+        @{ Id = "nvidia/nemotron-3-super-120b-a12b";      Label = "Nemotron 3 Super 120B - Most capable";        MaxTokens = 8192; MaxContextTokens = 120000 }
+    )
+}
+
+function Normalize-NvidiaNimModelId {
+    param([string]$ModelId)
+    # NIM model ids keep their vendor namespace (meta/..., nvidia/...), so only a
+    # redundant "nvidia_nim/" prefix is stripped.
+    $normalized = if ($ModelId) { $ModelId.Trim() } else { "" }
+    if ($normalized -match '(?i)^nvidia_nim/(.+)$') {
+        $normalized = $matches[1]
+    }
+    return $normalized
 }
 
 function Normalize-OpenRouterModelId {
@@ -120,6 +139,66 @@ function Normalize-OpenRouterModelId {
 
 function Get-ModelSelection {
     param([string]$ProviderId)
+
+    if ($ProviderId -eq "nvidia_nim") {
+        $choices = $ModelChoices[$ProviderId]
+        $defaultModel = if ($PrevModel -and $PrevProvider -eq $ProviderId) { Normalize-NvidiaNimModelId $PrevModel } else { $DefaultModels[$ProviderId] }
+        Write-Host ""
+        Write-Color -Text "Enter your NVIDIA NIM model id:" -Color White
+        Write-Color -Text "  Copy the model id from build.nvidia.com (example: openai/gpt-oss-20b)" -Color DarkGray
+        Write-Color -Text "  Popular worker choices:" -Color DarkGray
+        foreach ($c in $choices) {
+            Write-Color -Text "    - $($c.Id)  ($($c.Label))" -Color DarkGray
+        }
+        Write-Host ""
+        while ($true) {
+            $rawModel = Read-Host "Model id [$defaultModel]"
+            if ([string]::IsNullOrWhiteSpace($rawModel)) { $rawModel = $defaultModel }
+            $normalizedModel = Normalize-NvidiaNimModelId $rawModel
+            if (-not [string]::IsNullOrWhiteSpace($normalizedModel)) {
+                $nimKey = $null
+                if ($SelectedEnvVar) {
+                    $nimKey = [System.Environment]::GetEnvironmentVariable($SelectedEnvVar, "Process")
+                    if (-not $nimKey) {
+                        $nimKey = [System.Environment]::GetEnvironmentVariable($SelectedEnvVar, "User")
+                    }
+                }
+
+                if ($nimKey) {
+                    Write-Host "  Verifying model id... " -NoNewline
+                    try {
+                        $modelApiBase = if ($SelectedApiBase) { $SelectedApiBase } else { "https://integrate.api.nvidia.com/v1" }
+                        Push-Location $ProjectDir
+                        $hcResult = & $UvCmd run python (Join-Path $ProjectDir "scripts/check_llm_key.py") "nvidia_nim" $nimKey $modelApiBase $normalizedModel 2>$null
+                        Pop-Location
+                        $hcJson = $hcResult | ConvertFrom-Json
+                        if ($hcJson.valid -eq $true) {
+                            if ($hcJson.model) { $normalizedModel = [string]$hcJson.model }
+                            Write-Color -Text "ok" -Color Green
+                        } elseif ($hcJson.valid -eq $false) {
+                            Write-Color -Text "failed" -Color Red
+                            Write-Warn $hcJson.message
+                            Write-Host ""
+                            continue
+                        } else {
+                            Write-Color -Text "--" -Color Yellow
+                            Write-Color -Text "  Could not verify model id (network issue). Continuing with your selection." -Color DarkGray
+                        }
+                    } catch {
+                        Write-Color -Text "--" -Color Yellow
+                        Write-Color -Text "  Could not verify model id (network issue). Continuing with your selection." -Color DarkGray
+                    }
+                } else {
+                    Write-Color -Text "  Skipping model verification (NVIDIA NIM key not available in current shell)." -Color DarkGray
+                }
+
+                Write-Host ""
+                Write-Ok "Model: $normalizedModel"
+                return @{ Model = $normalizedModel; MaxTokens = 8192; MaxContextTokens = 120000 }
+            }
+            Write-Color -Text "Model id cannot be empty." -Color Red
+        }
+    }
 
     if ($ProviderId -eq "openrouter") {
         $defaultModel = ""
@@ -325,16 +404,17 @@ $antigravityAccountsPath = Join-Path $env:USERPROFILE ".teamagents\antigravity-a
 if (Test-Path $antigravityAccountsPath) { $AntigravityCredDetected = $true }
 
 # Detect API key providers
-$ProviderMenuEnvVars  = @("ANTHROPIC_API_KEY", "OPENAI_API_KEY", "GEMINI_API_KEY", "GROQ_API_KEY", "CEREBRAS_API_KEY", "OPENROUTER_API_KEY")
-$ProviderMenuNames    = @("Anthropic (Claude) - Recommended", "OpenAI (GPT)", "Google Gemini - Free tier available", "Groq - Fast, free tier", "Cerebras - Fast, free tier", "OpenRouter - Bring any OpenRouter model")
-$ProviderMenuIds      = @("anthropic", "openai", "gemini", "groq", "cerebras", "openrouter")
+$ProviderMenuEnvVars  = @("ANTHROPIC_API_KEY", "OPENAI_API_KEY", "GEMINI_API_KEY", "GROQ_API_KEY", "CEREBRAS_API_KEY", "OPENROUTER_API_KEY", "NVIDIA_NIM_API_KEY")
+$ProviderMenuNames    = @("Anthropic (Claude) - Recommended", "OpenAI (GPT)", "Google Gemini - Free tier available", "Groq - Fast, free tier", "Cerebras - Fast, free tier", "OpenRouter - Bring any OpenRouter model", "NVIDIA NIM - Bring any build.nvidia.com model")
+$ProviderMenuIds      = @("anthropic", "openai", "gemini", "groq", "cerebras", "openrouter", "nvidia_nim")
 $ProviderMenuUrls     = @(
     "https://console.anthropic.com/settings/keys",
     "https://platform.openai.com/api-keys",
     "https://aistudio.google.com/apikey",
     "https://console.groq.com/keys",
     "https://cloud.cerebras.ai/",
-    "https://openrouter.ai/keys"
+    "https://openrouter.ai/keys",
+    "https://build.nvidia.com/settings/api-keys"
 )
 
 # -- Read previous worker_llm configuration (if any) ---------
@@ -400,6 +480,7 @@ if ($PrevSubMode -or $PrevProvider) {
                 "groq"       { $DefaultChoice = "11" }
                 "cerebras"   { $DefaultChoice = "12" }
                 "openrouter" { $DefaultChoice = "13" }
+                "nvidia_nim" { $DefaultChoice = "14" }
                 "minimax"    { $DefaultChoice = "4" }
                 "kimi"       { $DefaultChoice = "5" }
                 "teamagents"       { $DefaultChoice = "6" }
@@ -413,6 +494,7 @@ $AllowedDefaultChoices = @{
     "gemini" = "1"
     "groq" = "2"
     "openrouter" = "3"
+    "nvidia_nim" = "4"
 }
 if ($PrevProvider -and $AllowedDefaultChoices.ContainsKey($PrevProvider)) {
     $DefaultChoice = $AllowedDefaultChoices[$PrevProvider]
@@ -428,7 +510,8 @@ Write-Color -Text "  Allowed API key providers:" -Color Cyan
 $AllowedProviders = @(
     @{ Label = "Google Gemini"; MenuNum = 1; InternalNum = 10; Env = "GEMINI_API_KEY" },
     @{ Label = "Groq"; MenuNum = 2; InternalNum = 11; Env = "GROQ_API_KEY" },
-    @{ Label = "OpenRouter"; MenuNum = 3; InternalNum = 13; Env = "OPENROUTER_API_KEY" }
+    @{ Label = "OpenRouter"; MenuNum = 3; InternalNum = 13; Env = "OPENROUTER_API_KEY" },
+    @{ Label = "NVIDIA NIM"; MenuNum = 4; InternalNum = 14; Env = "NVIDIA_NIM_API_KEY" }
 )
 foreach ($item in $AllowedProviders) {
     $envVal = [System.Environment]::GetEnvironmentVariable($item.Env, "Process")
@@ -439,7 +522,7 @@ foreach ($item in $AllowedProviders) {
     if ($envVal) { Write-Color -Text "  (credential detected)" -Color Green } else { Write-Host "" }
 }
 
-$SkipChoice = 4
+$SkipChoice = 5
 Write-Host "  " -NoNewline
 Write-Color -Text "$SkipChoice" -Color Cyan -NoNewline
 Write-Host ") Skip for now"
@@ -471,6 +554,8 @@ if ($num -eq 1) {
     $num = 11  # Groq
 } elseif ($num -eq 3) {
     $num = 13  # OpenRouter
+} elseif ($num -eq 4) {
+    $num = 14  # NVIDIA NIM
 }
 $SkipChoiceInternal = 199
 if ($num -eq $SkipChoice) {
@@ -638,7 +723,7 @@ switch ($num) {
             Write-Color -Text "  Model: gemini-3-flash | Direct OAuth (no proxy required)" -Color DarkGray
         }
     }
-    { $_ -ge 8 -and $_ -le 13 } {
+    { $_ -ge 8 -and $_ -le 14 } {
         # API key providers
         $provIdx = $num - 8
         $SelectedEnvVar     = $ProviderMenuEnvVars[$provIdx]
@@ -647,6 +732,8 @@ switch ($num) {
         $signupUrl          = $ProviderMenuUrls[$provIdx]
         if ($SelectedProviderId -eq "openrouter") {
             $SelectedApiBase = "https://openrouter.ai/api/v1"
+        } elseif ($SelectedProviderId -eq "nvidia_nim") {
+            $SelectedApiBase = "https://integrate.api.nvidia.com/v1"
         } else {
             $SelectedApiBase = ""
         }
@@ -1069,6 +1156,9 @@ if ($SelectedProviderId) {
         $workerLlm["api_key_env_var"] = $SelectedEnvVar
     } elseif ($SelectedProviderId -eq "openrouter") {
         $workerLlm["api_base"] = "https://openrouter.ai/api/v1"
+        $workerLlm["api_key_env_var"] = $SelectedEnvVar
+    } elseif ($SelectedProviderId -eq "nvidia_nim") {
+        $workerLlm["api_base"] = "https://integrate.api.nvidia.com/v1"
         $workerLlm["api_key_env_var"] = $SelectedEnvVar
     } else {
         $workerLlm["api_key_env_var"] = $SelectedEnvVar

@@ -70,6 +70,7 @@ if [ "$USE_ASSOC_ARRAYS" = true ]; then
         ["GROQ_API_KEY"]="Groq"
         ["CEREBRAS_API_KEY"]="Cerebras"
         ["OPENROUTER_API_KEY"]="OpenRouter"
+        ["NVIDIA_NIM_API_KEY"]="NVIDIA NIM"
         ["MISTRAL_API_KEY"]="Mistral"
         ["TOGETHER_API_KEY"]="Together AI"
         ["DEEPSEEK_API_KEY"]="DeepSeek"
@@ -84,6 +85,7 @@ if [ "$USE_ASSOC_ARRAYS" = true ]; then
         ["GROQ_API_KEY"]="groq"
         ["CEREBRAS_API_KEY"]="cerebras"
         ["OPENROUTER_API_KEY"]="openrouter"
+        ["NVIDIA_NIM_API_KEY"]="nvidia_nim"
         ["MISTRAL_API_KEY"]="mistral"
         ["TOGETHER_API_KEY"]="together"
         ["DEEPSEEK_API_KEY"]="deepseek"
@@ -96,6 +98,7 @@ if [ "$USE_ASSOC_ARRAYS" = true ]; then
         ["gemini"]="gemini-3-flash-preview"
         ["groq"]="moonshotai/kimi-k2-instruct-0905"
         ["cerebras"]="zai-glm-4.7"
+        ["nvidia_nim"]="openai/gpt-oss-20b"
         ["mistral"]="mistral-large-latest"
         ["together_ai"]="meta-llama/Llama-3.3-70B-Instruct-Turbo"
         ["deepseek"]="deepseek-chat"
@@ -179,12 +182,12 @@ if [ "$USE_ASSOC_ARRAYS" = true ]; then
     get_model_choice_maxcontexttokens() { echo "${MODEL_CHOICES_MAXCONTEXTTOKENS[$1:$2]}"; }
 else
     # Bash 3.2 fallback
-    PROVIDER_ENV_VARS=(ANTHROPIC_API_KEY OPENAI_API_KEY MINIMAX_API_KEY GEMINI_API_KEY GOOGLE_API_KEY GROQ_API_KEY CEREBRAS_API_KEY OPENROUTER_API_KEY MISTRAL_API_KEY TOGETHER_API_KEY DEEPSEEK_API_KEY)
-    PROVIDER_DISPLAY_NAMES=("Anthropic (Claude)" "OpenAI (GPT)" "MiniMax" "Google Gemini" "Google AI" "Groq" "Cerebras" "OpenRouter" "Mistral" "Together AI" "DeepSeek")
-    PROVIDER_ID_LIST=(anthropic openai minimax gemini google groq cerebras openrouter mistral together deepseek)
+    PROVIDER_ENV_VARS=(ANTHROPIC_API_KEY OPENAI_API_KEY MINIMAX_API_KEY GEMINI_API_KEY GOOGLE_API_KEY GROQ_API_KEY CEREBRAS_API_KEY OPENROUTER_API_KEY NVIDIA_NIM_API_KEY MISTRAL_API_KEY TOGETHER_API_KEY DEEPSEEK_API_KEY)
+    PROVIDER_DISPLAY_NAMES=("Anthropic (Claude)" "OpenAI (GPT)" "MiniMax" "Google Gemini" "Google AI" "Groq" "Cerebras" "OpenRouter" "NVIDIA NIM" "Mistral" "Together AI" "DeepSeek")
+    PROVIDER_ID_LIST=(anthropic openai minimax gemini google groq cerebras openrouter nvidia_nim mistral together deepseek)
 
-    MODEL_PROVIDER_IDS=(anthropic openai minimax gemini groq cerebras mistral together_ai deepseek)
-    MODEL_DEFAULTS=("claude-haiku-4-5-20251001" "gpt-5-mini" "MiniMax-M2.5" "gemini-3-flash-preview" "moonshotai/kimi-k2-instruct-0905" "zai-glm-4.7" "mistral-large-latest" "meta-llama/Llama-3.3-70B-Instruct-Turbo" "deepseek-chat")
+    MODEL_PROVIDER_IDS=(anthropic openai minimax gemini groq cerebras nvidia_nim mistral together_ai deepseek)
+    MODEL_DEFAULTS=("claude-haiku-4-5-20251001" "gpt-5-mini" "MiniMax-M2.5" "gemini-3-flash-preview" "moonshotai/kimi-k2-instruct-0905" "zai-glm-4.7" "openai/gpt-oss-20b" "mistral-large-latest" "meta-llama/Llama-3.3-70B-Instruct-Turbo" "deepseek-chat")
 
     get_provider_name() {
         local env_var="$1"; local i=0
@@ -282,10 +285,86 @@ normalize_openrouter_model_id() {
     printf '%s' "$raw"
 }
 
+# ── Normalize NVIDIA NIM model IDs ───────────────────────────────────
+# NIM model ids keep their vendor namespace (meta/..., nvidia/...), so only a
+# redundant "nvidia_nim/" prefix is stripped.
+
+normalize_nvidia_nim_model_id() {
+    local raw="$1"
+    raw="${raw#"${raw%%[![:space:]]*}"}"
+    raw="${raw%"${raw##*[![:space:]]}"}"
+    if [[ "$raw" =~ ^[Nn][Vv][Ii][Dd][Ii][Aa]_[Nn][Ii][Mm]/(.+)$ ]]; then
+        raw="${BASH_REMATCH[1]}"
+    fi
+    printf '%s' "$raw"
+}
+
 # ── Model selection prompt (identical to quickstart) ─────────────────
 
 prompt_model_selection() {
     local provider_id="$1"
+
+    if [ "$provider_id" = "nvidia_nim" ]; then
+        local default_model="openai/gpt-oss-20b"
+        if [ -n "$PREV_MODEL" ] && [ "$provider_id" = "$PREV_PROVIDER" ]; then
+            default_model="$(normalize_nvidia_nim_model_id "$PREV_MODEL")"
+        fi
+        echo ""
+        echo -e "${BOLD}Enter your NVIDIA NIM model id:${NC}"
+        echo -e "  ${DIM}Copy the model id from build.nvidia.com (example: meta/llama-3.3-70b-instruct)${NC}"
+        echo -e "  ${DIM}Smaller workers: openai/gpt-oss-20b, nvidia/nemotron-3.5-lightning-30b-a3b${NC}"
+        echo ""
+        local input_model=""
+        while true; do
+            read -r -p "Model id [$default_model]: " input_model || true
+            input_model="${input_model:-$default_model}"
+            local normalized_model
+            normalized_model="$(normalize_nvidia_nim_model_id "$input_model")"
+            if [ -n "$normalized_model" ]; then
+                local nim_key=""
+                if [ -n "${SELECTED_ENV_VAR:-}" ]; then
+                    nim_key="${!SELECTED_ENV_VAR:-}"
+                fi
+
+                if [ -n "$nim_key" ]; then
+                    local model_hc_result=""
+                    local model_hc_valid=""
+                    local model_hc_msg=""
+                    local model_hc_canonical=""
+                    local model_hc_base="${SELECTED_API_BASE:-https://integrate.api.nvidia.com/v1}"
+                    echo -n "  Verifying model id... "
+                    model_hc_result="$(cd "$PROJECT_DIR" && uv run python "$PROJECT_DIR/scripts/check_llm_key.py" "nvidia_nim" "$nim_key" "$model_hc_base" "$normalized_model" 2>/dev/null)" || true
+                    model_hc_valid="$(echo "$model_hc_result" | $PYTHON_CMD -c "import json,sys; print(json.loads(sys.stdin.read()).get('valid',''))" 2>/dev/null)" || true
+                    model_hc_msg="$(echo "$model_hc_result" | $PYTHON_CMD -c "import json,sys; print(json.loads(sys.stdin.read()).get('message',''))" 2>/dev/null)" || true
+                    model_hc_canonical="$(echo "$model_hc_result" | $PYTHON_CMD -c "import json,sys; print(json.loads(sys.stdin.read()).get('model',''))" 2>/dev/null)" || true
+                    if [ "$model_hc_valid" = "True" ]; then
+                        if [ -n "$model_hc_canonical" ]; then
+                            normalized_model="$model_hc_canonical"
+                        fi
+                        echo -e "${GREEN}ok${NC}"
+                    elif [ "$model_hc_valid" = "False" ]; then
+                        echo -e "${RED}failed${NC}"
+                        echo -e "  ${YELLOW}⚠ $model_hc_msg${NC}"
+                        echo ""
+                        continue
+                    else
+                        echo -e "${YELLOW}--${NC}"
+                        echo -e "  ${DIM}Could not verify model id (network issue). Continuing with your selection.${NC}"
+                    fi
+                else
+                    echo -e "  ${DIM}Skipping model verification (NVIDIA NIM key not available in current shell).${NC}"
+                fi
+
+                SELECTED_MODEL="$normalized_model"
+                SELECTED_MAX_TOKENS=8192
+                SELECTED_MAX_CONTEXT_TOKENS=120000
+                echo ""
+                echo -e "${GREEN}⬢${NC} Model: ${DIM}$SELECTED_MODEL${NC}"
+                return
+            fi
+            echo -e "${RED}Model id cannot be empty.${NC}"
+        done
+    fi
 
     if [ "$provider_id" = "openrouter" ]; then
         local default_model=""
@@ -714,6 +793,7 @@ if [ -n "$PREV_SUB_MODE" ] || [ -n "$PREV_PROVIDER" ]; then
                 groq)      DEFAULT_CHOICE=11 ;;
                 cerebras)  DEFAULT_CHOICE=12 ;;
                 openrouter) DEFAULT_CHOICE=13 ;;
+                nvidia_nim) DEFAULT_CHOICE=14 ;;
                 minimax)   DEFAULT_CHOICE=4 ;;
                 kimi)      DEFAULT_CHOICE=5 ;;
                 teamagents)      DEFAULT_CHOICE=6 ;;
@@ -780,8 +860,8 @@ echo ""
 echo -e "  ${CYAN}${BOLD}API key providers:${NC}"
 
 # 8-13) API key providers — show (credential detected) if key already set
-PROVIDER_MENU_ENVS=(ANTHROPIC_API_KEY OPENAI_API_KEY GEMINI_API_KEY GROQ_API_KEY CEREBRAS_API_KEY OPENROUTER_API_KEY)
-PROVIDER_MENU_NAMES=("Anthropic (Claude) - Recommended" "OpenAI (GPT)" "Google Gemini - Free tier available" "Groq - Fast, free tier" "Cerebras - Fast, free tier" "OpenRouter - Bring any OpenRouter model")
+PROVIDER_MENU_ENVS=(ANTHROPIC_API_KEY OPENAI_API_KEY GEMINI_API_KEY GROQ_API_KEY CEREBRAS_API_KEY OPENROUTER_API_KEY NVIDIA_NIM_API_KEY)
+PROVIDER_MENU_NAMES=("Anthropic (Claude) - Recommended" "OpenAI (GPT)" "Google Gemini - Free tier available" "Groq - Fast, free tier" "Cerebras - Fast, free tier" "OpenRouter - Bring any OpenRouter model" "NVIDIA NIM - Bring any build.nvidia.com model")
 for idx in "${!PROVIDER_MENU_ENVS[@]}"; do
     num=$((idx + 8))
     env_var="${PROVIDER_MENU_ENVS[$idx]}"
@@ -1010,6 +1090,13 @@ case $choice in
         PROVIDER_NAME="OpenRouter"
         SIGNUP_URL="https://openrouter.ai/keys"
         ;;
+    14)
+        SELECTED_ENV_VAR="NVIDIA_NIM_API_KEY"
+        SELECTED_PROVIDER_ID="nvidia_nim"
+        SELECTED_API_BASE="https://integrate.api.nvidia.com/v1"
+        PROVIDER_NAME="NVIDIA NIM"
+        SIGNUP_URL="https://build.nvidia.com/settings/api-keys"
+        ;;
     "$SKIP_CHOICE")
         echo ""
         echo -e "${YELLOW}Skipped.${NC} Worker model not configured."
@@ -1175,7 +1262,7 @@ if [ -n "$SELECTED_PROVIDER_ID" ]; then
         save_worker_configuration "$SELECTED_PROVIDER_ID" "$SELECTED_ENV_VAR" "$SELECTED_MODEL" "$SELECTED_MAX_TOKENS" "$SELECTED_MAX_CONTEXT_TOKENS" "" "$SELECTED_API_BASE" > /dev/null || SAVE_OK=false
     elif [ "$SUBSCRIPTION_MODE" = "hive_llm" ]; then
         save_worker_configuration "$SELECTED_PROVIDER_ID" "$SELECTED_ENV_VAR" "$SELECTED_MODEL" "$SELECTED_MAX_TOKENS" "$SELECTED_MAX_CONTEXT_TOKENS" "" "$SELECTED_API_BASE" > /dev/null || SAVE_OK=false
-    elif [ "$SELECTED_PROVIDER_ID" = "openrouter" ]; then
+    elif [ "$SELECTED_PROVIDER_ID" = "openrouter" ] || [ "$SELECTED_PROVIDER_ID" = "nvidia_nim" ]; then
         save_worker_configuration "$SELECTED_PROVIDER_ID" "$SELECTED_ENV_VAR" "$SELECTED_MODEL" "$SELECTED_MAX_TOKENS" "$SELECTED_MAX_CONTEXT_TOKENS" "" "$SELECTED_API_BASE" > /dev/null || SAVE_OK=false
     else
         save_worker_configuration "$SELECTED_PROVIDER_ID" "$SELECTED_ENV_VAR" "$SELECTED_MODEL" "$SELECTED_MAX_TOKENS" "$SELECTED_MAX_CONTEXT_TOKENS" > /dev/null || SAVE_OK=false

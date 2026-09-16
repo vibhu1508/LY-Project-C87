@@ -8,6 +8,9 @@ Vision support rules are derived from official vendor documentation:
 - Groq: console.groq.com/docs/vision — vision capable; treat as supported by default
 - Ollama/LM Studio/vLLM/llama.cpp: local runners denied by default; model names
   don't reliably indicate vision support, so users must configure explicitly
+- NVIDIA NIM: build.nvidia.com hosts mostly text-only open models; the vision
+  entries all carry a "vision"/"vl"/"vlm" marker in their model ID, so NIM is
+  denied unless the model name says otherwise
 """
 
 from __future__ import annotations
@@ -32,6 +35,18 @@ _VISION_ALLOW_BARE_PREFIXES: tuple[str, ...] = (
     # MiniMax vision model
     "minimax-vl",  # minimax-vl-01
 )
+
+# NVIDIA NIM catalogue markers: the hosted VLM entries always name themselves
+# (e.g. meta/llama-3.2-90b-vision-instruct, nvidia/nemotron-nano-12b-v2-vl,
+# microsoft/phi-3.5-vision-instruct).  Everything else on NIM is text-only.
+_NVIDIA_NIM_PREFIX = "nvidia_nim/"
+_NVIDIA_NIM_VISION_MARKERS: tuple[str, ...] = ("vision", "-vl", "vlm", "paligemma")
+
+
+def _nvidia_nim_supports_vision(bare_model: str) -> bool:
+    """Return whether an NVIDIA NIM model ID names itself as a vision model."""
+    return any(marker in bare_model for marker in _NVIDIA_NIM_VISION_MARKERS)
+
 
 # Step 2: provider-level deny — every model from this provider is text-only.
 _TEXT_ONLY_PROVIDER_PREFIXES: tuple[str, ...] = (
@@ -82,9 +97,10 @@ def supports_image_tool_results(model: str) -> bool:
 
     Logic (checked in order):
     1. Vision allow-list  → True  (known vision model, skip all denies)
-    2. Provider deny      → False (entire provider is text-only)
-    3. Model deny         → False (specific text-only model within a mixed provider)
-    4. Default            → True  (assume capable; unknown providers and models)
+    2. NVIDIA NIM         → only when the model ID names itself as vision
+    3. Provider deny      → False (entire provider is text-only)
+    4. Model deny         → False (specific text-only model within a mixed provider)
+    5. Default            → True  (assume capable; unknown providers and models)
     """
     model_lower = model.lower()
     bare = _model_name(model_lower)
@@ -93,11 +109,16 @@ def supports_image_tool_results(model: str) -> bool:
     if any(bare.startswith(p) for p in _VISION_ALLOW_BARE_PREFIXES):
         return True
 
-    # 2. Provider-level deny (all models from this provider are text-only)
+    # 2. NVIDIA NIM hosts many vendors' models under one prefix; only the
+    #    self-declared vision entries accept image content.
+    if model_lower.startswith(_NVIDIA_NIM_PREFIX):
+        return _nvidia_nim_supports_vision(bare)
+
+    # 3. Provider-level deny (all models from this provider are text-only)
     if any(model_lower.startswith(p) for p in _TEXT_ONLY_PROVIDER_PREFIXES):
         return False
 
-    # 3. Per-model deny (text-only variants within mixed-capability families)
+    # 4. Per-model deny (text-only variants within mixed-capability families)
     if any(bare.startswith(p) for p in _TEXT_ONLY_MODEL_BARE_PREFIXES):
         return False
 

@@ -22,6 +22,9 @@ import httpx
 from framework.config import TEAMAGENTS_LLM_ENDPOINT
 
 TIMEOUT = 10.0
+NVIDIA_NIM_API_BASE = "https://integrate.api.nvidia.com/v1"
+# Generous enough for a cold start, short enough that setup stays interactive.
+NVIDIA_NIM_PROBE_TIMEOUT = 45.0
 OPENROUTER_SEPARATOR_TRANSLATION = str.maketrans(
     {
         "\u2010": "-",
@@ -60,6 +63,20 @@ def _extract_error_message(response: httpx.Response) -> str:
             return message.strip()
 
     return ""
+
+
+def _extract_model_ids(payload: object) -> list[str]:
+    """Return the model IDs from an OpenAI-compatible GET /models response."""
+    if not isinstance(payload, dict):
+        return []
+    data = payload.get("data")
+    if not isinstance(data, list):
+        return []
+    return [
+        item["id"]
+        for item in data
+        if isinstance(item, dict) and isinstance(item.get("id"), str) and item["id"].strip()
+    ]
 
 
 def _sanitize_openrouter_model_id(value: str) -> str:
@@ -244,6 +261,115 @@ def check_openrouter_model(
     }
 
 
+def check_nvidia_nim(
+    api_key: str, api_base: str = NVIDIA_NIM_API_BASE, **_: str
+) -> dict:
+    """Validate an NVIDIA NIM key against GET /models (OpenAI-compatible)."""
+    return check_openai_compatible(
+        api_key, f"{api_base.rstrip('/')}/models", "NVIDIA NIM"
+    )
+
+
+def check_nvidia_nim_model(
+    api_key: str,
+    model: str,
+    api_base: str = NVIDIA_NIM_API_BASE,
+    **_: str,
+) -> dict:
+    """Validate that an NVIDIA NIM model ID is served by this endpoint."""
+    requested_model = (model or "").strip()
+    if requested_model.lower().startswith("nvidia_nim/"):
+        requested_model = requested_model.split("/", 1)[1]
+
+    endpoint = f"{api_base.rstrip('/')}/models"
+    with httpx.Client(timeout=TIMEOUT) as client:
+        r = client.get(endpoint, headers={"Authorization": f"Bearer {api_key}"})
+
+    if r.status_code == 200:
+        available = _extract_model_ids(r.json())
+        lookup = {model_id.casefold(): model_id for model_id in available}
+        matched = lookup.get(requested_model.casefold())
+        if matched:
+            # The catalogue lists models that are retired (410), not entitled to
+            # this account (404), or unresponsive. Being listed is not enough —
+            # probe the model so a bad pick fails here instead of hanging the
+            # agent later with no error.
+            return _probe_nvidia_nim_model(api_key, matched, api_base)
+
+        suggestions = [
+            lookup[key]
+            for key in get_close_matches(
+                requested_model.casefold(), list(lookup), n=1, cutoff=0.6
+            )
+        ]
+        base = f"NVIDIA NIM model is not available for this key: {requested_model}"
+        if suggestions:
+            return {"valid": False, "message": f"{base}. Closest matches: {', '.join(suggestions)}"}
+        return {"valid": False, "message": base}
+    if r.status_code == 429:
+        return {
+            "valid": True,
+            "message": "NVIDIA NIM model check rate-limited; assuming model is reachable",
+        }
+    if r.status_code == 401:
+        return {"valid": False, "message": "Invalid NVIDIA NIM API key"}
+    if r.status_code == 403:
+        return {"valid": False, "message": "NVIDIA NIM API key lacks permissions"}
+
+    detail = _extract_error_message(r)
+    suffix = f": {detail}" if detail else ""
+    return {
+        "valid": False,
+        "message": f"NVIDIA NIM model check returned status {r.status_code}{suffix}",
+    }
+
+
+def _probe_nvidia_nim_model(api_key: str, model: str, api_base: str) -> dict:
+    """Send a 1-token completion so retired/unentitled/stalled models fail here."""
+    try:
+        with httpx.Client(timeout=NVIDIA_NIM_PROBE_TIMEOUT) as client:
+            r = client.post(
+                f"{api_base.rstrip('/')}/chat/completions",
+                headers={
+                    "Authorization": f"Bearer {api_key}",
+                    "Content-Type": "application/json",
+                },
+                json={
+                    "model": model,
+                    "messages": [{"role": "user", "content": "hi"}],
+                    "max_tokens": 1,
+                },
+            )
+    except httpx.TimeoutException:
+        return {
+            "valid": False,
+            "message": (
+                f"NVIDIA NIM model '{model}' did not respond within "
+                f"{NVIDIA_NIM_PROBE_TIMEOUT:.0f}s. It is listed but not usable — pick another model."
+            ),
+        }
+
+    # 400/422 means the request shape was rejected, not the model — still usable.
+    if r.status_code in (200, 400, 422, 429):
+        return {
+            "valid": True,
+            "message": f"NVIDIA NIM model is available: {model}",
+            "model": model,
+        }
+
+    detail = _extract_error_message(r)
+    if r.status_code == 410:
+        reason = "has reached end of life"
+    elif r.status_code == 404:
+        reason = "is not available to this API key"
+    elif r.status_code == 403:
+        reason = "is not permitted for this API key"
+    else:
+        reason = f"returned status {r.status_code}"
+    base = f"NVIDIA NIM model '{model}' {reason}"
+    return {"valid": False, "message": f"{base}. {detail}" if detail else base}
+
+
 def check_minimax(
     api_key: str, api_base: str = "https://api.minimax.io/v1", **_: str
 ) -> dict:
@@ -318,6 +444,7 @@ PROVIDERS = {
         key, "https://api.cerebras.ai/v1/models", "Cerebras"
     ),
     "openrouter": lambda key, **kw: check_openrouter(key, **kw),
+    "nvidia_nim": lambda key, **kw: check_nvidia_nim(key, **kw),
     "minimax": lambda key, **kw: check_minimax(key),
     # Kimi For Coding uses an Anthropic-compatible endpoint; check via /v1/messages
     # with empty messages (same as check_anthropic, triggers 400 not 401).
@@ -349,7 +476,15 @@ def main() -> None:
     model = sys.argv[4] if len(sys.argv) > 4 else ""
 
     try:
-        if provider_id == "openrouter" and model:
+        if provider_id == "nvidia_nim" and model:
+            result = check_nvidia_nim_model(
+                api_key,
+                model=model,
+                api_base=(api_base or NVIDIA_NIM_API_BASE),
+            )
+        elif provider_id == "nvidia_nim":
+            result = check_nvidia_nim(api_key, api_base=(api_base or NVIDIA_NIM_API_BASE))
+        elif provider_id == "openrouter" and model:
             result = check_openrouter_model(
                 api_key,
                 model=model,

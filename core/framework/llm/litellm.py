@@ -164,6 +164,9 @@ RATE_LIMIT_BACKOFF_BASE = 2  # seconds
 RATE_LIMIT_MAX_DELAY = 120  # seconds - cap to prevent absurd waits
 MINIMAX_API_BASE = "https://api.minimax.io/v1"
 OPENROUTER_API_BASE = "https://openrouter.ai/api/v1"
+# NVIDIA NIM: hosted OpenAI-compatible catalogue (build.nvidia.com).  Self-hosted
+# NIM containers are supported by passing an explicit api_base.
+NVIDIA_NIM_API_BASE = "https://integrate.api.nvidia.com/v1"
 
 # Providers that accept cache_control on message content blocks.
 # Anthropic: native ephemeral caching. MiniMax & Z-AI/GLM: pass-through to their APIs.
@@ -465,6 +468,9 @@ class LiteLLMProvider(LLMProvider):
         # DeepSeek
         provider = LiteLLMProvider(model="deepseek/deepseek-chat")
 
+        # NVIDIA NIM (model IDs keep their vendor namespace)
+        provider = LiteLLMProvider(model="nvidia_nim/meta/llama-3.3-70b-instruct")
+
         # Local Ollama
         provider = LiteLLMProvider(model="ollama/llama3")
 
@@ -547,6 +553,8 @@ class LiteLLMProvider(LLMProvider):
             return MINIMAX_API_BASE
         if model_lower.startswith("openrouter/"):
             return OPENROUTER_API_BASE
+        if model_lower.startswith("nvidia_nim/"):
+            return NVIDIA_NIM_API_BASE
         if model_lower.startswith("kimi/"):
             return KIMI_API_BASE
         if model_lower.startswith("teamagents/"):

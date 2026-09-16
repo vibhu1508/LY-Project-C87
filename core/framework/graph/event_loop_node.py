@@ -113,6 +113,125 @@ _CONTEXT_TOO_LARGE_RE = re.compile(
 )
 
 
+def _iter_json_objects(text: str):
+    """Yield every top-level ``{...}`` span in *text* that parses as a JSON object.
+
+    Scans with string-awareness so braces inside question text (or escaped
+    quotes) don't split a payload. Yields in the order they appear.
+    """
+    depth = 0
+    start = -1
+    in_string = False
+    escaped = False
+    for idx, char in enumerate(text):
+        if in_string:
+            if escaped:
+                escaped = False
+            elif char == "\\":
+                escaped = True
+            elif char == '"':
+                in_string = False
+            continue
+        if char == '"':
+            in_string = True
+        elif char == "{":
+            if depth == 0:
+                start = idx
+            depth += 1
+        elif char == "}":
+            if depth == 0:
+                continue
+            depth -= 1
+            if depth == 0 and start >= 0:
+                try:
+                    payload = json.loads(text[start : idx + 1])
+                except ValueError:
+                    continue
+                if isinstance(payload, dict):
+                    yield payload
+
+
+def _recover_ask_user_from_text(text: str) -> tuple[str, list[str] | None] | None:
+    """Recover an ask_user payload a model emitted as text instead of calling the tool.
+
+    Weaker models sometimes copy the ask_user example out of the tool description
+    into their visible answer, e.g.::
+
+        What would you like to do next?
+
+        {"question": "Choose the next step:", "options": ["A", "B", "C"]}
+
+    The turn then carries no tool call, so the client-facing auto-block would ask
+    for input with an empty prompt and the UI would render no choices. Parsing the
+    payload back out keeps the question and its options intact.
+
+    Returns (question, options) or None when the text holds no such payload.
+    The last matching payload wins — models put it after their prose.
+    """
+    if not text or '"question"' not in text:
+        return None
+
+    recovered: tuple[str, list[str] | None] | None = None
+    for payload in _iter_json_objects(text):
+        question = payload.get("question")
+        if not isinstance(question, str) or not question.strip():
+            continue
+        raw_options = payload.get("options")
+        options: list[str] | None = None
+        if isinstance(raw_options, list):
+            options = [
+                opt.strip() for opt in raw_options if isinstance(opt, str) and opt.strip()
+            ] or None
+        recovered = (question.strip(), options)
+    return recovered
+
+
+def _recover_ask_user_multiple_from_text(text: str) -> list[dict] | None:
+    """Recover an ask_user_multiple batch emitted as text instead of a tool call.
+
+    Mirrors the shape the native tool path produces::
+
+        {"questions": [{"id": "scope", "prompt": "What scope?", "options": [...]}, ...]}
+
+    Normalization matches the native handler: ids default to ``q<N>``, and an
+    options list shorter than 2 entries is dropped so the UI renders a free-text
+    field. Batches with fewer than 2 usable questions are rejected, as the native
+    handler rejects them.
+
+    Returns the normalized question list, or None when the text holds no batch.
+    """
+    if not text or '"questions"' not in text:
+        return None
+
+    recovered: list[dict] | None = None
+    for payload in _iter_json_objects(text):
+        raw_questions = payload.get("questions")
+        if not isinstance(raw_questions, list) or len(raw_questions) < 2:
+            continue
+        questions: list[dict] = []
+        for i, q in enumerate(raw_questions):
+            if not isinstance(q, dict):
+                continue
+            prompt = q.get("prompt")
+            if not isinstance(prompt, str) or not prompt.strip():
+                continue
+            qid = str(q.get("id", f"q{i + 1}"))
+            raw_opts = q.get("options")
+            opts: list[str] | None = None
+            if isinstance(raw_opts, list):
+                opts = [
+                    str(o).strip() for o in raw_opts if isinstance(o, str) and str(o).strip()
+                ]
+                if len(opts) < 2:
+                    opts = None
+            questions.append(
+                {"id": qid, "prompt": prompt.strip(), **({"options": opts} if opts else {})}
+            )
+        if len(questions) >= 2:
+            recovered = questions
+    return recovered
+
+
 def _is_context_too_large_error(exc: BaseException) -> bool:
     """Detect whether an exception indicates the LLM input was too large."""
     cls = type(exc).__name__
@@ -1416,6 +1535,32 @@ class EventLoopNode(NodeProtocol):
                     # and wait for user input.
                     _cf_block = True
                     _cf_auto = True
+                    # Some models answer with the ask_user / ask_user_multiple
+                    # payload as text rather than calling the tool.  Recover it
+                    # so the client still receives the questions and options.
+                    _recovered_multi = _recover_ask_user_multiple_from_text(assistant_text)
+                    if _recovered_multi:
+                        self._pending_multi_questions = _recovered_multi
+                        _cf_prompt = ""
+                        ask_user_options = None
+                        logger.info(
+                            "[%s] iter=%d: recovered ask_user_multiple batch from "
+                            "text (questions=%d)",
+                            node_id,
+                            iteration,
+                            len(_recovered_multi),
+                        )
+                    else:
+                        _recovered = _recover_ask_user_from_text(assistant_text)
+                        if _recovered:
+                            _cf_prompt, ask_user_options = _recovered
+                            logger.info(
+                                "[%s] iter=%d: recovered ask_user payload from text "
+                                "(options=%d)",
+                                node_id,
+                                iteration,
+                                len(ask_user_options or []),
+                            )
 
             if _cf_block:
                 # Auto-block grace: when required outputs are still

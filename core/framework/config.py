@@ -29,8 +29,33 @@ TEAMAGENTS_LLM_ENDPOINT = "https://api.adenhq.com"
 HIVE_LLM_ENDPOINT = TEAMAGENTS_LLM_ENDPOINT
 logger = logging.getLogger(__name__)
 
-ALLOWED_LLM_PROVIDERS = frozenset({"gemini", "groq", "openrouter", "ollama"})
+ALLOWED_LLM_PROVIDERS = frozenset({"gemini", "groq", "openrouter", "ollama", "nvidia_nim"})
+ALLOWED_LLM_PROVIDERS_LABEL = "Gemini, Groq, OpenRouter, Ollama, and NVIDIA NIM"
 DEFAULT_ALLOWED_MODEL = "gemini/gemini-3-flash-preview"
+
+# Providers whose model IDs are pasted raw by the user (they already contain a
+# vendor namespace, e.g. "meta/llama-3.3-70b-instruct"), so a pasted
+# "<provider>/<id>" needs the redundant provider prefix stripped before we
+# rebuild the litellm model string.
+_PROVIDER_MODEL_PREFIXES = ("openrouter", "nvidia_nim")
+
+
+def _strip_provider_prefix(provider: str, model: str) -> str:
+    """Drop a redundant leading '<provider>/' from a configured model ID."""
+    prefix = f"{provider.strip().lower()}/"
+    if provider.strip().lower() in _PROVIDER_MODEL_PREFIXES and model.lower().startswith(prefix):
+        return model[len(prefix) :]
+    return model
+
+
+def _default_api_base_for_provider(provider: str) -> str | None:
+    """Return the API base a provider needs when the config does not set one."""
+    normalized = provider.strip().lower()
+    if normalized == "openrouter":
+        return OPENROUTER_API_BASE
+    if normalized == "nvidia_nim":
+        return NVIDIA_NIM_API_BASE
+    return None
 
 
 def _get_allowed_llm_section(section: str) -> dict[str, Any]:
@@ -50,17 +75,19 @@ def _get_allowed_llm_section(section: str) -> dict[str, Any]:
         )
     ):
         logger.warning(
-            "Ignoring %s config: only Gemini, Groq, OpenRouter, and Ollama are allowed.",
+            "Ignoring %s config: only %s are allowed.",
             section,
+            ALLOWED_LLM_PROVIDERS_LABEL,
         )
         return {}
 
     provider = str(raw.get("provider", "")).strip().lower()
     if provider and provider not in ALLOWED_LLM_PROVIDERS:
         logger.warning(
-            "Ignoring %s provider '%s': only Gemini, Groq, OpenRouter, and Ollama are allowed.",
+            "Ignoring %s provider '%s': only %s are allowed.",
             section,
             provider,
+            ALLOWED_LLM_PROVIDERS_LABEL,
         )
         return {}
 
@@ -94,9 +121,8 @@ def get_preferred_model() -> str:
     if llm.get("provider") and llm.get("model"):
         provider = str(llm["provider"])
         model = str(llm["model"]).strip()
-        # OpenRouter quickstart stores raw model IDs; tolerate pasted "openrouter/<id>" too.
-        if provider.lower() == "openrouter" and model.lower().startswith("openrouter/"):
-            model = model[len("openrouter/") :]
+        # Quickstart stores raw model IDs; tolerate a pasted "<provider>/<id>" too.
+        model = _strip_provider_prefix(provider, model)
         if model:
             return f"{provider}/{model}"
     return DEFAULT_ALLOWED_MODEL
@@ -113,8 +139,7 @@ def get_preferred_worker_model() -> str | None:
     if worker_llm.get("provider") and worker_llm.get("model"):
         provider = str(worker_llm["provider"])
         model = str(worker_llm["model"]).strip()
-        if provider.lower() == "openrouter" and model.lower().startswith("openrouter/"):
-            model = model[len("openrouter/") :]
+        model = _strip_provider_prefix(provider, model)
         if model:
             return f"{provider}/{model}"
     return None
@@ -190,9 +215,7 @@ def get_worker_api_base() -> str | None:
         return None
     if worker_llm.get("api_base"):
         return worker_llm["api_base"]
-    if str(worker_llm.get("provider", "")).lower() == "openrouter":
-        return OPENROUTER_API_BASE
-    return None
+    return _default_api_base_for_provider(str(worker_llm.get("provider", "")))
 
 
 def get_worker_llm_extra_kwargs() -> dict[str, Any]:
@@ -253,6 +276,9 @@ def get_max_tokens() -> int:
 
 DEFAULT_MAX_CONTEXT_TOKENS = 32_000
 OPENROUTER_API_BASE = "https://openrouter.ai/api/v1"
+# NVIDIA NIM: hosted, OpenAI-compatible catalogue at build.nvidia.com.
+# Self-hosted NIM containers override this via llm.api_base in configuration.json.
+NVIDIA_NIM_API_BASE = "https://integrate.api.nvidia.com/v1"
 
 
 def get_max_context_tokens() -> int:
@@ -405,6 +431,17 @@ def get_antigravity_client_secret() -> str | None:
     return secret
 
 
+def get_integrations_enabled() -> bool:
+    """Return whether integration (credential) setup is offered when a run fails.
+
+    When False, a worker that needs credentials fails with a plain error instead
+    of emitting ``credentials_required`` — so the client never opens the
+    integrations dialog. Set ``"integrations_enabled": false`` in
+    ~/.teamagents/configuration.json to stop after code generation.
+    """
+    return bool(get_hive_config().get("integrations_enabled", True))
+
+
 def get_gcu_enabled() -> bool:
     """Return whether GCU (browser automation) is enabled in user config."""
     return get_hive_config().get("gcu_enabled", True)
@@ -432,9 +469,7 @@ def get_api_base() -> str | None:
         return None
     if llm.get("api_base"):
         return llm["api_base"]
-    if str(llm.get("provider", "")).lower() == "openrouter":
-        return OPENROUTER_API_BASE
-    return None
+    return _default_api_base_for_provider(str(llm.get("provider", "")))
 
 
 def get_llm_extra_kwargs() -> dict[str, Any]:

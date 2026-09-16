@@ -727,6 +727,32 @@ def _dissolve_planning_nodes(
     return converted, flowchart_map
 
 
+
+def _integrations_unavailable(stage: str, agent_path: str = "") -> dict | None:
+    """Return a stop-here error when integration setup is switched off.
+
+    With ``integrations_enabled: false`` the lifecycle ends at validation: the
+    agent is generated and validated, but loading, credential setup and running
+    are all refused. Returns None when integrations are enabled, so the normal
+    flow proceeds untouched.
+    """
+    from framework.config import get_integrations_enabled
+
+    if get_integrations_enabled():
+        return None
+
+    return {
+        "error": "integrations_unavailable",
+        "stage": stage,
+        "agent_path": agent_path,
+        "message": (
+            "Code generation and validation are complete, but this build cannot "
+            f"continue to the {stage} stage: the required integrations are not "
+            "available. Report this to the user and stop — do not retry, do not "
+            "request credentials, and do not attempt to run the agent."
+        ),
+    }
+
 def _update_meta_json(session_manager, manager_session_id, updates: dict) -> None:
     """Merge updates into the queen session's meta.json."""
     if session_manager is None or not manager_session_id:
@@ -812,6 +838,10 @@ def register_queen_lifecycle_tools(
         Triggers the worker's default entry point with the given task.
         Returns immediately — the worker runs asynchronously.
         """
+        _blocked = _integrations_unavailable("run")
+        if _blocked is not None:
+            return json.dumps(_blocked)
+
         runtime = _get_runtime()
         if runtime is None:
             return json.dumps({"error": "No worker loaded in this session."})
@@ -886,10 +916,12 @@ def register_queen_lifecycle_tools(
                 }
             )
         except CredentialError as e:
+            _agent_path = str(getattr(session, "worker_path", "") or "")
+
             # Build structured error with per-credential details so the
             # queen can report exactly what's missing and how to fix it.
             error_payload = credential_errors_to_json(e)
-            error_payload["agent_path"] = str(getattr(session, "worker_path", "") or "")
+            error_payload["agent_path"] = _agent_path
 
             # Emit SSE event so the frontend opens the credentials modal
             bus = getattr(session, "event_bus", None)
@@ -3395,6 +3427,10 @@ def register_queen_lifecycle_tools(
             available immediately. The user will see the agent's graph and
             can interact with it without opening a new tab.
             """
+            _blocked = _integrations_unavailable("staging", agent_path)
+            if _blocked is not None:
+                return json.dumps(_blocked)
+
             runtime = _get_runtime()
             if runtime is not None:
                 try:
@@ -3599,6 +3635,10 @@ def register_queen_lifecycle_tools(
         Performs preflight checks (credentials, MCP resync), triggers the
         worker's default entry point, and switches to running phase.
         """
+        _blocked = _integrations_unavailable("run")
+        if _blocked is not None:
+            return json.dumps(_blocked)
+
         runtime = _get_runtime()
         if runtime is None:
             return json.dumps({"error": "No worker loaded in this session."})
@@ -3673,8 +3713,10 @@ def register_queen_lifecycle_tools(
                 }
             )
         except CredentialError as e:
+            _agent_path = str(getattr(session, "worker_path", "") or "")
+
             error_payload = credential_errors_to_json(e)
-            error_payload["agent_path"] = str(getattr(session, "worker_path", "") or "")
+            error_payload["agent_path"] = _agent_path
 
             bus = getattr(session, "event_bus", None)
             if bus is not None:

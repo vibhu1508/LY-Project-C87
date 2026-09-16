@@ -40,7 +40,8 @@ def _get_api_key():
         os.environ.get("ANTHROPIC_API_KEY") or
         os.environ.get("CEREBRAS_API_KEY") or
         os.environ.get("GROQ_API_KEY") or
-        os.environ.get("GEMINI_API_KEY")
+        os.environ.get("GEMINI_API_KEY") or
+        os.environ.get("NVIDIA_NIM_API_KEY")
     )
 
 
@@ -88,7 +89,8 @@ def _get_api_key():
         os.environ.get("ANTHROPIC_API_KEY") or
         os.environ.get("CEREBRAS_API_KEY") or
         os.environ.get("GROQ_API_KEY") or
-        os.environ.get("GEMINI_API_KEY")
+        os.environ.get("GEMINI_API_KEY") or
+        os.environ.get("NVIDIA_NIM_API_KEY")
     )
 
 

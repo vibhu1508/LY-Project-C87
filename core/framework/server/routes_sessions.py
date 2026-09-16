@@ -88,6 +88,23 @@ def _credential_error_response(exc: Exception, agent_path: str | None) -> web.Re
     if not isinstance(exc, CredentialError):
         return None
 
+    from framework.config import get_integrations_enabled
+
+    if not get_integrations_enabled():
+        # Integrations switched off: a non-424 status keeps the client from
+        # opening its credentials dialog.
+        return web.json_response(
+            {
+                "error": "integrations_unavailable",
+                "message": (
+                    "The agent was generated but cannot run: required "
+                    "integrations are not available in this build."
+                ),
+                "agent_path": agent_path or "",
+            },
+            status=503,
+        )
+
     from framework.server.routes_credentials import _status_to_dict
 
     # Prefer the structured validation result attached to the exception

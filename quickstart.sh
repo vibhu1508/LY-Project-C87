@@ -79,11 +79,11 @@ prompt_choice() {
 
 clear
 echo ""
-echo -e "${YELLOW}⬢${NC}${DIM}⬡${NC}${YELLOW}⬢${NC}${DIM}⬡${NC}${YELLOW}⬢${NC}${DIM}⬡${NC}${YELLOW}⬢${NC}${DIM}⬡${NC}${YELLOW}⬢${NC}${DIM}⬡${NC}${YELLOW}⬢${NC}${DIM}⬡${NC}${YELLOW}⬢${NC}${DIM}⬡${NC}${YELLOW}⬢${NC}${DIM}⬡${NC}${YELLOW}⬢${NC}${DIM}⬡${NC}${YELLOW}⬢${NC}${DIM}⬡${NC}${YELLOW}⬢${NC}${DIM}⬡${NC}${YELLOW}⬢${NC}${DIM}⬡${NC}${YELLOW}⬢${NC}${DIM}⬡${NC}${YELLOW}⬢${NC}"
+echo -e "${GREEN}⬢${NC}${DIM}⬡${NC}${GREEN}⬢${NC}${DIM}⬡${NC}${GREEN}⬢${NC}${DIM}⬡${NC}${GREEN}⬢${NC}${DIM}⬡${NC}${GREEN}⬢${NC}${DIM}⬡${NC}${GREEN}⬢${NC}${DIM}⬡${NC}${GREEN}⬢${NC}${DIM}⬡${NC}${GREEN}⬢${NC}${DIM}⬡${NC}${GREEN}⬢${NC}${DIM}⬡${NC}${GREEN}⬢${NC}${DIM}⬡${NC}${GREEN}⬢${NC}${DIM}⬡${NC}${GREEN}⬢${NC}${DIM}⬡${NC}${GREEN}⬢${NC}${DIM}⬡${NC}${GREEN}⬢${NC}"
 echo ""
-echo -e "${BOLD}          A D E N   H I V E${NC}"
+echo -e "${BOLD}          T E A M   A G E N T S${NC}"
 echo ""
-echo -e "${YELLOW}⬢${NC}${DIM}⬡${NC}${YELLOW}⬢${NC}${DIM}⬡${NC}${YELLOW}⬢${NC}${DIM}⬡${NC}${YELLOW}⬢${NC}${DIM}⬡${NC}${YELLOW}⬢${NC}${DIM}⬡${NC}${YELLOW}⬢${NC}${DIM}⬡${NC}${YELLOW}⬢${NC}${DIM}⬡${NC}${YELLOW}⬢${NC}${DIM}⬡${NC}${YELLOW}⬢${NC}${DIM}⬡${NC}${YELLOW}⬢${NC}${DIM}⬡${NC}${YELLOW}⬢${NC}${DIM}⬡${NC}${YELLOW}⬢${NC}${DIM}⬡${NC}${YELLOW}⬢${NC}"
+echo -e "${GREEN}⬢${NC}${DIM}⬡${NC}${GREEN}⬢${NC}${DIM}⬡${NC}${GREEN}⬢${NC}${DIM}⬡${NC}${GREEN}⬢${NC}${DIM}⬡${NC}${GREEN}⬢${NC}${DIM}⬡${NC}${GREEN}⬢${NC}${DIM}⬡${NC}${GREEN}⬢${NC}${DIM}⬡${NC}${GREEN}⬢${NC}${DIM}⬡${NC}${GREEN}⬢${NC}${DIM}⬡${NC}${GREEN}⬢${NC}${DIM}⬡${NC}${GREEN}⬢${NC}${DIM}⬡${NC}${GREEN}⬢${NC}${DIM}⬡${NC}${GREEN}⬢${NC}"
 echo ""
 echo -e "${DIM}     Goal-driven AI agent framework${NC}"
 echo ""
@@ -103,7 +103,7 @@ echo ""
 # Step 1: Check Python
 # ============================================================
 
-echo -e "${YELLOW}⬢${NC} ${BLUE}${BOLD}Step 1: Checking Python...${NC}"
+echo -e "${GREEN}⬢${NC} ${BLUE}${BOLD}Step 1: Checking Python...${NC}"
 echo ""
 
 # Check for Python
@@ -153,7 +153,7 @@ echo ""
 
 # Check for uv (install automatically if missing)
 if ! command -v uv &> /dev/null; then
-    echo -e "${YELLOW}  uv not found. Installing...${NC}"
+    echo -e "${GREEN}  uv not found. Installing...${NC}"
     if ! command -v curl &> /dev/null; then
         echo -e "${RED}Error: curl is not installed (needed to install uv)${NC}"
         echo "Please install curl or install uv manually from https://astral.sh/uv/"
@@ -374,6 +374,7 @@ if [ "$USE_ASSOC_ARRAYS" = true ]; then
         ["GROQ_API_KEY"]="Groq"
         ["CEREBRAS_API_KEY"]="Cerebras"
         ["OPENROUTER_API_KEY"]="OpenRouter"
+        ["NVIDIA_NIM_API_KEY"]="NVIDIA NIM"
         ["MISTRAL_API_KEY"]="Mistral"
         ["TOGETHER_API_KEY"]="Together AI"
         ["DEEPSEEK_API_KEY"]="DeepSeek"
@@ -388,6 +389,7 @@ if [ "$USE_ASSOC_ARRAYS" = true ]; then
         ["GROQ_API_KEY"]="groq"
         ["CEREBRAS_API_KEY"]="cerebras"
         ["OPENROUTER_API_KEY"]="openrouter"
+        ["NVIDIA_NIM_API_KEY"]="nvidia_nim"
         ["MISTRAL_API_KEY"]="mistral"
         ["TOGETHER_API_KEY"]="together"
         ["DEEPSEEK_API_KEY"]="deepseek"
@@ -400,6 +402,7 @@ if [ "$USE_ASSOC_ARRAYS" = true ]; then
         ["gemini"]="gemini-3-flash-preview"
         ["groq"]="moonshotai/kimi-k2-instruct-0905"
         ["cerebras"]="zai-glm-4.7"
+        ["nvidia_nim"]="nvidia/nemotron-3-super-120b-a12b"
         ["mistral"]="mistral-large-latest"
         ["together_ai"]="meta-llama/Llama-3.3-70B-Instruct-Turbo"
         ["deepseek"]="deepseek-chat"
@@ -511,13 +514,13 @@ if [ "$USE_ASSOC_ARRAYS" = true ]; then
     }
 else
     # Bash 3.2 - use parallel indexed arrays
-    PROVIDER_ENV_VARS=(ANTHROPIC_API_KEY OPENAI_API_KEY MINIMAX_API_KEY GEMINI_API_KEY GOOGLE_API_KEY GROQ_API_KEY CEREBRAS_API_KEY OPENROUTER_API_KEY MISTRAL_API_KEY TOGETHER_API_KEY DEEPSEEK_API_KEY)
-    PROVIDER_DISPLAY_NAMES=("Anthropic (Claude)" "OpenAI (GPT)" "MiniMax" "Google Gemini" "Google AI" "Groq" "Cerebras" "OpenRouter" "Mistral" "Together AI" "DeepSeek")
-    PROVIDER_ID_LIST=(anthropic openai minimax gemini google groq cerebras openrouter mistral together deepseek)
+    PROVIDER_ENV_VARS=(ANTHROPIC_API_KEY OPENAI_API_KEY MINIMAX_API_KEY GEMINI_API_KEY GOOGLE_API_KEY GROQ_API_KEY CEREBRAS_API_KEY OPENROUTER_API_KEY NVIDIA_NIM_API_KEY MISTRAL_API_KEY TOGETHER_API_KEY DEEPSEEK_API_KEY)
+    PROVIDER_DISPLAY_NAMES=("Anthropic (Claude)" "OpenAI (GPT)" "MiniMax" "Google Gemini" "Google AI" "Groq" "Cerebras" "OpenRouter" "NVIDIA NIM" "Mistral" "Together AI" "DeepSeek")
+    PROVIDER_ID_LIST=(anthropic openai minimax gemini google groq cerebras openrouter nvidia_nim mistral together deepseek)
 
     # Default models by provider id (parallel arrays)
-    MODEL_PROVIDER_IDS=(anthropic openai minimax gemini groq cerebras mistral together_ai deepseek)
-    MODEL_DEFAULTS=("claude-haiku-4-5-20251001" "gpt-5-mini" "MiniMax-M2.5" "gemini-3-flash-preview" "moonshotai/kimi-k2-instruct-0905" "zai-glm-4.7" "mistral-large-latest" "meta-llama/Llama-3.3-70B-Instruct-Turbo" "deepseek-chat")
+    MODEL_PROVIDER_IDS=(anthropic openai minimax gemini groq cerebras nvidia_nim mistral together_ai deepseek)
+    MODEL_DEFAULTS=("claude-haiku-4-5-20251001" "gpt-5-mini" "MiniMax-M2.5" "gemini-3-flash-preview" "moonshotai/kimi-k2-instruct-0905" "zai-glm-4.7" "nvidia/nemotron-3-super-120b-a12b" "mistral-large-latest" "meta-llama/Llama-3.3-70B-Instruct-Turbo" "deepseek-chat")
 
     # Helper: get provider display name for an env var
     get_provider_name() {
@@ -705,10 +708,120 @@ normalize_openrouter_model_id() {
     printf '%s' "$raw"
 }
 
+# Normalize user-pasted NVIDIA NIM model IDs:
+# - trim whitespace
+# - strip a redundant leading "nvidia_nim/" (the vendor namespace, e.g. "meta/",
+#   is part of the NIM model id and must be preserved)
+normalize_nvidia_nim_model_id() {
+    local raw="$1"
+    raw="${raw#"${raw%%[![:space:]]*}"}"
+    raw="${raw%"${raw##*[![:space:]]}"}"
+    if [[ "$raw" =~ ^[Nn][Vv][Ii][Dd][Ii][Aa]_[Nn][Ii][Mm]/(.+)$ ]]; then
+        raw="${BASH_REMATCH[1]}"
+    fi
+    printf '%s' "$raw"
+}
+
 # Prompt the user to choose a model for their selected provider.
 # Sets SELECTED_MODEL, SELECTED_MAX_TOKENS, and SELECTED_MAX_CONTEXT_TOKENS.
 prompt_model_selection() {
     local provider_id="$1"
+
+    if [ "$provider_id" = "ollama" ]; then
+        local default_model="llama3.2:3b"
+        if [ -n "$PREV_MODEL" ] && [ "$provider_id" = "$PREV_PROVIDER" ]; then
+            default_model="$PREV_MODEL"
+        fi
+        echo ""
+        echo -e "${BOLD}Enter your Ollama model id:${NC}"
+        echo -e "  ${DIM}Pull it first with 'ollama pull <model>'${NC}"
+        echo -e "  ${YELLOW}The Master Agent needs a capable model (32B-70B+) with native tool calling${NC}"
+        echo -e "  ${YELLOW}and a 128k+ context window (e.g. qwen2.5:32b). Smaller models will fail.${NC}"
+        echo ""
+        local input_model=""
+        while true; do
+            read -r -p "Model id [$default_model]: " input_model || true
+            input_model="${input_model:-$default_model}"
+            # Trim whitespace
+            input_model="${input_model#"${input_model%%[![:space:]]*}"}"
+            input_model="${input_model%"${input_model##*[![:space:]]}"}"
+            if [ -n "$input_model" ]; then
+                SELECTED_MODEL="$input_model"
+                SELECTED_MAX_TOKENS=8192
+                SELECTED_MAX_CONTEXT_TOKENS=120000
+                echo ""
+                echo -e "${GREEN}⬢${NC} Model: ${DIM}$SELECTED_MODEL${NC}"
+                return
+            fi
+            echo -e "${RED}Model id cannot be empty.${NC}"
+        done
+    fi
+
+    if [ "$provider_id" = "nvidia_nim" ]; then
+        local default_model="nvidia/nemotron-3-super-120b-a12b"
+        if [ -n "$PREV_MODEL" ] && [ "$provider_id" = "$PREV_PROVIDER" ]; then
+            default_model="$(normalize_nvidia_nim_model_id "$PREV_MODEL")"
+        fi
+        echo ""
+        echo -e "${BOLD}Enter your NVIDIA NIM model id:${NC}"
+        echo -e "  ${DIM}Copy the model id from build.nvidia.com (example: meta/llama-3.3-70b-instruct)${NC}"
+        echo -e "  ${DIM}Popular choices:${NC}"
+        echo -e "    ${DIM}nvidia/nemotron-3-super-120b-a12b     (most reliable tool use — recommended)${NC}"
+        echo -e "    ${DIM}openai/gpt-oss-120b                   (faster, weaker under long prompts)${NC}"
+        echo -e "    ${DIM}nvidia/nemotron-3.5-lightning-30b-a3b (smaller + fast)${NC}"
+        echo -e "    ${DIM}openai/gpt-oss-20b                    (smallest)${NC}"
+        echo ""
+        local input_model=""
+        while true; do
+            read -r -p "Model id [$default_model]: " input_model || true
+            input_model="${input_model:-$default_model}"
+            local normalized_model
+            normalized_model="$(normalize_nvidia_nim_model_id "$input_model")"
+            if [ -n "$normalized_model" ]; then
+                local nim_key=""
+                if [ -n "${SELECTED_ENV_VAR:-}" ]; then
+                    nim_key="${!SELECTED_ENV_VAR:-}"
+                fi
+
+                if [ -n "$nim_key" ]; then
+                    local model_hc_result=""
+                    local model_hc_valid=""
+                    local model_hc_msg=""
+                    local model_hc_canonical=""
+                    local model_hc_base="${SELECTED_API_BASE:-https://integrate.api.nvidia.com/v1}"
+                    echo -n "  Verifying model id... "
+                    model_hc_result="$(uv run python "$SCRIPT_DIR/scripts/check_llm_key.py" "nvidia_nim" "$nim_key" "$model_hc_base" "$normalized_model" 2>/dev/null)" || true
+                    model_hc_valid="$(echo "$model_hc_result" | $PYTHON_CMD -c "import json,sys; print(json.loads(sys.stdin.read()).get('valid',''))" 2>/dev/null)" || true
+                    model_hc_msg="$(echo "$model_hc_result" | $PYTHON_CMD -c "import json,sys; print(json.loads(sys.stdin.read()).get('message',''))" 2>/dev/null)" || true
+                    model_hc_canonical="$(echo "$model_hc_result" | $PYTHON_CMD -c "import json,sys; print(json.loads(sys.stdin.read()).get('model',''))" 2>/dev/null)" || true
+                    if [ "$model_hc_valid" = "True" ]; then
+                        if [ -n "$model_hc_canonical" ]; then
+                            normalized_model="$model_hc_canonical"
+                        fi
+                        echo -e "${GREEN}ok${NC}"
+                    elif [ "$model_hc_valid" = "False" ]; then
+                        echo -e "${RED}failed${NC}"
+                        echo -e "  ${YELLOW}⚠ $model_hc_msg${NC}"
+                        echo ""
+                        continue
+                    else
+                        echo -e "${YELLOW}--${NC}"
+                        echo -e "  ${DIM}Could not verify model id (network issue). Continuing with your selection.${NC}"
+                    fi
+                else
+                    echo -e "  ${DIM}Skipping model verification (NVIDIA NIM key not available in current shell).${NC}"
+                fi
+
+                SELECTED_MODEL="$normalized_model"
+                SELECTED_MAX_TOKENS=8192
+                SELECTED_MAX_CONTEXT_TOKENS=120000
+                echo ""
+                echo -e "${GREEN}⬢${NC} Model: ${DIM}$SELECTED_MODEL${NC}"
+                return
+            fi
+            echo -e "${RED}Model id cannot be empty.${NC}"
+        done
+    fi
 
     if [ "$provider_id" = "openrouter" ]; then
         local default_model=""
@@ -1100,103 +1213,44 @@ if [ -n "$PREV_SUB_MODE" ] || [ -n "$PREV_PROVIDER" ]; then
             ;;
     esac
 
-    if [ "$PREV_CRED_VALID" = true ]; then
-        case "$PREV_SUB_MODE" in
-            claude_code) DEFAULT_CHOICE=1 ;;
-            zai_code)    DEFAULT_CHOICE=2 ;;
-            codex)       DEFAULT_CHOICE=3 ;;
-            minimax_code) DEFAULT_CHOICE=4 ;;
-            kimi_code)   DEFAULT_CHOICE=5 ;;
-            hive_llm)    DEFAULT_CHOICE=6 ;;
-            antigravity) DEFAULT_CHOICE=7 ;;
+    # Only a previously saved *supported* provider can pre-fill the menu.
+    # A config using a subscription mode is not offered again — the framework
+    # would discard it.
+    if [ "$PREV_CRED_VALID" = true ] && [ -z "$PREV_SUB_MODE" ]; then
+        case "$PREV_PROVIDER" in
+            gemini)     DEFAULT_CHOICE=1 ;;
+            groq)       DEFAULT_CHOICE=2 ;;
+            openrouter) DEFAULT_CHOICE=3 ;;
+            nvidia_nim) DEFAULT_CHOICE=4 ;;
+            ollama)     DEFAULT_CHOICE=5 ;;
         esac
-        if [ -z "$DEFAULT_CHOICE" ]; then
-            case "$PREV_PROVIDER" in
-                anthropic) DEFAULT_CHOICE=8 ;;
-                openai)    DEFAULT_CHOICE=9 ;;
-                gemini)    DEFAULT_CHOICE=10 ;;
-                groq)      DEFAULT_CHOICE=11 ;;
-                cerebras)  DEFAULT_CHOICE=12 ;;
-                openrouter) DEFAULT_CHOICE=13 ;;
-                minimax)   DEFAULT_CHOICE=4 ;;
-                kimi)      DEFAULT_CHOICE=5 ;;
-                teamagents)      DEFAULT_CHOICE=6 ;;
-            esac
-        fi
     fi
 fi
 
 # ── Show unified provider selection menu ─────────────────────
+# Only providers in framework/config.py's ALLOWED_LLM_PROVIDERS are offered.
+# Anything else (subscription modes, Anthropic, OpenAI, Cerebras, ...) is
+# discarded at runtime by _get_allowed_llm_section(), which would leave the
+# user with a config that looks configured but silently falls back to the
+# default model. Menu numbers map to the internal case numbers below.
 echo -e "${BOLD}Select your default LLM provider:${NC}"
 echo ""
-echo -e "  ${CYAN}${BOLD}Subscription modes (no API key purchase needed):${NC}"
 
-# 1) Claude Code
-if [ "$CLAUDE_CRED_DETECTED" = true ]; then
-    echo -e "  ${CYAN}1)${NC} Claude Code Subscription  ${DIM}(use your Claude Max/Pro plan)${NC}  ${GREEN}(credential detected)${NC}"
-else
-    echo -e "  ${CYAN}1)${NC} Claude Code Subscription  ${DIM}(use your Claude Max/Pro plan)${NC}"
-fi
-
-# 2) ZAI Code
-if [ "$ZAI_CRED_DETECTED" = true ]; then
-    echo -e "  ${CYAN}2)${NC} ZAI Code Subscription     ${DIM}(use your ZAI Code plan)${NC}  ${GREEN}(credential detected)${NC}"
-else
-    echo -e "  ${CYAN}2)${NC} ZAI Code Subscription     ${DIM}(use your ZAI Code plan)${NC}"
-fi
-
-# 3) Codex
-if [ "$CODEX_CRED_DETECTED" = true ]; then
-    echo -e "  ${CYAN}3)${NC} OpenAI Codex Subscription  ${DIM}(use your Codex/ChatGPT Plus plan)${NC}  ${GREEN}(credential detected)${NC}"
-else
-    echo -e "  ${CYAN}3)${NC} OpenAI Codex Subscription  ${DIM}(use your Codex/ChatGPT Plus plan)${NC}"
-fi
-
-# 4) MiniMax
-if [ "$MINIMAX_CRED_DETECTED" = true ]; then
-    echo -e "  ${CYAN}4)${NC} MiniMax Coding Key         ${DIM}(use your MiniMax coding key)${NC}  ${GREEN}(credential detected)${NC}"
-else
-    echo -e "  ${CYAN}4)${NC} MiniMax Coding Key         ${DIM}(use your MiniMax coding key)${NC}"
-fi
-
-# 5) Kimi Code
-if [ "$KIMI_CRED_DETECTED" = true ]; then
-    echo -e "  ${CYAN}5)${NC} Kimi Code Subscription     ${DIM}(use your Kimi Code plan)${NC}  ${GREEN}(credential detected)${NC}"
-else
-    echo -e "  ${CYAN}5)${NC} Kimi Code Subscription     ${DIM}(use your Kimi Code plan)${NC}"
-fi
-
-# 6) TeamAgents LLM
-if [ "$HIVE_CRED_DETECTED" = true ]; then
-    echo -e "  ${CYAN}6)${NC} TeamAgents LLM                   ${DIM}(use your TeamAgents API key)${NC}  ${GREEN}(credential detected)${NC}"
-else
-    echo -e "  ${CYAN}6)${NC} TeamAgents LLM                   ${DIM}(use your TeamAgents API key)${NC}"
-fi
-
-# 7) Antigravity
-if [ "$ANTIGRAVITY_CRED_DETECTED" = true ]; then
-    echo -e "  ${CYAN}7)${NC} Antigravity Subscription  ${DIM}(use your Google/Gemini plan)${NC}  ${GREEN}(credential detected)${NC}"
-else
-    echo -e "  ${CYAN}7)${NC} Antigravity Subscription  ${DIM}(use your Google/Gemini plan)${NC}"
-fi
-
-echo ""
-echo -e "  ${CYAN}${BOLD}API key providers:${NC}"
-
-# 8-13) API key providers — show (credential detected) if key already set
-PROVIDER_MENU_ENVS=(ANTHROPIC_API_KEY OPENAI_API_KEY GEMINI_API_KEY GROQ_API_KEY CEREBRAS_API_KEY OPENROUTER_API_KEY)
-PROVIDER_MENU_NAMES=("Anthropic (Claude) - Recommended" "OpenAI (GPT)" "Google Gemini - Free tier available" "Groq - Fast, free tier" "Cerebras - Fast, free tier" "OpenRouter - Bring any OpenRouter model")
+PROVIDER_MENU_ENVS=(GEMINI_API_KEY GROQ_API_KEY OPENROUTER_API_KEY NVIDIA_NIM_API_KEY OLLAMA_HOST)
+PROVIDER_MENU_NAMES=("Google Gemini - Free tier available" "Groq - Fast, free tier" "OpenRouter - Bring any OpenRouter model" "NVIDIA NIM - Bring any build.nvidia.com model" "Ollama - Local, no API key (needs a 32B+ tool-calling model)")
+PROVIDER_MENU_INTERNAL=(10 11 13 14 15)
 for idx in "${!PROVIDER_MENU_ENVS[@]}"; do
-    num=$((idx + 8))
+    num=$((idx + 1))
     env_var="${PROVIDER_MENU_ENVS[$idx]}"
-    if [ -n "${!env_var}" ]; then
+    if [ -n "${!env_var:-}" ]; then
         echo -e "  ${CYAN}$num)${NC} ${PROVIDER_MENU_NAMES[$idx]}  ${GREEN}(credential detected)${NC}"
     else
         echo -e "  ${CYAN}$num)${NC} ${PROVIDER_MENU_NAMES[$idx]}"
     fi
 done
 
-SKIP_CHOICE=$((8 + ${#PROVIDER_MENU_ENVS[@]}))
+SKIP_CHOICE=$(( ${#PROVIDER_MENU_ENVS[@]} + 1 ))
+echo -e "  ${CYAN}$SKIP_CHOICE)${NC} Skip for now"
 echo -e "  ${CYAN}$SKIP_CHOICE)${NC} Skip for now"
 echo ""
 
@@ -1217,6 +1271,11 @@ while true; do
     fi
     echo -e "${RED}Invalid choice. Please enter 1-$SKIP_CHOICE${NC}"
 done
+
+# Map the displayed menu number onto the internal case number.
+if [ "$choice" -lt "$SKIP_CHOICE" ]; then
+    choice="${PROVIDER_MENU_INTERNAL[$((choice - 1))]}"
+fi
 
 case $choice in
     1)
@@ -1414,6 +1473,26 @@ case $choice in
         PROVIDER_NAME="OpenRouter"
         SIGNUP_URL="https://openrouter.ai/keys"
         ;;
+    14)
+        SELECTED_ENV_VAR="NVIDIA_NIM_API_KEY"
+        SELECTED_PROVIDER_ID="nvidia_nim"
+        SELECTED_API_BASE="https://integrate.api.nvidia.com/v1"
+        PROVIDER_NAME="NVIDIA NIM"
+        SIGNUP_URL="https://build.nvidia.com/settings/api-keys"
+        ;;
+    15)
+        # Ollama — local models, no API key needed.
+        SELECTED_ENV_VAR=""
+        SELECTED_PROVIDER_ID="ollama"
+        SELECTED_API_BASE="http://localhost:11434"
+        PROVIDER_NAME="Ollama"
+        if ! command -v ollama &> /dev/null; then
+            echo ""
+            echo -e "${YELLOW}  Ollama is not installed.${NC}"
+            echo -e "  Install it from ${CYAN}https://ollama.com/${NC}, pull a model, then run this script again."
+            echo ""
+        fi
+        ;;
     "$SKIP_CHOICE")
         echo ""
         echo -e "${YELLOW}Skipped.${NC} An LLM API key is required to test and use worker agents."
@@ -1582,7 +1661,7 @@ if [ -n "$SELECTED_PROVIDER_ID" ]; then
         save_configuration "$SELECTED_PROVIDER_ID" "$SELECTED_ENV_VAR" "$SELECTED_MODEL" "$SELECTED_MAX_TOKENS" "$SELECTED_MAX_CONTEXT_TOKENS" "" "$SELECTED_API_BASE" > /dev/null || SAVE_OK=false
     elif [ "$SUBSCRIPTION_MODE" = "hive_llm" ]; then
         save_configuration "$SELECTED_PROVIDER_ID" "$SELECTED_ENV_VAR" "$SELECTED_MODEL" "$SELECTED_MAX_TOKENS" "$SELECTED_MAX_CONTEXT_TOKENS" "" "$SELECTED_API_BASE" > /dev/null || SAVE_OK=false
-    elif [ "$SELECTED_PROVIDER_ID" = "openrouter" ]; then
+    elif [ "$SELECTED_PROVIDER_ID" = "ollama" ] || [ "$SELECTED_PROVIDER_ID" = "openrouter" ] || [ "$SELECTED_PROVIDER_ID" = "nvidia_nim" ]; then
         save_configuration "$SELECTED_PROVIDER_ID" "$SELECTED_ENV_VAR" "$SELECTED_MODEL" "$SELECTED_MAX_TOKENS" "$SELECTED_MAX_CONTEXT_TOKENS" "" "$SELECTED_API_BASE" > /dev/null || SAVE_OK=false
     else
         save_configuration "$SELECTED_PROVIDER_ID" "$SELECTED_ENV_VAR" "$SELECTED_MODEL" "$SELECTED_MAX_TOKENS" "$SELECTED_MAX_CONTEXT_TOKENS" > /dev/null || SAVE_OK=false
@@ -1794,7 +1873,7 @@ mkdir -p "$HOME/.local/bin"
 
 # Git Bash on Windows may materialize `ln -s` as a plain file copy.
 # Use a launcher shim there, but prefer a real symlink on Linux/macOS.
-HIVE_SCRIPT="$SCRIPT_DIR/teamagents"
+HIVE_SCRIPT="$SCRIPT_DIR/teamagents.sh"
 HIVE_LINK="$HOME/.local/bin/teamagents"
 HIVE_SCRIPT_ESCAPED=$(printf '%q' "$HIVE_SCRIPT")
 
@@ -1834,7 +1913,7 @@ clear
 echo ""
 echo -e "${GREEN}⬢${NC}${DIM}⬡${NC}${GREEN}⬢${NC}${DIM}⬡${NC}${GREEN}⬢${NC}${DIM}⬡${NC}${GREEN}⬢${NC}${DIM}⬡${NC}${GREEN}⬢${NC}${DIM}⬡${NC}${GREEN}⬢${NC}${DIM}⬡${NC}${GREEN}⬢${NC}${DIM}⬡${NC}${GREEN}⬢${NC}${DIM}⬡${NC}${GREEN}⬢${NC}${DIM}⬡${NC}${GREEN}⬢${NC}${DIM}⬡${NC}${GREEN}⬢${NC}${DIM}⬡${NC}${GREEN}⬢${NC}${DIM}⬡${NC}${GREEN}⬢${NC}"
 echo ""
-echo -e "${GREEN}${BOLD}        ADEN TEAMAGENTS — READY${NC}"
+echo -e "${GREEN}${BOLD}        TEAMAGENTS — READY${NC}"
 echo ""
 echo -e "${GREEN}⬢${NC}${DIM}⬡${NC}${GREEN}⬢${NC}${DIM}⬡${NC}${GREEN}⬢${NC}${DIM}⬡${NC}${GREEN}⬢${NC}${DIM}⬡${NC}${GREEN}⬢${NC}${DIM}⬡${NC}${GREEN}⬢${NC}${DIM}⬡${NC}${GREEN}⬢${NC}${DIM}⬡${NC}${GREEN}⬢${NC}${DIM}⬡${NC}${GREEN}⬢${NC}${DIM}⬡${NC}${GREEN}⬢${NC}${DIM}⬡${NC}${GREEN}⬢${NC}${DIM}⬡${NC}${GREEN}⬢${NC}${DIM}⬡${NC}${GREEN}⬢${NC}"
 echo ""
@@ -1859,6 +1938,12 @@ if [ -n "$SELECTED_PROVIDER_ID" ]; then
     elif [ "$SELECTED_PROVIDER_ID" = "openrouter" ]; then
         echo -e "  ${GREEN}⬢${NC} OpenRouter API Key → ${DIM}$SELECTED_MODEL${NC}"
         echo -e "  ${DIM}API: openrouter.ai/api/v1 (OpenAI-compatible)${NC}"
+    elif [ "$SELECTED_PROVIDER_ID" = "nvidia_nim" ]; then
+        echo -e "  ${GREEN}⬢${NC} NVIDIA NIM API Key → ${DIM}$SELECTED_MODEL${NC}"
+        echo -e "  ${DIM}API: integrate.api.nvidia.com/v1 (OpenAI-compatible)${NC}"
+    elif [ "$SELECTED_PROVIDER_ID" = "ollama" ]; then
+        echo -e "  ${GREEN}⬢${NC} Ollama (local) → ${DIM}$SELECTED_MODEL${NC}"
+        echo -e "  ${DIM}API: localhost:11434 (no API key needed)${NC}"
     else
         echo -e "  ${CYAN}$SELECTED_PROVIDER_ID${NC} → ${DIM}$SELECTED_MODEL${NC}"
     fi
@@ -1906,15 +1991,15 @@ if [ "$CODEX_AVAILABLE" = true ]; then
 fi
 
 echo -e "${DIM}API keys saved to ${CYAN}$SHELL_RC_FILE${NC}${DIM}. New terminals pick them up automatically.${NC}"
-echo -e "${DIM}Launch anytime from this project root with ${CYAN}./teamagents open${NC}${DIM}. Run ./quickstart.sh again to reconfigure.${NC}"
+echo -e "${DIM}Launch anytime with ${CYAN}teamagents open${NC}${DIM} (or ${CYAN}./teamagents.sh open${NC}${DIM} from this project root). Run ./quickstart.sh again to reconfigure.${NC}"
 echo ""
 
 if [ "$FRONTEND_BUILT" = true ]; then
     echo -e "${BOLD}Launching dashboard...${NC}"
     echo ""
-    "$SCRIPT_DIR/teamagents" open
+    "$SCRIPT_DIR/teamagents.sh" open
 else
     echo -e "${YELLOW}Frontend build was skipped or failed.${NC} Launch manually when ready:"
-    echo -e "     ${CYAN}./teamagents open${NC}"
+    echo -e "     ${CYAN}./teamagents.sh open${NC}"
     echo ""
 fi
