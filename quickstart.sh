@@ -1251,7 +1251,6 @@ done
 
 SKIP_CHOICE=$(( ${#PROVIDER_MENU_ENVS[@]} + 1 ))
 echo -e "  ${CYAN}$SKIP_CHOICE)${NC} Skip for now"
-echo -e "  ${CYAN}$SKIP_CHOICE)${NC} Skip for now"
 echo ""
 
 if [ -n "$DEFAULT_CHOICE" ]; then
