@@ -1,6 +1,8 @@
 import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { Hexagon, X } from "lucide-react";
+import { Hexagon, X, SlidersHorizontal } from "lucide-react";
+import { SlidingTabs } from "@/components/ui/sliding-tabs";
+import { useShowDetails } from "@/hooks/use-details-mode";
 import { sessionsApi } from "@/api/sessions";
 import { loadPersistedTabs, savePersistedTabs, TAB_STORAGE_KEY, type PersistedTabState } from "@/lib/tab-persistence";
 
@@ -86,54 +88,60 @@ export default function TopBar({ tabs: tabsProp, onTabClick, onCloseTab, canClos
     });
   }, [onCloseTab]);
 
-  return (
-    <div className="relative h-12 flex items-center justify-between px-5 border-b border-border/60 bg-card/50 backdrop-blur-sm flex-shrink-0">
-      <div className="flex items-center gap-3 min-w-0">
-        <button onClick={() => navigate("/")} className="flex items-center gap-2 hover:opacity-80 transition-opacity flex-shrink-0">
-          <Hexagon className="w-4 h-4 text-primary" />
-          <span className="text-sm font-semibold text-primary">TeamAgents</span>
-        </button>
+  const [showDetails, setShowDetails] = useShowDetails();
 
-        {tabs.length > 0 && (
-          <>
-            <span className="text-border text-xs flex-shrink-0">|</span>
-            <div className="flex items-center gap-0.5 min-w-0 overflow-x-auto scrollbar-hide">
-              {tabs.map((tab) => (
-                <button
-                  key={tab.agentType}
-                  onClick={() => handleTabClick(tab.agentType)}
-                  className={`group flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors whitespace-nowrap flex-shrink-0 ${
-                    tab.isActive
-                      ? "bg-primary/15 text-primary"
-                      : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-                  }`}
-                >
-                  {tab.hasRunning && (
+  return (
+    <div className="relative z-20 flex-shrink-0 px-4 pt-3 pb-1">
+      <div className="glass flex h-12 items-center justify-between gap-3 rounded-full px-3 pl-4">
+        <div className="flex items-center gap-3 min-w-0">
+          <button onClick={() => navigate("/")} className="flex items-center gap-2 hover:opacity-80 transition-opacity flex-shrink-0">
+            <Hexagon className="w-4 h-4 text-foreground" />
+            <span className="text-sm font-semibold tracking-tight text-foreground">TeamAgents</span>
+          </button>
+
+          {tabs.length > 0 && (
+            <>
+              <span className="h-4 w-px bg-white/15 flex-shrink-0" />
+              <SlidingTabs
+                tabs={tabs.map((tab) => ({
+                  id: tab.agentType,
+                  label: tab.label,
+                  active: tab.isActive,
+                  onClick: () => handleTabClick(tab.agentType),
+                  badge: tab.hasRunning ? (
                     <span className="relative flex h-1.5 w-1.5 flex-shrink-0">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-60" />
-                      <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-primary" />
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-60" />
+                      <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-white" />
                     </span>
-                  )}
-                  <span>{tab.label}</span>
-                  {showClose && (
+                  ) : undefined,
+                  trailing: showClose ? (
                     <X
                       className="w-3 h-3 opacity-0 group-hover:opacity-60 hover:!opacity-100 transition-opacity"
                       onClick={(e) => handleCloseTab(tab.agentType, e)}
                     />
-                  )}
-                </button>
-              ))}
-            </div>
-            {afterTabs}
-          </>
-        )}
-      </div>
+                  ) : undefined,
+                }))}
+              />
+              {afterTabs}
+            </>
+          )}
+        </div>
 
-      {children && (
         <div className="flex items-center gap-1 flex-shrink-0">
           {children}
+          <button
+            onClick={() => setShowDetails(!showDetails)}
+            aria-pressed={showDetails}
+            title="Show technical details (tool activity, logs, usage)"
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+              showDetails ? "bg-white/15 text-foreground" : "text-muted-foreground hover:text-foreground hover:bg-white/8"
+            }`}
+          >
+            <SlidersHorizontal className="w-3.5 h-3.5" />
+            Details
+          </button>
         </div>
-      )}
+      </div>
     </div>
   );
 }

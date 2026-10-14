@@ -7,17 +7,17 @@ import MarkdownContent from "@/components/MarkdownContent";
 // Shared helpers
 // ---------------------------------------------------------------------------
 
-const workerColor = "hsl(148,64%,46%)";
+const workerColor = "hsl(0,0%,46%)";
 
 const SUBAGENT_COLORS = [
-  "hsl(148,64%,46%)",
-  "hsl(140,56%,42%)",
-  "hsl(160,54%,40%)",
-  "hsl(132,48%,44%)",
-  "hsl(154,58%,38%)",
-  "hsl(145,46%,40%)",
-  "hsl(166,48%,42%)",
-  "hsl(138,52%,45%)",
+  "hsl(0,0%,46%)",
+  "hsl(0,0%,42%)",
+  "hsl(0,0%,40%)",
+  "hsl(0,0%,44%)",
+  "hsl(0,0%,38%)",
+  "hsl(0,0%,40%)",
+  "hsl(0,0%,42%)",
+  "hsl(0,0%,45%)",
 ];
 
 function colorForIndex(i: number): string {
@@ -70,7 +70,7 @@ function ToolOverlay({
     <div
       className="absolute inset-0 top-[22px] flex items-center justify-center transition-opacity duration-200 z-10"
       style={{
-        background: "rgba(8,8,14,0.82)",
+        background: "rgba(8,8,8,0.82)",
         opacity: visible ? 1 : 0,
         pointerEvents: visible ? "auto" : "none",
       }}
@@ -176,11 +176,11 @@ function MuxPane({
       {/* Title bar */}
       <div
         className="flex items-center gap-1.5 px-2 py-[3px] flex-shrink-0 cursor-pointer select-none"
-        style={{ background: "#0e0e16", borderBottom: "1px solid #1a1a2a" }}
+        style={{ background: "#0e0e0e", borderBottom: "1px solid #1a1a1a" }}
         onClick={onClickTitle}
       >
         {isFinished ? (
-          <span className="text-[8px] flex-shrink-0 leading-none" style={{ color: "#4a4" }}>&#10003;</span>
+          <span className="text-[8px] flex-shrink-0 leading-none" style={{ color: "#bbb" }}>&#10003;</span>
         ) : (
           <div
             className="w-[6px] h-[6px] rounded-full flex-shrink-0"
@@ -196,14 +196,14 @@ function MuxPane({
         </span>
         <div
           className="w-[36px] h-[3px] rounded-full overflow-hidden flex-shrink-0"
-          style={{ background: "#1a1a2a" }}
+          style={{ background: "#1a1a1a" }}
         >
           <div
             className="h-full rounded-full transition-all duration-500"
             style={{
               width: `${Math.min(pct, 100)}%`,
               backgroundColor:
-                pct >= 80 ? "hsl(0,65%,55%)" : pct >= 50 ? "hsl(35,90%,55%)" : color,
+                pct >= 80 ? "hsl(0,65%,55%)" : pct >= 50 ? "hsl(0,0%,55%)" : color,
             }}
           />
         </div>
@@ -217,7 +217,7 @@ function MuxPane({
         ref={bodyRef}
         onScroll={handleScroll}
         className="flex-1 min-h-0 overflow-y-auto px-2 py-1 text-[10px] leading-[1.7]"
-        style={{ background: "#08080e", color: "#555", fontFamily: "monospace" }}
+        style={{ background: "#080808", color: "#555", fontFamily: "monospace" }}
       >
         {latestContent ? (
           <div style={{ color: "#ccc" }}>
@@ -350,8 +350,8 @@ const ParallelSubagentBubble = memo(
           <div
             className="rounded-lg overflow-hidden"
             style={{
-              border: "2px solid #1a1a2a",
-              background: "#08080e",
+              border: "2px solid #1a1a1a",
+              background: "#080808",
             }}
           >
             {/* Grid */}

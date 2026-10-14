@@ -35,10 +35,10 @@ export function buildTriggerColors(): TriggerColorSet {
 }
 
 export const ACTIVE_TRIGGER_COLORS: TriggerColorSet = {
-  bg: "hsl(210,30%,18%)",
-  border: "hsl(210,50%,50%)",
-  text: "hsl(210,40%,75%)",
-  icon: "hsl(210,60%,65%)",
+  bg: "hsl(0,0%,18%)",
+  border: "hsl(0,0%,50%)",
+  text: "hsl(0,0%,75%)",
+  icon: "hsl(0,0%,65%)",
 };
 
 export const TRIGGER_ICONS: Record<string, string> = {

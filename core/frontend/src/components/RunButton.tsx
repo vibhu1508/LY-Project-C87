@@ -13,16 +13,16 @@ export const RunButton = memo(function RunButton({ runState, disabled, onRun, on
       disabled={runState === "deploying" || disabled}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-semibold transition-all duration-200 ${
+      className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold transition-all duration-200 ${
         showPause
-          ? "bg-amber-500/15 text-amber-400 border border-amber-500/40 hover:bg-amber-500/25 active:scale-95 cursor-pointer"
+          ? "bg-white/15 text-foreground border border-white/30 hover:bg-white/25 active:scale-95 cursor-pointer"
           : runState === "running"
-          ? "bg-green-500/15 text-green-400 border border-green-500/30 cursor-pointer"
+          ? "bg-white/10 text-foreground border border-white/20 cursor-pointer"
           : runState === "deploying"
-          ? "bg-primary/10 text-primary border border-primary/20 cursor-default"
+          ? "bg-white/10 text-foreground border border-white/15 cursor-default"
           : disabled
-          ? "bg-muted/30 text-muted-foreground/40 border border-border/20 cursor-not-allowed"
-          : "bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 hover:border-primary/40 active:scale-95"
+          ? "bg-white/5 text-muted-foreground/40 border border-white/10 cursor-not-allowed"
+          : "bg-white text-black border border-white hover:bg-white/90 active:scale-95"
       }`}
     >
       {runState === "deploying" ? (
@@ -34,7 +34,7 @@ export const RunButton = memo(function RunButton({ runState, disabled, onRun, on
       ) : (
         <Play className="w-3 h-3 fill-current" />
       )}
-      {runState === "deploying" ? "Deploying\u2026" : showPause ? "Pause" : runState === "running" ? "Running" : "Run"}
+      {runState === "deploying" ? "Starting\u2026" : showPause ? "Pause" : runState === "running" ? "Running" : "Run"}
     </button>
   );
 });

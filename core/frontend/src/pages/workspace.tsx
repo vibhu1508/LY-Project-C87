@@ -6,6 +6,9 @@ import type { GraphNode, NodeStatus } from "@/components/graph-types";
 import DraftGraph from "@/components/DraftGraph";
 import ChatPanel, { type ChatMessage } from "@/components/ChatPanel";
 import TopBar from "@/components/TopBar";
+import JourneyBar from "@/components/JourneyBar";
+import { hasActiveTrigger } from "@/lib/journey";
+import { useShowDetails } from "@/hooks/use-details-mode";
 import { TAB_STORAGE_KEY, loadPersistedTabs, savePersistedTabs, type PersistedTabState } from "@/lib/tab-persistence";
 import NodeDetailPanel from "@/components/NodeDetailPanel";
 import CredentialsModal, { type Credential, createFreshCredentials, cloneCredentials, allRequiredCredentialsMet, clearCredentialCache } from "@/components/CredentialsModal";
@@ -76,7 +79,7 @@ function TimerCountdown({ initialSeconds }: { initialSeconds: number }) {
     return () => clearInterval(id);
   }, []);
 
-  if (remaining <= 0) return <span className="text-amber-400/80">firing...</span>;
+  if (remaining <= 0) return <span className="text-foreground/80">firing...</span>;
   return <span>{formatCountdown(remaining)}</span>;
 }
 
@@ -176,7 +179,7 @@ setPos({
     <div
       ref={ref}
       style={{ position: "fixed", top: pos.top, left: pos.left, zIndex: 9999 }}
-      className="w-60 rounded-xl border border-border/60 bg-card shadow-xl shadow-black/30 overflow-hidden"
+      className="w-60 glass-strong rounded-2xl overflow-hidden"
     >
       <div className="flex items-center gap-2 px-3 py-2.5 border-b border-border/40">
         {step !== "root" && (
@@ -188,7 +191,7 @@ setPos({
           </button>
         )}
         <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-          {step === "root" ? "Add Tab" : step === "new-agent-choice" ? "New Child Agent" : "Open Agent"}
+          {step === "root" ? "New tab" : step === "new-agent-choice" ? "New agent" : "Open an agent"}
         </span>
       </div>
 
@@ -218,7 +221,7 @@ setPos({
               <span className={iconWrap}><Sparkles className="w-3.5 h-3.5 text-primary" /></span>
               <div>
                 <div className="font-medium leading-tight">From scratch</div>
-                <div className="text-xs text-muted-foreground mt-0.5">Empty pipeline + Master Agent setup</div>
+                <div className="text-xs text-muted-foreground mt-0.5">Start from an empty idea</div>
               </div>
             </button>
             <button className={optionClass} onClick={() => setStep("clone-pick")}>
@@ -492,7 +495,7 @@ export default function Workspace() {
     // coming from home, so the new tab won't overwrite existing ones.
     if (initialPrompt && hasExplicitAgent) {
       const rawLabel = initialAgent.startsWith("new-agent")
-        ? "New Child Agent"
+        ? "New agent"
         : formatAgentDisplayName(initialAgent);
       const existingNewAgentCount = Object.keys(initial).filter(
         k => (k === "new-agent" || k.startsWith("new-agent-")) && (initial[k] || []).length > 0
@@ -507,7 +510,7 @@ export default function Workspace() {
     // If ?session= was passed we intentionally do NOT create a tab here —
     // handleHistoryOpen is called post-mount and does proper dedup.
     if (initialAgent === "new-agent") {
-      const s = createSession("new-agent", "New Child Agent");
+      const s = createSession("new-agent", "New agent");
       initial["new-agent"] = [...(initial["new-agent"] || []), s];
     } else if (!initialSessionId) {
       // Only auto-create an agent tab if there's no session to restore
@@ -590,6 +593,10 @@ export default function Workspace() {
   const initialAgentRef = useRef(initialAgent);
   const mountedRef = useRef(false);
   const [credentialsOpen, setCredentialsOpen] = useState(false);
+  const [showDetails] = useShowDetails();
+  // Bumped whenever the credentials modal closes/saves so the journey bar re-checks what is missing.
+  const [credentialsRefreshKey, setCredentialsRefreshKey] = useState(0);
+  const openCredentialsFromJourney = useCallback(() => setCredentialsOpen(true), []);
   // Explicit agent path for the credentials modal — set from 424 responses
   // when activeWorker doesn't match the actual agent (e.g. "new-agent" tab).
   const [credentialAgentPath, setCredentialAgentPath] = useState<string | null>(null);
@@ -2328,7 +2335,7 @@ export default function Workspace() {
           // The draft dict is published directly as event.data (not nested under a key)
           const draft = event.data as unknown as DraftGraphData | undefined;
           if (draft?.nodes) {
-            // Ensure the "Designing flowchart…" spinner stays visible for a
+            // Ensure the "Drawing your plan…" spinner stays visible for a
             // minimum duration so users see feedback before the draft appears.
             const MIN_SPINNER_MS = 600;
             const since = designingDraftSinceRef.current[agentType] || 0;
@@ -2690,7 +2697,7 @@ export default function Workspace() {
       };
       const promptMsg: ChatMessage = {
         id: makeId(), agent: "Master Agent", agentColor: "",
-        content: "Before we get started, you'll need to configure your credentials. Click the **Credentials** button in the top bar to connect the required integrations for this agent.",
+        content: "Before we get started, you'll need to configure your credentials. Click the **Accounts** button in the top bar to connect the required integrations for this agent.",
         timestamp: "", role: "queen" as const, thread, createdAt: Date.now(),
       };
       setSessionsByAgent(prev => ({
@@ -3027,7 +3034,7 @@ export default function Workspace() {
           k => (k === "new-agent" || k.startsWith("new-agent-")) && (sessionsByAgent[k] || []).length > 0
         ).length
       : 0;
-    const rawLabel = agentLabel || (isNewAgent ? "New Child Agent" : formatAgentDisplayName(agentType));
+    const rawLabel = agentLabel || (isNewAgent ? "New agent" : formatAgentDisplayName(agentType));
     const displayLabel = existingNewAgentCount === 0 ? rawLabel : `${rawLabel} #${existingNewAgentCount + 1}`;
     const newSession = createSession(tabKey, displayLabel);
 
@@ -3078,7 +3085,7 @@ export default function Workspace() {
     ).length;
     const rawLabel = agentName ||
       (agentPath ? agentPath.replace(/\/$/, "").split("/").pop()?.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase()) || agentPath : null) ||
-      "New Child Agent";
+      "New agent";
     const label = existingTabCount === 0 ? rawLabel : `${rawLabel} #${existingTabCount + 1}`;
     const newSession = createSession(resolvedAgentType, label);
     newSession.backendSessionId = sessionId;
@@ -3132,7 +3139,7 @@ export default function Workspace() {
   const activeWorkerLabel = activeAgentState?.displayName || formatAgentDisplayName(baseAgentType(activeWorker));
 
   return (
-    <div className="flex flex-col h-screen bg-background overflow-hidden">
+    <div className="flex flex-col h-screen overflow-hidden">
       <TopBar
         tabs={agentTabs}
         onTabClick={(agentType) => {
@@ -3149,8 +3156,8 @@ export default function Workspace() {
             <button
               ref={newTabBtnRef}
               onClick={() => setNewTabOpen(o => !o)}
-              className="flex-shrink-0 p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
-              title="Add tab"
+              className="flex-shrink-0 p-1.5 rounded-full text-muted-foreground hover:text-foreground hover:bg-white/10 transition-colors"
+              title="New agent"
             >
               <Plus className="w-3.5 h-3.5" />
             </button>
@@ -3168,15 +3175,15 @@ export default function Workspace() {
       >
         <button
           onClick={() => setCredentialsOpen(true)}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors flex-shrink-0"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-white/8 transition-colors flex-shrink-0"
         >
           <KeyRound className="w-3.5 h-3.5" />
-          Credentials
+          Accounts
         </button>
-        {activeAgentState?.sessionId && (
+        {showDetails && activeAgentState?.sessionId && (
           <button
             onClick={() => sessionsApi.revealFolder(activeAgentState.sessionId!).catch(() => {})}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors flex-shrink-0"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-white/8 transition-colors flex-shrink-0"
             title="Open session data folder"
           >
             <FolderOpen className="w-3.5 h-3.5" />
@@ -3186,11 +3193,11 @@ export default function Workspace() {
       </TopBar>
 
       {/* Main content area */}
-      <div className="flex flex-1 min-h-0">
+      <div className="flex flex-1 min-h-0 gap-3 p-3">
 
         {/* ── Draft flowchart + chat ─────────────────────────────────── */}
         <div
-          className="bg-card/30 flex flex-col border-r border-border/30 relative"
+          className="glass rounded-3xl overflow-hidden flex flex-col relative"
           style={{ width: `${graphPanelPct}%`, minWidth: 240, flexShrink: 0 }}
         >
           <div className="flex-1 min-h-0">
@@ -3200,9 +3207,9 @@ export default function Workspace() {
               originalDraft={activeAgentState?.originalDraft ?? null}
               loadingMessage={
                 activeAgentState?.designingDraft
-                  ? "Designing flowchart…"
+                  ? "Drawing your plan…"
                   : !activeAgentState?.originalDraft && !activeAgentState?.draftGraph && activeAgentState?.queenPhase !== "planning"
-                    ? "Loading flowchart…"
+                    ? "Loading your plan…"
                     : null
               }
               building={activeAgentState?.queenBuilding}
@@ -3219,53 +3226,55 @@ export default function Workspace() {
           </div>
           {/* Resize handle */}
           <div
-            className="absolute top-0 right-0 w-1 h-full cursor-col-resize hover:bg-primary/30 active:bg-primary/40 transition-colors z-10"
+            className="absolute top-0 right-0 w-1 h-full cursor-col-resize hover:bg-white/25 active:bg-white/35 transition-colors z-10"
             onMouseDown={() => { resizing.current = true; document.body.style.cursor = "col-resize"; }}
           />
         </div>
-        <div className="flex-1 min-w-0 flex">
-          <div className="flex-1 min-w-0 relative">
+        <div className="flex-1 min-w-0 flex gap-3">
+          <div className="flex-1 min-w-0 relative flex flex-col glass rounded-3xl overflow-hidden">
             {/* Loading overlay */}
             {activeAgentState?.loading && (
-              <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/60 backdrop-blur-sm">
+              <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/50 backdrop-blur-md">
                 <div className="flex items-center gap-3 text-muted-foreground">
                   <Loader2 className="w-5 h-5 animate-spin" />
-                  <span className="text-sm">Connecting to agent...</span>
+                  <span className="text-sm">Getting things ready…</span>
                 </div>
               </div>
             )}
 
             {/* Queen connecting overlay — agent loaded but queen not yet alive */}
             {!activeAgentState?.loading && activeAgentState?.ready && !activeAgentState?.queenReady && (
-              <div className="absolute top-0 left-0 right-0 z-10 px-4 py-2 bg-background border-b border-primary/20 flex items-center gap-2">
-                <Loader2 className="w-3.5 h-3.5 animate-spin text-primary/60" />
-                <span className="text-xs text-primary/80">Connecting to Master Agent...</span>
+              <div className="flex-shrink-0 px-4 py-2 border-b border-white/10 flex items-center gap-2">
+                <Loader2 className="w-3.5 h-3.5 animate-spin text-muted-foreground" />
+                <span className="text-xs text-muted-foreground">Waking up your assistant…</span>
               </div>
             )}
 
             {/* Connection error banner */}
             {activeAgentState?.error && !activeAgentState?.loading && dismissedBanner !== activeAgentState.error && (
               activeAgentState.error === "credentials_required" ? (
-                <div className="absolute top-0 left-0 right-0 z-10 px-4 py-2 bg-background border-b border-amber-500/30 flex items-center gap-2">
-                  <KeyRound className="w-4 h-4 text-amber-600" />
-                  <span className="text-xs text-amber-700">Missing credentials — configure them to continue</span>
+                <div className="flex-shrink-0 px-4 py-2 border-b border-white/10 flex items-center gap-2">
+                  <KeyRound className="w-4 h-4 text-foreground" />
+                  <span className="text-xs text-foreground">Some accounts need to be connected to continue</span>
                   <button
                     onClick={() => setCredentialsOpen(true)}
                     className="ml-auto text-xs font-medium text-primary hover:underline"
                   >
-                    Open Credentials
+                    Connect accounts
                   </button>
                   <button
                     onClick={() => setDismissedBanner(activeAgentState.error!)}
-                    className="p-0.5 rounded text-amber-600 hover:text-amber-800 hover:bg-amber-500/20 transition-colors"
+                    className="p-0.5 rounded text-muted-foreground hover:text-foreground hover:bg-white/10 transition-colors"
                   >
                     <X className="w-3.5 h-3.5" />
                   </button>
                 </div>
               ) : (
-                <div className="absolute top-0 left-0 right-0 z-10 px-4 py-2 bg-background border-b border-destructive/30 flex items-center gap-2">
+                <div className="flex-shrink-0 px-4 py-2 border-b border-destructive/30 flex items-center gap-2">
                   <WifiOff className="w-4 h-4 text-destructive" />
-                  <span className="text-xs text-destructive">Backend unavailable: {activeAgentState.error}</span>
+                  <span className="text-xs text-destructive">
+                    Can't reach the server{showDetails ? `: ${activeAgentState.error}` : ". Please check that it's running."}
+                  </span>
                   <button
                     onClick={() => setDismissedBanner(activeAgentState.error!)}
                     className="ml-auto p-0.5 rounded text-destructive hover:text-destructive hover:bg-destructive/20 transition-colors"
@@ -3276,7 +3285,31 @@ export default function Workspace() {
               )
             )}
 
+            {activeSession && activeAgentState && (
+              <JourneyBar
+                key={activeAgentState.sessionId ?? activeWorker}
+                phase={activeAgentState.queenPhase}
+                runState={activeAgentState.workerRunState}
+                messages={activeSession.messages}
+                sessionId={activeAgentState.sessionId}
+                agentPath={activeAgentState.agentPath}
+                credentialsRefreshKey={credentialsRefreshKey}
+                isDeployed={hasActiveTrigger(currentGraph.nodes)}
+                // A pending free-text worker question would swallow the deploy request, so wait for it.
+                disabled={!activeAgentState.ready || (activeAgentState.awaitingInput && activeAgentState.pendingQuestionSource === "worker")}
+                onOpenCredentials={openCredentialsFromJourney}
+                onRun={handleRun}
+                onPause={handlePause}
+                onDeploy={() =>
+                  handleSend(
+                    "Deploy this agent: set it up to run automatically on a schedule. If you need to know how often, ask me.",
+                    activeWorker,
+                  )
+                }
+              />
+            )}
             {activeSession && (
+              <div className="flex-1 min-h-0">
               <ChatPanel
                 messages={activeSession.messages}
                 onSend={handleSend}
@@ -3303,16 +3336,17 @@ export default function Workspace() {
                 contextUsage={activeAgentState?.contextUsage}
                 supportsImages={activeAgentState?.queenSupportsImages ?? true}
               />
+              </div>
             )}
           </div>
           {resolvedSelectedNode && (
             <div className="w-[480px] min-w-[400px] flex-shrink-0">
               {resolvedSelectedNode.nodeType === "trigger" ? (
-                <div className="flex flex-col h-full border-l border-border/40 bg-card/20 animate-in slide-in-from-right">
+                <div className="flex flex-col h-full glass rounded-3xl overflow-hidden animate-in slide-in-from-right">
                   <div className="px-4 pt-4 pb-3 border-b border-border/30 flex items-start justify-between gap-2">
                     <div className="flex items-start gap-3 min-w-0">
-                      <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5 bg-[hsl(210,40%,55%)]/15 border border-[hsl(210,40%,55%)]/25">
-                        <span className="text-sm" style={{ color: "hsl(210,40%,55%)" }}>
+                      <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5 bg-[hsl(0,0%,55%)]/15 border border-[hsl(0,0%,55%)]/25">
+                        <span className="text-sm" style={{ color: "hsl(0,0%,55%)" }}>
                           {{ "webhook": "\u26A1", "timer": "\u23F1", "api": "\u2192", "event": "\u223F" }[resolvedSelectedNode.triggerType || ""] || "\u26A1"}
                         </span>
                       </div>
@@ -3322,11 +3356,11 @@ export default function Workspace() {
                           {resolvedSelectedNode.triggerType} trigger
                           <span className={`inline-block w-1.5 h-1.5 rounded-full ${
                             resolvedSelectedNode.status === "running" || resolvedSelectedNode.status === "complete"
-                              ? "bg-emerald-400" : "bg-muted-foreground/40"
+                              ? "bg-white" : "bg-muted-foreground/40"
                           }`} />
                           <span className={`text-[10px] ${
                             resolvedSelectedNode.status === "running" || resolvedSelectedNode.status === "complete"
-                              ? "text-emerald-400" : "text-muted-foreground/60"
+                              ? "text-foreground" : "text-muted-foreground/60"
                           }`}>
                             {resolvedSelectedNode.status === "running" || resolvedSelectedNode.status === "complete" ? "active" : "inactive"}
                           </span>
@@ -3453,7 +3487,7 @@ export default function Workspace() {
                         );
                       })()}
                       {!triggerTaskDraft && (
-                        <p className="text-[10px] text-amber-400/80 mt-1">A task is required before enabling this trigger.</p>
+                        <p className="text-[10px] text-foreground/80 mt-1">A task is required before enabling this trigger.</p>
                       )}
                     </div>
                     <div>
@@ -3481,7 +3515,7 @@ export default function Workspace() {
                                 ? "border-red-500/30 text-red-400 hover:bg-red-500/10"
                                 : taskMissing
                                   ? "border-border/30 text-muted-foreground/40 cursor-not-allowed"
-                                  : "border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10"
+                                  : "border-white/30 text-foreground hover:bg-white/10"
                             }`}
                           >
                             {triggerIsActive ? "Disable Trigger" : "Enable Trigger"}
@@ -3522,6 +3556,7 @@ export default function Workspace() {
         onClose={() => {
           setCredentialsOpen(false);
           setCredentialAgentPath(null);
+          setCredentialsRefreshKey((k) => k + 1);
           // Keep credentials_required error set — clearing it here triggers
           // the auto-load effect which retries session creation immediately,
           // causing an infinite modal loop when credentials are still missing.
@@ -3530,6 +3565,7 @@ export default function Workspace() {
         }}
         credentials={activeSession?.credentials || []}
         onCredentialChange={() => {
+          setCredentialsRefreshKey((k) => k + 1);
           // Clear credential error so the auto-load effect retries session creation
           if (agentStates[activeWorker]?.error === "credentials_required") {
             updateAgentState(activeWorker, { error: null });

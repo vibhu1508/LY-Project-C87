@@ -62,7 +62,7 @@ function defaultLabel(s: HistorySession, index: number): string {
       .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
       .join(" ");
   }
-  return `New Child Agent${index > 0 ? ` #${index + 1}` : ""}`;
+  return `New agent${index > 0 ? ` #${index + 1}` : ""}`;
 }
 
 function formatDateTime(createdAt: number, sessionId: string): string {
@@ -213,7 +213,7 @@ function HistoryRow({ session: s, label, isActive, isLive, onOpen, onRename, onD
               )}
             </div>
             {isLive && (
-              <span className="text-[9px] text-emerald-500/80 font-semibold uppercase tracking-wide">live</span>
+              <span className="text-[9px] text-foreground/80 font-semibold uppercase tracking-wide">live</span>
             )}
           </>
         )}
@@ -419,7 +419,7 @@ export default function HistorySidebar({ onOpen, openSessionIds = [], activeSess
               >
                 <Clock className="w-3 h-3" />
                 {isLive && (
-                  <span className="absolute top-0.5 right-0.5 w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                  <span className="absolute top-0.5 right-0.5 w-1.5 h-1.5 rounded-full bg-white" />
                 )}
               </button>
             );

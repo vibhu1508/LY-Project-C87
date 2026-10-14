@@ -898,7 +898,7 @@ export default function DraftGraph({ draft, originalDraft, onNodeClick, flowchar
     }
 
     const statusLabel = isActive ? "active" : "inactive";
-    const statusColor = isActive ? "hsl(140,40%,50%)" : "hsl(210,20%,40%)";
+    const statusColor = isActive ? "hsl(0,0%,50%)" : "hsl(0,0%,40%)";
 
     return (
       <g
@@ -1070,7 +1070,7 @@ export default function DraftGraph({ draft, originalDraft, onNodeClick, flowchar
     return (
       <div className="flex flex-col h-full">
         <div className="px-4 pt-3 pb-1.5 flex items-center gap-2">
-          <p className="text-[11px] text-muted-foreground font-medium uppercase tracking-wider">Draft</p>
+          <p className="text-[11px] text-muted-foreground font-medium uppercase tracking-wider">Your plan</p>
         </div>
         <div className="flex-1 flex flex-col items-center justify-center gap-3">
           {loadingMessage ? (
@@ -1080,9 +1080,9 @@ export default function DraftGraph({ draft, originalDraft, onNodeClick, flowchar
             </>
           ) : (
             <p className="text-xs text-muted-foreground/60 text-center italic">
-              No draft graph yet.
+              Your plan will appear here.
               <br />
-              Describe your workflow to get started.
+              Tell me what you want to automate to get started.
             </p>
           )}
         </div>
@@ -1104,12 +1104,12 @@ export default function DraftGraph({ draft, originalDraft, onNodeClick, flowchar
               building
             </span>
           ) : loadingMessage ? (
-            <span className="text-[9px] font-mono font-medium rounded px-1 py-0.5 leading-none border text-amber-500/60 border-amber-500/20 flex items-center gap-1">
+            <span className="text-[9px] font-mono font-medium rounded px-1 py-0.5 leading-none border text-foreground/60 border-white/20 flex items-center gap-1">
               <Loader2 className="w-2.5 h-2.5 animate-spin" />
               updating
             </span>
           ) : (
-            <span className={`text-[9px] font-mono font-medium rounded px-1 py-0.5 leading-none border ${hasStatusOverlay ? "text-emerald-500/60 border-emerald-500/20" : "text-amber-500/60 border-amber-500/20"}`}>
+            <span className={`text-[9px] font-mono font-medium rounded px-1 py-0.5 leading-none border ${hasStatusOverlay ? "text-foreground/60 border-white/20" : "text-foreground/60 border-white/20"}`}>
               {hasStatusOverlay ? "live" : "planning"}
             </span>
           )}
@@ -1195,9 +1195,9 @@ export default function DraftGraph({ draft, originalDraft, onNodeClick, flowchar
                   rx={8}
                   fill={chrome.groupFill}
                   fillOpacity={0.35}
-                  stroke={chrome.groupStroke}
-                  strokeWidth={1}
-                  strokeDasharray="5 3"
+                  stroke={groupStatus === "complete" && groupStatusColor ? groupStatusColor : chrome.groupStroke}
+                  strokeWidth={groupStatus === "complete" ? 1.5 : 1}
+                  strokeDasharray={groupStatus === "complete" ? undefined : "5 3"}
                 />
                 <text
                   x={minX + 8}

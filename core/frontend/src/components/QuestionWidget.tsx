@@ -72,7 +72,7 @@ export default function QuestionWidget({ question, options, onSubmit, onDismiss 
 
   return (
     <div ref={containerRef} className="p-4">
-      <div className="bg-card border border-border rounded-xl shadow-sm overflow-hidden">
+      <div className="glass-strong rounded-3xl overflow-hidden">
         {/* Header / Question */}
         <div className="px-5 pt-4 pb-3 flex items-start gap-3">
           <div className="w-7 h-7 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center flex-shrink-0 mt-0.5">

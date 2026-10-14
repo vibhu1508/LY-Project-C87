@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Mail, Briefcase, Shield, Search, Newspaper, ArrowRight, Hexagon, Send, Bot, Radar, Reply, DollarSign, MapPin, Calendar, UserPlus, Twitter } from "lucide-react";
 import TopBar from "@/components/TopBar";
+import { AnimatedGroup } from "@/components/ui/animated-group";
 import type { LucideIcon } from "lucide-react";
 import { agentsApi } from "@/api/agents";
 import type { DiscoverEntry } from "@/api/types";
@@ -23,21 +24,6 @@ const AGENT_ICONS: Record<string, LucideIcon> = {
   twitter_news_agent: Twitter,
 };
 
-const AGENT_COLORS: Record<string, string> = {
-  email_inbox_management: "hsl(142,70%,45%)",
-  job_hunter: "hsl(148,68%,42%)",
-  vulnerability_assessment: "hsl(156,70%,40%)",
-  deep_research_agent: "hsl(138,62%,48%)",
-  tech_news_reporter: "hsl(144,60%,44%)",
-  competitive_intel_agent: "hsl(150,65%,40%)",
-  email_reply_agent: "hsl(134,62%,46%)",
-  hubspot_revenue_leak_detector: "hsl(160,56%,36%)",
-  local_business_extractor: "hsl(146,58%,42%)",
-  meeting_scheduler: "hsl(152,58%,43%)",
-  sdr_agent: "hsl(140,54%,41%)",
-  twitter_news_agent: "hsl(158,62%,45%)",
-};
-
 function agentSlug(path: string): string {
   return path.replace(/\/$/, "").split("/").pop() || path;
 }
@@ -45,10 +31,10 @@ function agentSlug(path: string): string {
 // --- Generic prompt hints (not tied to specific agents) ---
 
 const promptHints = [
-  "Check my inbox for urgent emails",
-  "Find senior engineer roles that match my profile",
-  "Research the latest trends in AI agents",
-  "Run a security scan on my domain",
+  "Remind me of assignment deadlines every Friday",
+  "Summarize my unread emails each morning",
+  "Turn lecture videos into study notes",
+  "Email my class when homework is posted",
 ];
 
 export default function Home() {
@@ -93,33 +79,23 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen flex flex-col">
       <TopBar />
 
-      {/* Main content */}
       <div className="flex-1 flex flex-col items-center justify-center p-6">
-        <div className="w-full max-w-2xl">
-          {/* Master Agent greeting */}
+        <AnimatedGroup className="w-full max-w-2xl" stagger={0.09}>
           <div className="text-center mb-8">
-            <div
-              className="inline-flex w-12 h-12 rounded-2xl items-center justify-center mb-4"
-              style={{
-                backgroundColor: "hsl(145,70%,46%,0.12)",
-                border: "1.5px solid hsl(145,70%,46%,0.28)",
-                boxShadow: "0 0 24px hsl(145,70%,46%,0.14)",
-              }}
-            >
-              <Bot className="w-6 h-6 text-primary" />
+            <div className="inline-flex w-14 h-14 rounded-full items-center justify-center mb-5 glass-strong">
+              <Bot className="w-6 h-6 text-foreground" />
             </div>
-            <h1 className="text-xl font-semibold text-foreground mb-1.5">What can I help you with?</h1>
+            <h1 className="text-3xl font-semibold tracking-tight text-foreground mb-2">What would you like to automate?</h1>
             <p className="text-sm text-muted-foreground">
-              I am your Master Agent. I plan and coordinate child agents to execute your goals.
+              Describe it in your own words. I'll build it, test it with you, and set it running.
             </p>
           </div>
 
-          {/* Chat input */}
           <form onSubmit={handleSubmit} className="mb-6">
-            <div className="relative border border-border/60 rounded-xl bg-card/50 hover:border-primary/30 focus-within:border-primary/40 transition-colors shadow-sm">
+            <div className="relative glass-strong rounded-3xl focus-within:border-white/30 transition-colors">
               <textarea
                 ref={textareaRef}
                 rows={1}
@@ -136,121 +112,82 @@ export default function Home() {
                     handleSubmit(e);
                   }
                 }}
-                placeholder="Describe a task for TeamAgents..."
-                className="w-full bg-transparent px-5 py-4 pr-12 text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none rounded-xl resize-none overflow-y-auto"
+                placeholder="e.g. Email me a summary of my assignments every Friday…"
+                className="w-full bg-transparent px-6 py-4 pr-16 text-sm text-foreground placeholder:text-muted-foreground/70 focus:outline-none rounded-3xl resize-none overflow-y-auto"
               />
-              <div className="absolute right-3 bottom-2.5">
+              <div className="absolute right-2.5 bottom-2.5">
                 <button
                   type="submit"
                   disabled={!inputValue.trim()}
-                  className="w-7 h-7 rounded-lg bg-primary/90 hover:bg-primary text-primary-foreground flex items-center justify-center transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                  className="w-9 h-9 rounded-full bg-white text-black hover:bg-white/90 flex items-center justify-center transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                 >
-                  <Send className="w-3.5 h-3.5" />
+                  <Send className="w-4 h-4" />
                 </button>
               </div>
             </div>
           </form>
 
-          {/* Action buttons */}
-          <div className="flex items-center justify-center gap-3 mb-6">
-            <button
-              onClick={() => setShowAgents(!showAgents)}
-              className="inline-flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-lg border border-border/60 text-muted-foreground hover:text-foreground hover:border-primary/30 hover:bg-primary/[0.03] transition-all"
-            >
-              <Hexagon className="w-4 h-4 text-primary/60" />
-              <span>Try a sample agent</span>
-              <ArrowRight className={`w-3.5 h-3.5 transition-transform duration-200 ${showAgents ? "rotate-90" : ""}`} />
-            </button>
-            <button
-              onClick={() => navigate("/my-agents")}
-              className="inline-flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-lg border border-border/60 text-muted-foreground hover:text-foreground hover:border-primary/30 hover:bg-primary/[0.03] transition-all"
-            >
-              <Bot className="w-4 h-4 text-primary/60" />
-              <span>Child Agents</span>
-            </button>
-          </div>
-
-          {/* Prompt hint pills */}
           <div className="flex flex-wrap justify-center gap-2 mb-6">
             {promptHints.map((hint) => (
               <button
                 key={hint}
                 onClick={() => handlePromptHint(hint)}
-                className="text-xs text-muted-foreground hover:text-foreground border border-border/50 hover:border-primary/30 rounded-full px-3.5 py-1.5 transition-all hover:bg-primary/[0.03]"
+                className="text-xs text-muted-foreground hover:text-foreground glass-soft glass-hover rounded-full px-3.5 py-1.5"
               >
                 {hint}
               </button>
             ))}
           </div>
 
-          {/* Agent cards — revealed on toggle */}
+          <div className="flex items-center justify-center gap-3 mb-6">
+            <button
+              onClick={() => setShowAgents(!showAgents)}
+              className="inline-flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-full glass glass-hover text-foreground"
+            >
+              <Hexagon className="w-4 h-4" />
+              <span>Browse examples</span>
+              <ArrowRight className={`w-3.5 h-3.5 transition-transform duration-200 ${showAgents ? "rotate-90" : ""}`} />
+            </button>
+            <button
+              onClick={() => navigate("/my-agents")}
+              className="inline-flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-full glass glass-hover text-foreground"
+            >
+              <Bot className="w-4 h-4" />
+              <span>My agents</span>
+            </button>
+          </div>
+
           {showAgents && (
             <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
               {loading && (
-                <div className="text-center py-8 text-sm text-muted-foreground">Loading agents...</div>
+                <div className="text-center py-8 text-sm text-muted-foreground">Loading examples…</div>
               )}
               {error && (
-                <div className="text-center py-8 text-sm text-destructive">{error}</div>
+                <div className="text-center py-8 text-sm text-destructive">Couldn't load examples. Please try again.</div>
               )}
               {!loading && !error && agents.length === 0 && (
-                <div className="text-center py-8 text-sm text-muted-foreground">No sample agents found.</div>
+                <div className="text-center py-8 text-sm text-muted-foreground">No examples available yet.</div>
               )}
               {!loading && !error && agents.length > 0 && (
-                <div className="grid grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                   {agents.map((agent) => {
                     const slug = agentSlug(agent.path);
                     const Icon = AGENT_ICONS[slug] || Hexagon;
-                    const color = AGENT_COLORS[slug] || "hsl(145,70%,46%)";
                     return (
                       <button
                         key={agent.path}
                         onClick={() => handleSelect(agent.path)}
-                        className="text-left rounded-xl border border-border/60 p-4 transition-all duration-200 hover:border-primary/30 hover:bg-primary/[0.03] group relative overflow-hidden h-full flex flex-col"
+                        className="text-left rounded-3xl glass-soft glass-hover p-4 group relative overflow-hidden h-full flex flex-col"
                       >
-                        <div className="flex flex-col flex-1">
-                          <div className="flex items-center gap-3 mb-2.5">
-                            <div
-                              className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
-                              style={{
-                                backgroundColor: `${color}15`,
-                                border: `1.5px solid ${color}30`,
-                              }}
-                            >
-                              <Icon className="w-4 h-4" style={{ color }} />
-                            </div>
-                            <h3 className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">
-                              {agent.name}
-                            </h3>
+                        <div className="flex items-center gap-3 mb-2.5">
+                          <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 bg-white/10 border border-white/15">
+                            <Icon className="w-4 h-4 text-foreground" />
                           </div>
-                          <p className="text-xs text-muted-foreground leading-relaxed mb-3 line-clamp-2">
-                            {agent.description}
-                          </p>
-                          <div className="flex gap-1.5 flex-wrap mt-auto">
-                            {agent.tags.length > 0 ? (
-                              agent.tags.map((tag) => (
-                                <span
-                                  key={tag}
-                                  className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-muted/60 text-muted-foreground"
-                                >
-                                  {tag}
-                                </span>
-                              ))
-                            ) : (
-                              <>
-                                {agent.node_count > 0 && (
-                                  <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-muted/60 text-muted-foreground">
-                                    {agent.node_count} nodes
-                                  </span>
-                                )}
-                                {agent.tool_count > 0 && (
-                                  <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-muted/60 text-muted-foreground">
-                                    {agent.tool_count} tools
-                                  </span>
-                                )}
-                              </>
-                            )}
-                          </div>
+                          <h3 className="text-sm font-semibold text-foreground">{agent.name}</h3>
                         </div>
+                        <p className="text-xs text-muted-foreground leading-relaxed line-clamp-3">
+                          {agent.description}
+                        </p>
                       </button>
                     );
                   })}
@@ -258,7 +195,7 @@ export default function Home() {
               )}
             </div>
           )}
-        </div>
+        </AnimatedGroup>
       </div>
     </div>
   );

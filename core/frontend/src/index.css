@@ -1,5 +1,5 @@
 @import "tailwindcss";
-@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
 
 @custom-variant dark (&:is(.dark *));
 
@@ -30,76 +30,56 @@
 }
 
 @layer base {
-  :root {
-    --background: 150 24% 8%;
-    --foreground: 140 28% 94%;
-    --card: 150 23% 10%;
-    --card-foreground: 140 24% 92%;
-    --popover: 150 23% 10%;
-    --popover-foreground: 140 24% 92%;
-    --primary: 145 66% 46%;
-    --primary-foreground: 140 50% 6%;
-    --secondary: 150 18% 16%;
-    --secondary-foreground: 140 24% 92%;
-    --muted: 150 16% 15%;
-    --muted-foreground: 145 14% 68%;
-    --accent: 150 22% 18%;
-    --accent-foreground: 140 24% 92%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 148 18% 22%;
-    --input: 148 18% 22%;
-    --ring: 145 66% 46%;
-    --radius: 0.5rem;
-  }
-
+  :root,
   .dark {
-    --background: 150 24% 8%;
-    --foreground: 140 28% 94%;
-    --card: 150 23% 10%;
-    --card-foreground: 140 24% 92%;
-    --popover: 150 23% 10%;
-    --popover-foreground: 140 24% 92%;
-    --primary: 145 66% 46%;
-    --primary-foreground: 140 50% 6%;
-    --secondary: 150 18% 16%;
-    --secondary-foreground: 140 24% 92%;
-    --muted: 150 16% 15%;
-    --muted-foreground: 145 14% 68%;
-    --accent: 150 22% 18%;
-    --accent-foreground: 140 24% 92%;
-    --destructive: 0 62.8% 50.6%;
+    /* Black · glass · white palette (single theme) */
+    --background: 0 0% 2%;
+    --foreground: 0 0% 96%;
+    --card: 0 0% 6%;
+    --card-foreground: 0 0% 94%;
+    --popover: 0 0% 7%;
+    --popover-foreground: 0 0% 94%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 0 0% 6%;
+    --secondary: 0 0% 12%;
+    --secondary-foreground: 0 0% 94%;
+    --muted: 0 0% 12%;
+    --muted-foreground: 0 0% 64%;
+    --accent: 0 0% 16%;
+    --accent-foreground: 0 0% 96%;
+    --destructive: 0 72% 62%;
     --destructive-foreground: 0 0% 98%;
-    --border: 148 18% 22%;
-    --input: 148 18% 22%;
-    --ring: 145 66% 46%;
+    --border: 0 0% 100% / 0.12;
+    --input: 0 0% 100% / 0.14;
+    --ring: 0 0% 100% / 0.5;
+    --radius: 0.875rem;
 
     /* Agent graph node status colors */
-    --node-running: 145 75% 52%;
-    --node-looping: 155 66% 48%;
-    --node-complete: 142 46% 42%;
-    --node-pending: 150 10% 30%;
-    --node-pending-bg: 150 9% 13%;
-    --node-pending-border: 150 10% 22%;
-    --node-error: 0 65% 55%;
+    --node-running: 0 0% 96%;
+    --node-looping: 0 0% 80%;
+    --node-complete: 0 0% 82%;
+    --node-pending: 0 0% 32%;
+    --node-pending-bg: 0 0% 9%;
+    --node-pending-border: 0 0% 20%;
+    --node-error: 0 72% 62%;
 
     /* Agent graph trigger node colors */
-    --trigger-bg: 154 28% 14%;
-    --trigger-border: 152 36% 28%;
-    --trigger-text: 148 26% 67%;
-    --trigger-icon: 146 55% 50%;
+    --trigger-bg: 0 0% 10%;
+    --trigger-border: 0 0% 28%;
+    --trigger-text: 0 0% 72%;
+    --trigger-icon: 0 0% 90%;
 
     /* Draft graph chrome colors */
-    --draft-edge: 150 10% 30%;
-    --draft-edge-arrow: 150 10% 34%;
-    --draft-edge-label: 150 10% 45%;
-    --draft-back-edge: 150 10% 24%;
-    --draft-group-fill: 150 12% 17%;
-    --draft-group-stroke: 150 10% 36%;
-    --draft-chrome-text: 148 10% 55%;
-    --draft-chrome-text-dim: 148 10% 60%;
-    --draft-node-text: 0 0% 78%;
-    --draft-node-text-hover: 0 0% 92%;
+    --draft-edge: 0 0% 34%;
+    --draft-edge-arrow: 0 0% 42%;
+    --draft-edge-label: 0 0% 52%;
+    --draft-back-edge: 0 0% 26%;
+    --draft-group-fill: 0 0% 12%;
+    --draft-group-stroke: 0 0% 30%;
+    --draft-chrome-text: 0 0% 58%;
+    --draft-chrome-text-dim: 0 0% 64%;
+    --draft-node-text: 0 0% 82%;
+    --draft-node-text-hover: 0 0% 96%;
   }
 }
 
@@ -110,11 +90,13 @@
 
   body {
     @apply bg-background text-foreground;
-    font-family: "Space Grotesk", "Segoe UI", sans-serif;
+    font-family: "Inter", "Space Grotesk", "Segoe UI", sans-serif;
+    -webkit-font-smoothing: antialiased;
     background-image:
-      radial-gradient(circle at 15% 10%, hsl(145 80% 25% / 0.18), transparent 32%),
-      radial-gradient(circle at 85% 2%, hsl(160 70% 20% / 0.2), transparent 30%),
-      linear-gradient(180deg, hsl(150 24% 8%), hsl(150 22% 6%));
+      radial-gradient(60rem 40rem at 12% -10%, rgb(255 255 255 / 0.16), transparent 60%),
+      radial-gradient(50rem 36rem at 95% 8%, rgb(160 170 200 / 0.14), transparent 60%),
+      radial-gradient(46rem 30rem at 50% 115%, rgb(255 255 255 / 0.11), transparent 60%),
+      linear-gradient(180deg, hsl(0 0% 3%), hsl(0 0% 1%));
     background-attachment: fixed;
   }
 
@@ -126,6 +108,61 @@
     padding: 0;
     margin: 0;
   }
+
+  ::selection {
+    background: rgb(255 255 255 / 0.25);
+  }
+}
+
+/* ── Glass surfaces ───────────────────────────────────────────────────────
+   Blur is applied to panels/containers only (never per chat bubble) so long
+   conversations stay smooth. */
+@utility glass {
+  background: linear-gradient(140deg, rgb(255 255 255 / 0.09), rgb(255 255 255 / 0.03));
+  border: 1px solid rgb(255 255 255 / 0.12);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.1),
+    0 8px 32px rgb(0 0 0 / 0.45);
+  -webkit-backdrop-filter: blur(24px) saturate(150%);
+  backdrop-filter: blur(24px) saturate(150%);
+}
+
+@utility glass-strong {
+  background: linear-gradient(140deg, rgb(255 255 255 / 0.14), rgb(255 255 255 / 0.05));
+  border: 1px solid rgb(255 255 255 / 0.18);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.16),
+    0 16px 48px rgb(0 0 0 / 0.55);
+  -webkit-backdrop-filter: blur(32px) saturate(160%);
+  backdrop-filter: blur(32px) saturate(160%);
+}
+
+/* Flat tint with no blur — cheap, for repeated items (chat bubbles, rows) */
+@utility glass-soft {
+  background: rgb(255 255 255 / 0.05);
+  border: 1px solid rgb(255 255 255 / 0.09);
+}
+
+@utility glass-hover {
+  transition: background-color 0.2s, border-color 0.2s, transform 0.2s;
+  &:hover {
+    background: rgb(255 255 255 / 0.1);
+    border-color: rgb(255 255 255 / 0.2);
+  }
+}
+
+@utility text-shimmer {
+  background: linear-gradient(90deg, rgb(255 255 255 / 0.4) 0%, rgb(255 255 255 / 1) 50%, rgb(255 255 255 / 0.4) 100%);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: shimmer 2.2s linear infinite;
+}
+
+@keyframes shimmer {
+  from { background-position: 200% 0; }
+  to { background-position: -200% 0; }
 }
 
 * {

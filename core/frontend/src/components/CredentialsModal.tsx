@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { KeyRound, Check, AlertCircle, X, Shield, Loader2, Trash2, ExternalLink, Pencil } from "lucide-react";
 import { credentialsApi, type AgentCredentialRequirement } from "@/api/credentials";
+import { friendlyCredentialName } from "@/lib/credential-status";
 
 export interface Credential {
   id: string;
@@ -274,7 +275,7 @@ export default function CredentialsModal({
 
       {/* Modal */}
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
-        <div className="bg-card border border-border rounded-xl shadow-2xl w-full max-w-md pointer-events-auto">
+        <div className="glass-strong rounded-3xl w-full max-w-md pointer-events-auto">
           {/* Header */}
           <div className="flex items-center justify-between px-5 py-4 border-b border-border/60">
             <div className="flex items-center gap-3">
@@ -282,7 +283,7 @@ export default function CredentialsModal({
                 <KeyRound className="w-4 h-4 text-primary" />
               </div>
               <div>
-                <h2 className="text-sm font-semibold text-foreground">Credentials</h2>
+                <h2 className="text-sm font-semibold text-foreground">Connect your accounts</h2>
                 <p className="text-[11px] text-muted-foreground">{agentLabel}</p>
               </div>
             </div>
@@ -297,25 +298,25 @@ export default function CredentialsModal({
               error && rows.length === 0
                 ? "bg-destructive/5 border-destructive/20 text-destructive"
                 : allRequiredMet
-                  ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-600"
+                  ? "bg-white/10 border-white/20 text-foreground"
                   : "bg-destructive/5 border-destructive/20 text-destructive"
             }`}>
               {error && rows.length === 0 ? (
                 <>
                   <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
-                  <span className="break-words">Failed to check credentials: {error}</span>
+                  <span className="break-words">Couldn't check your accounts{error ? ` (${error})` : ""}</span>
                 </>
               ) : allRequiredMet ? (
                 <>
                   <Shield className="w-3.5 h-3.5" />
                   {rows.length === 0
-                    ? "No required credentials!"
-                    : `All required credentials connected (${connectedCount}/${rows.length} total)`}
+                    ? "Nothing to connect for this agent"
+                    : `All set — ${connectedCount} of ${rows.length} accounts connected`}
                 </>
               ) : (
                 <>
                   <AlertCircle className="w-3.5 h-3.5" />
-                  {missingCount > 0 && `${missingCount} missing`}
+                  {missingCount > 0 && `${missingCount} to connect`}
                   {missingCount > 0 && invalidCount > 0 && ", "}
                   {invalidCount > 0 && `${invalidCount} invalid`}
                 </>
@@ -351,23 +352,23 @@ export default function CredentialsModal({
                           : "border-border/60 bg-muted/20"
                     }`}
                   >
-                    <span className="text-lg flex-shrink-0">{row.icon}</span>
+                    <KeyRound className="w-4 h-4 flex-shrink-0 text-muted-foreground" />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium text-foreground">{row.name}</span>
+                        <span className="text-sm font-medium text-foreground">{friendlyCredentialName({ credential_name: row.name, credential_id: row.id })}</span>
                         {row.required && (
                           row.alternativeGroup ? (
                             <span className={`text-[9px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded ${
                               row.connected
-                                ? "text-emerald-600/70 bg-emerald-500/10"
-                                : "text-amber-600/70 bg-amber-500/10"
+                                ? "text-foreground/70 bg-white/10"
+                                : "text-foreground/70 bg-white/10"
                             }`}>
                               Either
                             </span>
                           ) : (
                             <span className={`text-[9px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded ${
                               row.connected
-                                ? "text-emerald-600/70 bg-emerald-500/10"
+                                ? "text-foreground/70 bg-white/10"
                                 : "text-destructive/70 bg-destructive/10"
                             }`}>
                               Required
@@ -524,7 +525,7 @@ export default function CredentialsModal({
                     : "bg-muted text-muted-foreground cursor-not-allowed"
                 }`}
               >
-                {allRequiredMet ? "Done" : missingCount > 0 ? "Connect required credentials to continue" : "Fix invalid credentials to continue"}
+                {allRequiredMet ? "Done" : missingCount > 0 ? "Connect the accounts above to continue" : "Fix the account above to continue"}
               </button>
             </div>
           )}

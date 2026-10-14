@@ -48,35 +48,35 @@ export default function MyAgents() {
   const idleCount = agents.length - activeCount;
 
   return (
-    <div className="h-screen bg-background flex flex-col overflow-hidden">
+    <div className="h-screen flex flex-col overflow-hidden">
       <TopBar />
 
       {/* Content */}
       <div className="flex-1 p-6 md:p-10 max-w-5xl mx-auto w-full overflow-y-auto">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-xl font-semibold text-foreground">Child Agents</h1>
+            <h1 className="text-2xl font-semibold tracking-tight text-foreground">My agents</h1>
             <p className="text-sm text-muted-foreground mt-1">
-              {activeCount} active · {idleCount} idle
+              {activeCount} running · {idleCount} resting
             </p>
           </div>
           <button
             onClick={() => navigate("/workspace?agent=new-agent")}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 rounded-full bg-white text-black text-sm font-medium hover:bg-white/90 transition-colors"
           >
             <Plus className="w-4 h-4" />
-            New Child Agent
+            New agent
           </button>
         </div>
 
         {loading && (
-          <div className="text-center py-16 text-sm text-muted-foreground">Loading agents...</div>
+          <div className="text-center py-16 text-sm text-muted-foreground">Loading your agents…</div>
         )}
         {error && (
-          <div className="text-center py-16 text-sm text-destructive">{error}</div>
+          <div className="text-center py-16 text-sm text-destructive">Couldn't load your agents. Please try again.</div>
         )}
         {!loading && !error && agents.length === 0 && (
-          <div className="text-center py-16 text-sm text-muted-foreground">No agents found in exports/</div>
+          <div className="text-center py-16 text-sm text-muted-foreground">You haven't created any agents yet — start one above.</div>
         )}
 
         {!loading && !error && agents.length > 0 && (
@@ -85,31 +85,31 @@ export default function MyAgents() {
               <button
                 key={agent.path}
                 onClick={() => navigate(`/workspace?agent=${encodeURIComponent(agent.path)}`)}
-                className="group text-left rounded-xl border border-border/60 bg-card/50 p-5 hover:border-primary/40 hover:bg-card transition-all duration-200"
+                className="group text-left rounded-3xl glass glass-hover p-5"
               >
                 <div className="flex items-start justify-between mb-3">
-                  <div className="p-2 rounded-lg bg-muted/60">
-                    <Bot className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                  <div className="p-2 rounded-full bg-white/10">
+                    <Bot className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-colors" />
                   </div>
                   <div className="flex items-center gap-1.5">
                     {agent.is_loaded ? (
                       <>
                         <span className="relative flex h-2 w-2">
-                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-50" />
-                          <span className="relative inline-flex rounded-full h-2 w-2 bg-primary" />
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-50" />
+                          <span className="relative inline-flex rounded-full h-2 w-2 bg-white" />
                         </span>
-                        <span className="text-xs font-medium text-primary">Active</span>
+                        <span className="text-xs font-medium text-foreground">Running</span>
                       </>
                     ) : (
                       <>
                         <Moon className="w-3 h-3 text-muted-foreground" />
-                        <span className="text-xs text-muted-foreground">Idle</span>
+                        <span className="text-xs text-muted-foreground">Resting</span>
                       </>
                     )}
                   </div>
                 </div>
 
-                <h3 className="text-sm font-semibold text-foreground mb-1 group-hover:text-primary transition-colors">
+                <h3 className="text-sm font-semibold text-foreground mb-1 group-hover:text-foreground transition-colors">
                   {agent.name}
                 </h3>
                 <p className="text-xs text-muted-foreground leading-relaxed mb-4 line-clamp-2">

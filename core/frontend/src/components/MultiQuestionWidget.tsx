@@ -71,7 +71,7 @@ export default function MultiQuestionWidget({ questions, onSubmit, onDismiss }: 
 
   return (
     <div className="p-4">
-      <div className="bg-card border border-border rounded-xl shadow-sm overflow-hidden">
+      <div className="glass-strong rounded-3xl overflow-hidden">
         {/* Header */}
         <div className="px-5 pt-4 pb-2 flex items-center gap-3">
           <div className="w-7 h-7 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center flex-shrink-0">
