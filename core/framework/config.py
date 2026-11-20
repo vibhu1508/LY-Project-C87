@@ -23,14 +23,17 @@ TEAMAGENTS_CONFIG_FILE = Path.home() / ".teamagents" / "configuration.json"
 # Backward-compat aliases for existing imports/tests that still reference Hive names.
 HIVE_CONFIG_FILE = TEAMAGENTS_CONFIG_FILE
 
-# TeamAgents LLM router endpoint (Anthropic-compatible).
-# litellm's Anthropic handler appends /v1/messages, so this is just the base host.
-TEAMAGENTS_LLM_ENDPOINT = "https://api.adenhq.com"
-HIVE_LLM_ENDPOINT = TEAMAGENTS_LLM_ENDPOINT
+# TeamAgents LLM router endpoint (legacy alias, deprecated).
+TEAMAGENTS_LLM_ENDPOINT = None
+HIVE_LLM_ENDPOINT = None
 logger = logging.getLogger(__name__)
 
-ALLOWED_LLM_PROVIDERS = frozenset({"gemini", "groq", "openrouter", "ollama", "nvidia_nim"})
-ALLOWED_LLM_PROVIDERS_LABEL = "Gemini, Groq, OpenRouter, Ollama, and NVIDIA NIM"
+ALLOWED_LLM_PROVIDERS = frozenset(
+    {"gemini", "groq", "openrouter", "ollama", "nvidia_nim", "antigravity", "claude_code"}
+)
+ALLOWED_LLM_PROVIDERS_LABEL = (
+    "Gemini, Groq, OpenRouter, Ollama, NVIDIA NIM, Antigravity, and Claude Code"
+)
 DEFAULT_ALLOWED_MODEL = "gemini/gemini-3-flash-preview"
 
 # Providers whose model IDs are pasted raw by the user (they already contain a
@@ -64,14 +67,12 @@ def _get_allowed_llm_section(section: str) -> dict[str, Any]:
     if not isinstance(raw, dict):
         return {}
 
-    # Block all subscription/proxy toggles so only direct Gemini/Groq/OpenRouter remain.
+    # Block other subscription/proxy toggles that are not supported.
     if any(
         raw.get(flag)
         for flag in (
-            "use_claude_code_subscription",
             "use_codex_subscription",
             "use_kimi_code_subscription",
-            "use_antigravity_subscription",
         )
     ):
         logger.warning(
@@ -96,15 +97,16 @@ def _get_allowed_llm_section(section: str) -> dict[str, Any]:
 
 def get_hive_config() -> dict[str, Any]:
     """Load teamagents configuration from ~/.teamagents/configuration.json."""
-    if not TEAMAGENTS_CONFIG_FILE.exists():
+    cfg_file = HIVE_CONFIG_FILE
+    if not cfg_file.exists():
         return {}
     try:
-        with open(TEAMAGENTS_CONFIG_FILE, encoding="utf-8-sig") as f:
+        with open(cfg_file, encoding="utf-8-sig") as f:
             return json.load(f)
     except (json.JSONDecodeError, OSError) as e:
         logger.warning(
             "Failed to load TeamAgents config %s: %s",
-            TEAMAGENTS_CONFIG_FILE,
+            cfg_file,
             e,
         )
         return {}
@@ -118,12 +120,18 @@ def get_hive_config() -> dict[str, Any]:
 def get_preferred_model() -> str:
     """Return the user's preferred LLM model string (e.g. 'anthropic/claude-sonnet-4-20250514')."""
     llm = _get_allowed_llm_section("llm")
+    if llm.get("use_antigravity_subscription"):
+        return str(llm.get("model") or "gemini-3.5-pro").strip()
     if llm.get("provider") and llm.get("model"):
         provider = str(llm["provider"])
         model = str(llm["model"]).strip()
         # Quickstart stores raw model IDs; tolerate a pasted "<provider>/<id>" too.
         model = _strip_provider_prefix(provider, model)
         if model:
+            if provider == "antigravity":
+                return model
+            if provider == "claude_code":
+                return f"anthropic/{model}" if not model.startswith("anthropic/") else model
             return f"{provider}/{model}"
     return DEFAULT_ALLOWED_MODEL
 

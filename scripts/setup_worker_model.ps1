@@ -19,7 +19,6 @@ $ProjectDir = Split-Path -Parent $ScriptDir
 $UvHelperPath = Join-Path $ScriptDir "uv-discovery.ps1"
 $TeamAgentsConfigDir = Join-Path $env:USERPROFILE ".teamagents"
 $TeamAgentsConfigFile = Join-Path $TeamAgentsConfigDir "configuration.json"
-$TeamAgentsLlmEndpoint = "https://api.adenhq.com"
 
 . $UvHelperPath
 
@@ -437,7 +436,6 @@ if (Test-Path $TeamAgentsConfigFile) {
             elseif ($prevLlm.provider -eq "minimax" -or ($prevLlm.api_base -and $prevLlm.api_base -like "*api.minimax.io*")) { $PrevSubMode = "minimax_code" }
             elseif ($prevLlm.api_base -and $prevLlm.api_base -like "*api.z.ai*") { $PrevSubMode = "zai_code" }
             elseif ($prevLlm.api_base -and $prevLlm.api_base -like "*api.kimi.com*") { $PrevSubMode = "kimi_code" }
-            elseif ($prevLlm.provider -eq "teamagents" -or ($prevLlm.api_base -and $prevLlm.api_base -like "*adenhq.com*")) { $PrevSubMode = "teamagents_llm" }
         }
     } catch { }
 }

@@ -66,7 +66,7 @@ import type { AgentCredentialRequirement } from "@/api/credentials";
 const req = (o: Partial<AgentCredentialRequirement>): AgentCredentialRequirement => ({
   credential_name: "x", credential_id: "x", env_var: "X", description: "", help_url: "", tools: [],
   node_types: [], available: false, valid: null, validation_message: null,
-  direct_api_key_supported: true, aden_supported: false, credential_key: "k", alternative_group: null, ...o,
+  direct_api_key_supported: true, credential_key: "k", alternative_group: null, ...o,
 });
 
 describe("credential status", () => {

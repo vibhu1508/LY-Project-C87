@@ -20,49 +20,44 @@ def ensure_credential_key_env() -> None:
       1. ``os.environ`` (already set — nothing to do)
       2. Dedicated file storage (``~/.teamagents/secrets/`` or encrypted store)
       3. Shell config fallback (``~/.zshrc`` / ``~/.bashrc``) for backward compat
-
-    Boot order matters: HIVE_CREDENTIAL_KEY must load BEFORE ADEN_API_KEY
-    because the encrypted store depends on it.
-
-    Remaining LLM/tool API keys still load from shell config.
     """
-    from .key_storage import load_aden_api_key, load_credential_key
+    from .key_storage import load_credential_key
 
-    # Step 1: HIVE_CREDENTIAL_KEY (must come first — encrypted store depends on it)
+    # Step 1: HIVE_CREDENTIAL_KEY
     load_credential_key()
 
-    # Step 2: ADEN_API_KEY (uses encrypted store, then shell config fallback)
-    load_aden_api_key()
-
-    # Step 3: Load remaining LLM/tool API keys from shell config
+    # Step 2: Load remaining LLM/tool API keys from shell config
     try:
         from aden_tools.credentials.shell_config import check_env_var_in_shell_config
     except ImportError:
-        return
+        check_env_var_in_shell_config = None
 
-    try:
-        from aden_tools.credentials import CREDENTIAL_SPECS
+    if check_env_var_in_shell_config:
+        try:
+            from aden_tools.credentials import CREDENTIAL_SPECS
 
-        for spec in CREDENTIAL_SPECS.values():
-            var_name = spec.env_var
-            if var_name and var_name not in ("HIVE_CREDENTIAL_KEY", "ADEN_API_KEY"):
-                if not os.environ.get(var_name):
-                    found, value = check_env_var_in_shell_config(var_name)
-                    if found and value:
-                        os.environ[var_name] = value
-                        logger.debug("Loaded %s from shell config", var_name)
-        # Also load the currently configured LLM env var even if it's not in CREDENTIAL_SPECS.
-        # This keeps quickstart-written keys available to fresh processes on Unix shells.
-        from framework.config import get_hive_config
+            for spec in CREDENTIAL_SPECS.values():
+                var_name = spec.env_var
+                if var_name and var_name != "HIVE_CREDENTIAL_KEY":
+                    if not os.environ.get(var_name):
+                        found, value = check_env_var_in_shell_config(var_name)
+                        if found and value:
+                            os.environ[var_name] = value
+                            logger.debug("Loaded %s from shell config", var_name)
+        except ImportError:
+            pass
 
-        llm_env_var = str(get_hive_config().get("llm", {}).get("api_key_env_var", "")).strip()
-        if llm_env_var and not os.environ.get(llm_env_var):
-            found, value = check_env_var_in_shell_config(llm_env_var)
-            if found and value:
-                os.environ[llm_env_var] = value
-                logger.debug("Loaded configured LLM env var %s from shell config", llm_env_var)
-    except ImportError:
-        pass
+        try:
+            from framework.config import get_hive_config
+
+            llm_env_var = str(get_hive_config().get("llm", {}).get("api_key_env_var", "")).strip()
+            if llm_env_var and not os.environ.get(llm_env_var):
+                found, value = check_env_var_in_shell_config(llm_env_var)
+                if found and value:
+                    os.environ[llm_env_var] = value
+                    logger.debug("Loaded configured LLM env var %s from shell config", llm_env_var)
+        except Exception:
+            pass
 
 
 @dataclass
@@ -183,57 +178,8 @@ def _label(c: CredentialStatus) -> str:
 
 
 def _presync_aden_tokens(credential_specs: dict, *, force: bool = False) -> None:
-    """Sync Aden-backed OAuth tokens into env vars for validation.
-
-    When ADEN_API_KEY is available, fetches fresh OAuth tokens from the Aden
-    server and exports them to env vars.  This ensures validation sees real
-    tokens instead of stale or mis-stored values in the encrypted store.
-    Only touches credentials that are ``aden_supported`` AND whose env var
-    is not already set (so explicit user exports always win).
-
-    Args:
-        force: When True, overwrite env vars that are already set.  Used by
-            the credentials modal to pick up freshly reauthorized tokens
-            from Aden instead of reusing stale values from a prior sync.
-    """
-    from framework.credentials.store import CredentialStore
-
-    try:
-        aden_store = CredentialStore.with_aden_sync(auto_sync=True)
-    except Exception as e:
-        logger.warning("Aden pre-sync unavailable: %s", e)
-        return
-
-    for name, spec in credential_specs.items():
-        if not spec.aden_supported:
-            continue
-        if not force and os.environ.get(spec.env_var):
-            continue  # Already set — don't overwrite
-        cred_id = spec.credential_id or name
-        # sync_all() already fetched everything available from Aden.
-        # Skip credentials not in the store — they aren't connected,
-        # so fetching individually would fail with "Invalid integration ID".
-        if not aden_store.exists(cred_id):
-            continue
-        try:
-            value = aden_store.get_key(cred_id, spec.credential_key)
-            if value:
-                os.environ[spec.env_var] = value
-                logger.debug("Pre-synced %s from Aden", spec.env_var)
-            else:
-                logger.warning(
-                    "Pre-sync: %s (id=%s) available but key '%s' returned None",
-                    spec.env_var,
-                    cred_id,
-                    spec.credential_key,
-                )
-        except Exception as e:
-            logger.warning(
-                "Pre-sync failed for %s (id=%s): %s",
-                spec.env_var,
-                cred_id,
-                e,
-            )
+    """Deprecated: Aden sync has been removed."""
+    pass
 
 
 def validate_agent_credentials(
@@ -285,13 +231,6 @@ def validate_agent_credentials(
     # Build credential store.
     # Env vars take priority — if a user explicitly exports a fresh key it
     # must win over a potentially stale value in the encrypted store.
-    #
-    # Pre-sync: when ADEN_API_KEY is available, sync OAuth tokens from Aden
-    # into env vars so validation sees fresh tokens instead of stale values
-    # in the encrypted store (e.g., a previously mis-stored google.enc).
-    if os.environ.get("ADEN_API_KEY"):
-        _presync_aden_tokens(CREDENTIAL_SPECS, force=force_refresh)
-
     env_mapping = {
         (spec.credential_id or name): spec.env_var for name, spec in CREDENTIAL_SPECS.items()
     }
@@ -311,7 +250,7 @@ def validate_agent_credentials(
         for nt in spec.node_types:
             node_type_to_cred[nt] = cred_name
 
-    has_aden_key = bool(os.environ.get("ADEN_API_KEY"))
+    has_aden_key = False
     checked: set[str] = set()
     all_credentials: list[CredentialStatus] = []
     # Credentials that are present and should be health-checked
@@ -326,14 +265,7 @@ def validate_agent_credentials(
     ) -> None:
         cred_id = spec.credential_id or cred_name
         available = store.is_available(cred_id)
-
-        # Aden-not-connected: ADEN_API_KEY set, Aden-only cred, but integration missing
-        is_aden_nc = (
-            not available
-            and has_aden_key
-            and spec.aden_supported
-            and not spec.direct_api_key_supported
-        )
+        is_aden_nc = False
 
         status = CredentialStatus(
             credential_name=cred_name,

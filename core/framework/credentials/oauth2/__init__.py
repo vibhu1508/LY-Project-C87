@@ -63,7 +63,11 @@ For advanced lifecycle management:
 """
 
 from .base_provider import BaseOAuth2Provider
-from .hubspot_provider import HubSpotOAuth2Provider
+try:
+    from .hubspot_provider import HubSpotOAuth2Provider
+except ImportError:
+    HubSpotOAuth2Provider = None
+
 from .lifecycle import TokenLifecycleManager, TokenRefreshResult
 from .provider import (
     OAuth2Config,
@@ -73,7 +77,11 @@ from .provider import (
     TokenExpiredError,
     TokenPlacement,
 )
-from .zoho_provider import ZohoOAuth2Provider
+
+try:
+    from .zoho_provider import ZohoOAuth2Provider
+except ImportError:
+    ZohoOAuth2Provider = None
 
 __all__ = [
     # Types

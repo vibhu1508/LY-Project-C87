@@ -20,7 +20,6 @@ export interface AgentCredentialRequirement {
   valid: boolean | null;
   validation_message: string | null;
   direct_api_key_supported: boolean;
-  aden_supported: boolean;
   credential_key: string;
   alternative_group: string | null;
 }
@@ -42,7 +41,7 @@ export const credentialsApi = {
     api.delete<{ deleted: boolean }>(`/credentials/${credentialId}`),
 
   checkAgent: (agentPath: string) =>
-    api.post<{ required: AgentCredentialRequirement[]; has_aden_key: boolean }>(
+    api.post<{ required: AgentCredentialRequirement[] }>(
       "/credentials/check-agent",
       { agent_path: agentPath },
     ),

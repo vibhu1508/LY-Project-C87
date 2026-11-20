@@ -8,19 +8,14 @@ from framework.llm.provider import LLMProvider, LLMResponse, Tool
 
 
 def _get_api_key_from_credential_store() -> str | None:
-    """Get API key from CredentialStoreAdapter or environment.
-
-    Priority:
-    1. CredentialStoreAdapter (supports encrypted storage + env vars)
-    2. os.environ fallback
-    """
+    """Get API key from credential store or environment."""
     try:
-        from aden_tools.credentials import CredentialStoreAdapter
+        from framework.credentials.store import CredentialStore
 
-        creds = CredentialStoreAdapter.default()
-        if creds.is_available("anthropic"):
-            return creds.get("anthropic")
-    except ImportError:
+        store = CredentialStore.default()
+        if store.is_available("anthropic"):
+            return store.get_key("anthropic", "api_key")
+    except Exception:
         pass
     return os.environ.get("ANTHROPIC_API_KEY")
 

@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 import re
 import time
 import uuid
@@ -41,11 +42,11 @@ logger = logging.getLogger(__name__)
 
 _TOKEN_URL = "https://oauth2.googleapis.com/token"
 
-# Fallback order: daily sandbox → autopush sandbox → production
+# Antigravity Cloud Code Assist endpoint
 _ENDPOINTS = [
-    "https://daily-cloudcode-pa.sandbox.googleapis.com",
-    "https://autopush-cloudcode-pa.sandbox.googleapis.com",
     "https://cloudcode-pa.googleapis.com",
+    "https://autopush-cloudcode-pa.sandbox.googleapis.com",
+    "https://daily-cloudcode-pa.sandbox.googleapis.com",
 ]
 _DEFAULT_PROJECT_ID = "rising-fact-p41fc"
 _TOKEN_REFRESH_BUFFER_SECS = 60
@@ -63,6 +64,11 @@ _IDE_STATE_DB_MAC = (
 )
 _IDE_STATE_DB_LINUX = (
     Path.home() / ".config" / "Antigravity" / "User" / "globalStorage" / "state.vscdb"
+)
+_IDE_STATE_DB_WIN = (
+    Path(os.environ.get("APPDATA", "")) / "Antigravity" / "User" / "globalStorage" / "state.vscdb"
+    if os.environ.get("APPDATA")
+    else None
 )
 _IDE_STATE_DB_KEY = "antigravityUnifiedStateSync.oauthToken"
 
@@ -149,8 +155,12 @@ def _load_from_ide_db() -> tuple[str | None, str | None, float]:
     import base64  # noqa: PLC0415
     import sqlite3  # noqa: PLC0415
 
-    for db_path in (_IDE_STATE_DB_MAC, _IDE_STATE_DB_LINUX):
-        if not db_path.exists():
+    candidates_dbs = [_IDE_STATE_DB_MAC, _IDE_STATE_DB_LINUX]
+    if _IDE_STATE_DB_WIN:
+        candidates_dbs.append(_IDE_STATE_DB_WIN)
+
+    for db_path in candidates_dbs:
+        if not db_path or not db_path.exists():
             continue
         try:
             con = sqlite3.connect(f"file:{db_path}?mode=ro", uri=True)
@@ -629,7 +639,7 @@ class AntigravityProvider(LLMProvider):
                             continue
                     last_exc = exc
                     continue
-                elif exc.code >= 500:
+                elif exc.code >= 500 or exc.code == 404:
                     last_exc = exc
                     continue
                 # Include the API response body in the exception for easier debugging.

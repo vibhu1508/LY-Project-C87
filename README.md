@@ -41,10 +41,10 @@ Unlike generalized AI frameworks, TeamAgents has been heavily pruned and optimiz
 ![Defining Scope](assets/6.gif)
 
 ### Prerequisites
-- **Operating System:** Windows (The setup currently utilizes PowerShell scripts).
+- **Operating System:** Windows (The setup currently utilizes PowerShell scripts) or Linux/macOS.
 - **Python:** Python 3.10 or higher.
 - **Node.js:** Node.js v20+ (Only required for the UI dashboard; the script will attempt to install this for you if missing).
-- **LLM API Key:** You will need an API key from **Groq**, **Google Gemini**, **OpenRouter**, or **NVIDIA NIM**. 
+- **LLM Provider:** An API key from **Google Gemini**, **Groq**, **OpenRouter**, **NVIDIA NIM**, a local model via **Ollama**, or a subscription with **Antigravity** (via Antigravity IDE) or **Claude Code** (via `claude login`).
 
 ### Installation & Launch
 
@@ -55,7 +55,9 @@ Unlike generalized AI frameworks, TeamAgents has been heavily pruned and optimiz
    ```
 3. **Follow the Setup Wizard:**
    - The script will automatically install necessary dependencies using `uv` (a fast Python package manager) and build the React dashboard.
-   - It will prompt you to select your preferred AI provider (`Gemini`, `Groq`, `OpenRouter`, `Ollama`, or `NVIDIA NIM`).
+   - It will prompt you to select your preferred AI provider (`Google Gemini`, `Groq`, `OpenRouter`, `Ollama`, `NVIDIA NIM`, `Antigravity`, or `Claude Code`).
+   - *Note on Antigravity:* If you use Google Antigravity, the framework automatically detects your credentials from the Antigravity IDE. No manual API keys needed.
+   - *Note on Claude Code:* If you have Claude Code installed, the framework automatically detects and refreshes your token from `~/.claude/.credentials.json`.
    - *Note on NVIDIA NIM:* Get a key at [build.nvidia.com](https://build.nvidia.com/settings/api-keys) and paste a model id exactly as the catalogue lists it, including the vendor namespace (e.g. `meta/llama-3.3-70b-instruct`). The key is stored in `NVIDIA_NIM_API_KEY` and calls go to the OpenAI-compatible endpoint `https://integrate.api.nvidia.com/v1`. To point at a self-hosted NIM container instead, set `llm.api_base` in `~/.teamagents/configuration.json`.
    - *Note on Local Models (Ollama):* If you have a highly capable PC, you can use Ollama as your required integration to run models completely offline. However, the Master Agent utilizes an extremely complex, 60,000+ character system prompt to orchestrate its 30+ tools. **You must use a highly capable model (32B to 70B+ parameters) that natively supports tool calling and has at least a 128k token context length (e.g., `qwen2.5:32b` or `llama3.1:70b`)**. Smaller models (7B/8B), models without tool calling support, or models with small context windows will easily hallucinate and fail to format their internal tool-calling properly.
 

@@ -19,8 +19,6 @@ from difflib import get_close_matches
 
 import httpx
 
-from framework.config import TEAMAGENTS_LLM_ENDPOINT
-
 TIMEOUT = 10.0
 NVIDIA_NIM_API_BASE = "https://integrate.api.nvidia.com/v1"
 # Generous enough for a cold start, short enough that setup stays interactive.
@@ -450,10 +448,6 @@ PROVIDERS = {
     # with empty messages (same as check_anthropic, triggers 400 not 401).
     "kimi": lambda key, **kw: check_anthropic_compatible(
         key, "https://api.kimi.com/coding/v1/messages", "Kimi"
-    ),
-    # TeamAgents LLM uses an Anthropic-compatible endpoint
-    "teamagents": lambda key, **kw: check_anthropic_compatible(
-        key, f"{TEAMAGENTS_LLM_ENDPOINT}/v1/messages", "TeamAgents"
     ),
 }
 

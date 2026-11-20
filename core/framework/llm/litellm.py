@@ -27,7 +27,6 @@ except ImportError:
     litellm = None  # type: ignore[assignment]
     RateLimitError = Exception  # type: ignore[assignment, misc]
 
-from framework.config import HIVE_LLM_ENDPOINT as HIVE_API_BASE
 from framework.llm.provider import LLMProvider, LLMResponse, Tool
 from framework.llm.stream_events import StreamEvent
 
@@ -557,8 +556,6 @@ class LiteLLMProvider(LLMProvider):
             return NVIDIA_NIM_API_BASE
         if model_lower.startswith("kimi/"):
             return KIMI_API_BASE
-        if model_lower.startswith("teamagents/"):
-            return HIVE_API_BASE
         return None
 
     def _completion_with_rate_limit_retry(

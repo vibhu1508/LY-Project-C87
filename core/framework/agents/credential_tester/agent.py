@@ -82,37 +82,8 @@ def get_tools_for_provider(provider_name: str) -> list[str]:
 
 
 def _list_aden_accounts() -> list[dict]:
-    """List active accounts from the Aden platform (requires ADEN_API_KEY)."""
-    import os
-
-    api_key = os.environ.get("ADEN_API_KEY")
-    if not api_key:
-        return []
-
-    try:
-        from framework.credentials.aden.client import AdenClientConfig, AdenCredentialClient
-
-        client = AdenCredentialClient(
-            AdenClientConfig(
-                base_url=os.environ.get("ADEN_API_URL", "https://api.adenhq.com"),
-            )
-        )
-        try:
-            integrations = client.list_integrations()
-        finally:
-            client.close()
-
-        return [
-            {
-                "provider": c.provider,
-                "alias": c.alias,
-                "identity": {"email": c.email} if c.email else {},
-                "integration_id": c.integration_id,
-                "source": "aden",
-            }
-            for c in integrations
-            if c.status == "active"
-        ]
+    """List active accounts from the Aden platform (deprecated: returns empty list)."""
+    return []
     except (ImportError, OSError) as exc:
         logger.debug("Could not list Aden accounts: %s", exc)
         return []

@@ -33,7 +33,7 @@ NC='\033[0m' # No Color
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 # TeamAgents LLM router endpoint
-HIVE_LLM_ENDPOINT="https://api.adenhq.com"
+HIVE_LLM_ENDPOINT=""
 
 # Helper function for prompts
 prompt_yes_no() {
@@ -312,7 +312,7 @@ echo ""
 IMPORT_ERRORS=0
 
 # Batch check all imports in single process (reduces subprocess spawning overhead)
-CHECK_RESULT=$(uv run python scripts/check_requirements.py framework aden_tools litellm 2>/dev/null)
+CHECK_RESULT=$(uv run python scripts/check_requirements.py framework tools litellm 2>/dev/null)
 CHECK_EXIT=$?
 
 # Parse and display results
@@ -327,7 +327,7 @@ try:
     data = json.loads(sys.stdin.read())
     modules = [
         ('framework', 'framework imports OK', True),
-        ('aden_tools', 'aden_tools imports OK', True),
+        ('tools', 'tools imports OK', True),
         ('litellm', 'litellm imports OK', False)
     ]
     import_errors = 0
@@ -1236,13 +1236,25 @@ fi
 echo -e "${BOLD}Select your default LLM provider:${NC}"
 echo ""
 
-PROVIDER_MENU_ENVS=(GEMINI_API_KEY GROQ_API_KEY OPENROUTER_API_KEY NVIDIA_NIM_API_KEY OLLAMA_HOST)
-PROVIDER_MENU_NAMES=("Google Gemini - Free tier available" "Groq - Fast, free tier" "OpenRouter - Bring any OpenRouter model" "NVIDIA NIM - Bring any build.nvidia.com model" "Ollama - Local, no API key (needs a 32B+ tool-calling model)")
-PROVIDER_MENU_INTERNAL=(10 11 13 14 15)
+PROVIDER_MENU_ENVS=(GEMINI_API_KEY GROQ_API_KEY OPENROUTER_API_KEY NVIDIA_NIM_API_KEY OLLAMA_HOST ANTIGRAVITY CLAUDE_CODE)
+PROVIDER_MENU_NAMES=("Google Gemini - Free tier available" "Groq - Fast, free tier" "OpenRouter - Bring any OpenRouter model" "NVIDIA NIM - Bring any build.nvidia.com model" "Ollama - Local, no API key (needs a 32B+ tool-calling model)" "Antigravity - Google Cloud Code Assist subscription" "Claude Code - Anthropic subscription")
+PROVIDER_MENU_INTERNAL=(10 11 13 14 15 7 1)
 for idx in "${!PROVIDER_MENU_ENVS[@]}"; do
     num=$((idx + 1))
     env_var="${PROVIDER_MENU_ENVS[$idx]}"
-    if [ -n "${!env_var:-}" ]; then
+    if [ "$env_var" = "ANTIGRAVITY" ]; then
+        if [ "$ANTIGRAVITY_CRED_DETECTED" = true ]; then
+            echo -e "  ${CYAN}$num)${NC} ${PROVIDER_MENU_NAMES[$idx]}  ${GREEN}(credential detected)${NC}"
+        else
+            echo -e "  ${CYAN}$num)${NC} ${PROVIDER_MENU_NAMES[$idx]}"
+        fi
+    elif [ "$env_var" = "CLAUDE_CODE" ]; then
+        if [ "$CLAUDE_CRED_DETECTED" = true ]; then
+            echo -e "  ${CYAN}$num)${NC} ${PROVIDER_MENU_NAMES[$idx]}  ${GREEN}(credential detected)${NC}"
+        else
+            echo -e "  ${CYAN}$num)${NC} ${PROVIDER_MENU_NAMES[$idx]}"
+        fi
+    elif [ -n "${!env_var:-}" ]; then
         echo -e "  ${CYAN}$num)${NC} ${PROVIDER_MENU_NAMES[$idx]}  ${GREEN}(credential detected)${NC}"
     else
         echo -e "  ${CYAN}$num)${NC} ${PROVIDER_MENU_NAMES[$idx]}"
@@ -1741,11 +1753,11 @@ HIVE_KEY_FILE="$HOME/.teamagents/secrets/credential_key"
 
 # Check if HIVE_CREDENTIAL_KEY already exists (from env, file, or shell rc)
 if [ -n "$HIVE_CREDENTIAL_KEY" ]; then
-    echo -e "${GREEN}  ✓ HIVE_CREDENTIAL_KEY already set${NC}"
+    echo -e "${GREEN}  ✓ Local credential encryption key already set${NC}"
 elif [ -f "$HIVE_KEY_FILE" ]; then
     HIVE_CREDENTIAL_KEY=$(cat "$HIVE_KEY_FILE")
     export HIVE_CREDENTIAL_KEY
-    echo -e "${GREEN}  ✓ HIVE_CREDENTIAL_KEY loaded from $HIVE_KEY_FILE${NC}"
+    echo -e "${GREEN}  ✓ Local credential encryption key loaded from $HIVE_KEY_FILE${NC}"
 else
     # Generate a new Fernet encryption key
     echo -n "  Generating encryption key... "
@@ -1814,8 +1826,8 @@ else
     ERRORS=$((ERRORS + 1))
 fi
 
-echo -n "  ⬡ aden_tools... "
-if uv run python -c "import aden_tools" > /dev/null 2>&1; then
+echo -n "  ⬡ tools... "
+if uv run python -c "import tools" > /dev/null 2>&1; then
     echo -e "${GREEN}ok${NC}"
 else
     echo -e "${RED}failed${NC}"

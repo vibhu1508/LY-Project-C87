@@ -714,52 +714,6 @@ class CredentialStore:
 
         local_storage = EncryptedFileStorage(base_path=local_path)
 
-        # Check if Aden is configured
-        api_key = os.environ.get("ADEN_API_KEY")
-        if not api_key:
-            logger.info("ADEN_API_KEY not set, using local-only credential storage")
-            return cls(storage=local_storage, **kwargs)
-
-        # Try to setup Aden sync
-        try:
-            from .aden import (
-                AdenCachedStorage,
-                AdenClientConfig,
-                AdenCredentialClient,
-                AdenSyncProvider,
-            )
-
-            # Create Aden client
-            client = AdenCredentialClient(AdenClientConfig(base_url=base_url))
-
-            # Create sync provider
-            provider = AdenSyncProvider(client=client)
-
-            # Use cached storage for offline resilience
-            cached_storage = AdenCachedStorage(
-                local_storage=local_storage,
-                aden_provider=provider,
-                cache_ttl_seconds=cache_ttl_seconds,
-            )
-
-            store = cls(
-                storage=cached_storage,
-                providers=[provider],
-                auto_refresh=True,
-                **kwargs,
-            )
-
-            # Initial sync
-            if auto_sync:
-                synced = provider.sync_all(store)
-                logger.info(f"Synced {synced} credentials from Aden server")
-
-            return store
-
-        except ImportError:
-            logger.warning("Aden components not available, using local storage")
-            return cls(storage=local_storage, **kwargs)
-
-        except Exception as e:
-            logger.warning(f"Failed to setup Aden sync: {e}. Using local storage.")
-            return cls(storage=local_storage, **kwargs)
+        # Aden platform sync is removed; using local encrypted credential storage
+        logger.info("Using local encrypted credential storage")
+        return cls(storage=local_storage, **kwargs)

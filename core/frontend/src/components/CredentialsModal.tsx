@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { KeyRound, Check, AlertCircle, X, Shield, Loader2, Trash2, ExternalLink, Pencil } from "lucide-react";
+import { KeyRound, Check, AlertCircle, X, Shield, Loader2, Trash2, Pencil } from "lucide-react";
 import { credentialsApi, type AgentCredentialRequirement } from "@/api/credentials";
 import { friendlyCredentialName } from "@/lib/credential-status";
 
@@ -38,7 +38,6 @@ interface CredentialRow {
   connected: boolean;
   required: boolean;
   credentialKey: string; // key name within the credential (e.g., "api_key")
-  adenSupported: boolean; // whether this credential uses OAuth via Aden
   valid: boolean | null; // true = health check passed, false = failed, null = not checked
   validationMessage: string | null;
   alternativeGroup: string | null; // non-null when multiple providers can satisfy a tool
@@ -53,7 +52,6 @@ function requirementToRow(r: AgentCredentialRequirement): CredentialRow {
     connected: r.available,
     required: true,
     credentialKey: r.credential_key || "api_key",
-    adenSupported: r.aden_supported,
     valid: r.valid,
     validationMessage: r.validation_message,
     alternativeGroup: r.alternative_group ?? null,
@@ -103,7 +101,6 @@ export default function CredentialsModal({
   const [inputValue, setInputValue] = useState("");
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
-  const pendingAdenAuth = useRef(false);
   const lastFocusFetch = useRef(0);
 
   const fetchStatus = useCallback(async () => {
@@ -138,7 +135,6 @@ export default function CredentialsModal({
         setRows(legacyCredentials.map(c => ({
           ...c,
           credentialKey: "api_key",
-          adenSupported: false,
           valid: null,
           validationMessage: null,
           alternativeGroup: null,
@@ -161,10 +157,7 @@ export default function CredentialsModal({
     }
   }, [open, fetchStatus]);
 
-  // Re-fetch when user returns to window (e.g. after completing OAuth on Aden).
-  // Uses "focus" instead of "visibilitychange" because window.open("_blank")
-  // doesn't reliably trigger visibilitychange — the original tab may never
-  // lose visibility. "focus" fires reliably when the user clicks back.
+  // Re-fetch when user returns to window
   useEffect(() => {
     if (!open) return;
     const handleFocus = () => {
@@ -174,11 +167,6 @@ export default function CredentialsModal({
       lastFocusFetch.current = now;
       if (agentPath) credentialCache.delete(agentPath);
       fetchStatus();
-      if (pendingAdenAuth.current) {
-        pendingAdenAuth.current = false;
-        setEditingId("aden_api_key");
-        setInputValue("");
-      }
     };
     window.addEventListener("focus", handleFocus);
     return () => window.removeEventListener("focus", handleFocus);
@@ -201,22 +189,7 @@ export default function CredentialsModal({
         } finally {
           setSaving(false);
         }
-        return;
       }
-      // Empty input on aden_api_key — fall through to reopen platform auth flow
-      if (row.id !== "aden_api_key") return;
-    }
-
-    if (row.id === "aden_api_key" && row.adenSupported) {
-      // Platform key — open TeamAgents console so user can grab the key from Developers tab
-      window.open("https://adenhq.com/", "_blank", "noopener");
-      pendingAdenAuth.current = true;
-      return;
-    }
-
-    if (row.adenSupported) {
-      // OAuth credential — redirect to TeamAgents console
-      window.open("https://adenhq.com/", "_blank", "noopener");
       return;
     }
 
@@ -265,8 +238,6 @@ export default function CredentialsModal({
   const nonAltMissing = nonAltRequired.filter(c => !c.connected).length;
   const altGroupsMissing = [...altGroups.values()].filter(v => !v).length;
   const missingCount = nonAltMissing + altGroupsMissing;
-
-  const adenPlatformConnected = rows.find(r => r.id === "aden_api_key")?.connected ?? false;
 
   return (
     <>
@@ -391,7 +362,7 @@ export default function CredentialsModal({
                             title={row.validationMessage || "Invalid — click to update"}
                           >
                             <AlertCircle className="w-3 h-3" />
-                            {row.adenSupported ? "Reauthorize" : "Update Key"}
+                            Update Key
                           </button>
                         ) : (
                           <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium bg-primary/10 text-primary">
@@ -399,55 +370,38 @@ export default function CredentialsModal({
                             Connected
                           </span>
                         )}
-                        {(row.id === "aden_api_key" || !row.adenSupported) && (
-                          <button
-                            onClick={() => {
-                              setEditingId(editingId === row.id ? null : row.id);
-                              setInputValue("");
-                              setDeletingId(null);
-                            }}
-                            disabled={saving}
-                            className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
-                            title="Update key"
-                          >
-                            <Pencil className="w-3 h-3" />
-                          </button>
-                        )}
-                        {!(row.adenSupported && row.id !== "aden_api_key") && (
-                          <button
-                            onClick={() => {
-                              setDeletingId(deletingId === row.id ? null : row.id);
-                              if (editingId) { setEditingId(null); setInputValue(""); }
-                            }}
-                            disabled={saving}
-                            className="p-1.5 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
-                            title="Delete credential"
-                          >
-                            <Trash2 className="w-3 h-3" />
-                          </button>
-                        )}
+                        <button
+                          onClick={() => {
+                            setEditingId(editingId === row.id ? null : row.id);
+                            setInputValue("");
+                            setDeletingId(null);
+                          }}
+                          disabled={saving}
+                          className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
+                          title="Update key"
+                        >
+                          <Pencil className="w-3 h-3" />
+                        </button>
+                        <button
+                          onClick={() => {
+                            setDeletingId(deletingId === row.id ? null : row.id);
+                            if (editingId) { setEditingId(null); setInputValue(""); }
+                          }}
+                          disabled={saving}
+                          className="p-1.5 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                          title="Delete credential"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </button>
                       </div>
-                    ) : row.adenSupported && !adenPlatformConnected && row.id !== "aden_api_key" ? (
-                      <span className="text-[11px] text-muted-foreground italic flex-shrink-0">
-                        Connect TeamAgents platform key first
-                      </span>
                     ) : (
                       <button
                         onClick={() => handleConnect(row)}
                         disabled={saving}
                         className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium bg-muted/60 text-foreground hover:bg-muted transition-colors flex-shrink-0"
                       >
-                        {row.adenSupported ? (
-                          <>
-                            <ExternalLink className="w-3 h-3" />
-                            Authorize
-                          </>
-                        ) : (
-                          <>
-                            <KeyRound className="w-3 h-3" />
-                            Connect
-                          </>
-                        )}
+                        <KeyRound className="w-3 h-3" />
+                        Connect
                       </button>
                     )}
                   </div>

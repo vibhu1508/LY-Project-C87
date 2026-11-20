@@ -1,4 +1,4 @@
-#Requires -Version 5.1
+﻿#Requires -Version 5.1
 <#
 .SYNOPSIS
     quickstart.ps1 - Interactive onboarding for Aden Agent Framework (Windows)
@@ -20,9 +20,6 @@
 $ErrorActionPreference = "Continue"
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Definition
 $UvHelperPath = Join-Path $ScriptDir "scripts\uv-discovery.ps1"
-
-# TeamAgents LLM router endpoint
-$TeamAgentsLlmEndpoint = "https://api.adenhq.com"
 
 . $UvHelperPath
 
@@ -802,6 +799,8 @@ $DefaultModels = @{
     gemini      = "gemini-3-flash-preview"
     groq        = "moonshotai/kimi-k2-instruct-0905"
     ollama      = "llama3.2"
+    antigravity = "gemini-3.5-pro"
+    claude_code = "claude-sonnet-4-5-20250514"
 }
 
 # Model choices: array of hashtables per provider
@@ -982,7 +981,14 @@ $SelectedMaxContextTokens = 120000
 $SelectedApiBase         = ""
 $SubscriptionMode        = ""
 
-# â”€â”€ Credential detection (silent â€” just set flags) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# ── Credential detection (silent — just set flags) ───────────
+$AntigravityDetected = $false
+$antigravityAccPath = Join-Path $env:USERPROFILE ".teamagents\antigravity-accounts.json"
+$antigravityDbPath = if ($env:APPDATA) { Join-Path $env:APPDATA "Antigravity\User\globalStorage\state.vscdb" } else { "" }
+if ((Test-Path $antigravityAccPath) -or ($antigravityDbPath -and (Test-Path $antigravityDbPath))) {
+    $AntigravityDetected = $true
+}
+
 $ClaudeCredDetected = $false
 $claudeCredPath = Join-Path $env:USERPROFILE ".claude\.credentials.json"
 if (Test-Path $claudeCredPath) { $ClaudeCredDetected = $true }
@@ -1039,20 +1045,22 @@ if (Test-Path $TeamAgentsConfigFile) {
 $DefaultChoice = ""
 if ($PrevProvider) {
     $AllowedDefaultChoices = @{
-        "gemini" = "1"
-        "groq" = "2"
-        "openrouter" = "3"
-        "ollama" = "4"
+        "gemini"      = "1"
+        "groq"        = "2"
+        "openrouter"  = "3"
+        "ollama"      = "4"
+        "antigravity" = "5"
+        "claude_code" = "6"
     }
     if ($AllowedDefaultChoices.ContainsKey($PrevProvider)) {
         $DefaultChoice = $AllowedDefaultChoices[$PrevProvider]
     }
 }
 
-# â”€â”€ Show unified provider selection menu â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# ── Show unified provider selection menu ──────────────────────
 Write-Color -Text "Select your default LLM provider:" -Color White
 Write-Host ""
-Write-Color -Text "  Allowed API key providers:" -Color Cyan
+Write-Color -Text "  API key providers:" -Color Cyan
 
 $AllowedProviders = @(
     @{ Label = "Google Gemini"; MenuNum = 1; InternalNum = 1; Env = "GEMINI_API_KEY" },
@@ -1069,7 +1077,21 @@ foreach ($item in $AllowedProviders) {
     if ($envVal) { Write-Color -Text "  (credential detected)" -Color Green } else { Write-Host "" }
 }
 
-$SkipChoice = 5
+Write-Host ""
+Write-Color -Text "  Subscription providers:" -Color Cyan
+
+Write-Host "  " -NoNewline
+Write-Color -Text "5" -Color Cyan -NoNewline
+Write-Host ") Antigravity (Google Cloud Code Assist)" -NoNewline
+if ($AntigravityDetected) { Write-Color -Text "  (credential detected)" -Color Green } else { Write-Host "" }
+
+Write-Host "  " -NoNewline
+Write-Color -Text "6" -Color Cyan -NoNewline
+Write-Host ") Claude Code (Anthropic)" -NoNewline
+if ($ClaudeCredDetected) { Write-Color -Text "  (credential detected)" -Color Green } else { Write-Host "" }
+
+$SkipChoice = 7
+Write-Host ""
 Write-Host "  " -NoNewline
 Write-Color -Text "$SkipChoice" -Color Cyan -NoNewline
 Write-Host ") Skip for now"
@@ -1182,9 +1204,37 @@ switch ($num) {
                 $SelectedProviderId = ""
                 break
             } else {
-                # User pressed Enter with existing key â€” keep it
+                # User pressed Enter with existing key — keep it
                 break
             }
+        }
+    }
+    5 {
+        $SelectedProviderId = "antigravity"
+        $SubscriptionMode   = "antigravity"
+        $SelectedModel      = "gemini-3.5-pro"
+        $SelectedMaxTokens  = 8192
+        $SelectedMaxContextTokens = 900000
+        Write-Host ""
+        Write-Ok "Antigravity provider selected."
+        if ($AntigravityDetected) {
+            Write-Ok "Antigravity credentials detected."
+        } else {
+            Write-Warn "Antigravity credentials not found. Make sure you are signed into the Antigravity IDE."
+        }
+    }
+    6 {
+        $SelectedProviderId = "claude_code"
+        $SubscriptionMode   = "claude_code"
+        $SelectedModel      = "claude-sonnet-4-5-20250514"
+        $SelectedMaxTokens  = 8192
+        $SelectedMaxContextTokens = 200000
+        Write-Host ""
+        Write-Ok "Claude Code provider selected."
+        if ($ClaudeCredDetected) {
+            Write-Ok "Claude Code credentials detected (~/.claude/.credentials.json)."
+        } else {
+            Write-Warn "Claude Code credentials not found. Run 'claude login' to authenticate."
         }
     }
     { $_ -eq $SkipChoiceInternal } {
@@ -1241,6 +1291,10 @@ if ($SelectedProviderId) {
     } elseif ($SelectedProviderId -eq "openrouter") {
         $config.llm["api_base"] = "https://openrouter.ai/api/v1"
         $config.llm["api_key_env_var"] = $SelectedEnvVar
+    } elseif ($SubscriptionMode -eq "antigravity") {
+        $config.llm["use_antigravity_subscription"] = $true
+    } elseif ($SubscriptionMode -eq "claude_code") {
+        $config.llm["use_claude_code_subscription"] = $true
     } else {
         $config.llm["api_key_env_var"] = $SelectedEnvVar
     }
@@ -1310,9 +1364,9 @@ if (-not $credKey) {
 
 if ($credKey) {
     switch ($credKeySource) {
-        "environment" { Write-Ok "HIVE_CREDENTIAL_KEY already set" }
-        "file"        { Write-Ok "HIVE_CREDENTIAL_KEY loaded from $TeamAgentsKeyFile" }
-        "user_env"    { Write-Ok "HIVE_CREDENTIAL_KEY loaded from User environment variable" }
+        "environment" { Write-Ok "Local credential encryption key already set" }
+        "file"        { Write-Ok "Local credential encryption key loaded from $TeamAgentsKeyFile" }
+        "user_env"    { Write-Ok "Local credential encryption key loaded from User environment variable" }
     }
 } else {
     Write-Host "  Generating encryption key... " -NoNewline
@@ -1524,7 +1578,10 @@ Write-Host ""
 if ($SelectedProviderId) {
     if (-not $SelectedModel) { $SelectedModel = $DefaultModels[$SelectedProviderId] }
     Write-Color -Text "Default LLM:" -Color White
-    if ($SubscriptionMode -eq "claude_code") {
+    if ($SubscriptionMode -eq "antigravity") {
+        Write-Ok "Antigravity Subscription -> $SelectedModel"
+        Write-Color -Text "  Google Cloud Code Assist authentication active" -Color DarkGray
+    } elseif ($SubscriptionMode -eq "claude_code") {
         Write-Ok "Claude Code Subscription -> $SelectedModel"
         Write-Color -Text "  Token auto-refresh from ~/.claude/.credentials.json" -Color DarkGray
     } elseif ($SubscriptionMode -eq "zai_code") {

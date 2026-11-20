@@ -23,7 +23,7 @@ def pick_account(agent: CredentialTesterAgent) -> dict | None:
     accounts = agent.list_accounts()
     if not accounts:
         click.echo("No connected accounts found.")
-        click.echo("Set ADEN_API_KEY and connect accounts at https://app.adenhq.com")
+        click.echo("Configure credentials via the TeamAgents dashboard or environment variables.")
         return None
 
     click.echo("\nConnected accounts:\n")

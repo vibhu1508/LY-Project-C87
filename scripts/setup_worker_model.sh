@@ -30,7 +30,7 @@ DIM='\033[2m'
 NC='\033[0m'
 
 # TeamAgents LLM endpoint
-HIVE_LLM_ENDPOINT="https://api.adenhq.com"
+HIVE_LLM_ENDPOINT=""
 
 # Get the directory where this script is located, then the project root
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
@@ -745,8 +745,6 @@ try:
         sub = "antigravity"
     elif llm.get("provider", "") == "minimax" or "api.minimax.io" in llm.get("api_base", ""):
         sub = "minimax_code"
-    elif llm.get("provider", "") == "teamagents" or "adenhq.com" in llm.get("api_base", ""):
-        sub = "hive_llm"
     elif "api.z.ai" in llm.get("api_base", ""):
         sub = "zai_code"
     print(f"PREV_SUB_MODE={sub}")

@@ -2,11 +2,9 @@
 Dedicated file-based storage for bootstrap credentials.
 
 HIVE_CREDENTIAL_KEY -> ~/.teamagents/secrets/credential_key  (plain text, chmod 600)
-ADEN_API_KEY        -> ~/.teamagents/credentials/             (encrypted via EncryptedFileStorage)
 
 Boot order:
   1. load_credential_key()   -- reads/generates the Fernet key, sets os.environ
-  2. load_aden_api_key()     -- uses the encrypted store (which needs the key from step 1)
 """
 
 from __future__ import annotations
@@ -20,8 +18,6 @@ logger = logging.getLogger(__name__)
 
 CREDENTIAL_KEY_PATH = Path.home() / ".teamagents" / "secrets" / "credential_key"
 CREDENTIAL_KEY_ENV_VAR = "HIVE_CREDENTIAL_KEY"
-ADEN_CREDENTIAL_ID = "aden_api_key"
-ADEN_ENV_VAR = "ADEN_API_KEY"
 
 
 # ---------------------------------------------------------------------------
@@ -66,11 +62,17 @@ def save_credential_key(key: str) -> Path:
     """
     path = CREDENTIAL_KEY_PATH
     path.parent.mkdir(parents=True, exist_ok=True)
-    # Restrict the secrets directory itself
-    path.parent.chmod(stat.S_IRWXU)  # 0o700
+    try:
+        # Restrict the secrets directory itself (Unix)
+        path.parent.chmod(stat.S_IRWXU)  # 0o700
+    except Exception:
+        pass
 
     path.write_text(key, encoding="utf-8")
-    path.chmod(stat.S_IRUSR | stat.S_IWUSR)  # 0o600
+    try:
+        path.chmod(stat.S_IRUSR | stat.S_IWUSR)  # 0o600
+    except Exception:
+        pass
 
     os.environ[CREDENTIAL_KEY_ENV_VAR] = key
     return path
@@ -90,79 +92,23 @@ def generate_and_save_credential_key() -> str:
 
 
 # ---------------------------------------------------------------------------
-# ADEN_API_KEY
+# Deprecated Aden Stubs (no-op)
 # ---------------------------------------------------------------------------
 
 
 def load_aden_api_key() -> str | None:
-    """Load ADEN_API_KEY with priority: env > encrypted store > shell config.
-
-    **Must** be called after ``load_credential_key()`` because the encrypted
-    store depends on HIVE_CREDENTIAL_KEY.
-
-    Sets ``os.environ["ADEN_API_KEY"]`` as a side-effect when found.
-    Returns the key string, or ``None`` if unavailable everywhere.
-    """
-    # 1. Already in environment
-    key = os.environ.get(ADEN_ENV_VAR)
-    if key:
-        return key
-
-    # 2. Encrypted credential store
-    key = _read_aden_from_encrypted_store()
-    if key:
-        os.environ[ADEN_ENV_VAR] = key
-        return key
-
-    # 3. Shell config fallback (backward compat)
-    key = _read_from_shell_config(ADEN_ENV_VAR)
-    if key:
-        os.environ[ADEN_ENV_VAR] = key
-        return key
-
+    """Deprecated stub: Aden service has been removed."""
     return None
 
 
 def save_aden_api_key(key: str) -> None:
-    """Save ADEN_API_KEY to the encrypted credential store.
-
-    Also sets ``os.environ["ADEN_API_KEY"]``.
-    """
-    from pydantic import SecretStr
-
-    from .models import CredentialKey, CredentialObject
-    from .storage import EncryptedFileStorage
-
-    storage = EncryptedFileStorage()
-    cred = CredentialObject(
-        id=ADEN_CREDENTIAL_ID,
-        keys={"api_key": CredentialKey(name="api_key", value=SecretStr(key))},
-    )
-    storage.save(cred)
-    os.environ[ADEN_ENV_VAR] = key
+    """Deprecated stub: Aden service has been removed."""
+    pass
 
 
 def delete_aden_api_key() -> bool:
-    """Remove ADEN_API_KEY from the encrypted store and ``os.environ``.
-
-    Returns True if the key existed and was deleted, False otherwise.
-    """
-    deleted = False
-    try:
-        from .storage import EncryptedFileStorage
-
-        storage = EncryptedFileStorage()
-        deleted = storage.delete(ADEN_CREDENTIAL_ID)
-    except (FileNotFoundError, PermissionError) as e:
-        logger.debug("Could not delete %s from encrypted store: %s", ADEN_CREDENTIAL_ID, e)
-    except Exception:
-        logger.warning(
-            "Unexpected error deleting %s from encrypted store",
-            ADEN_CREDENTIAL_ID,
-            exc_info=True,
-        )
-    os.environ.pop(ADEN_ENV_VAR, None)
-    return deleted
+    """Deprecated stub: Aden service has been removed."""
+    return False
 
 
 # ---------------------------------------------------------------------------
@@ -185,35 +131,17 @@ def _read_credential_key_file() -> str | None:
 
 
 def _read_from_shell_config(env_var: str) -> str | None:
-    """Fallback: read an env var from ~/.zshrc or ~/.bashrc."""
-    try:
-        from aden_tools.credentials.shell_config import check_env_var_in_shell_config
-
-        found, value = check_env_var_in_shell_config(env_var)
-        if found and value:
-            return value
-    except ImportError:
-        pass
-    return None
-
-
-def _read_aden_from_encrypted_store() -> str | None:
-    """Try to load ADEN_API_KEY from the encrypted credential store."""
-    if not os.environ.get(CREDENTIAL_KEY_ENV_VAR):
-        return None
-    try:
-        from .storage import EncryptedFileStorage
-
-        storage = EncryptedFileStorage()
-        cred = storage.load(ADEN_CREDENTIAL_ID)
-        if cred:
-            return cred.get_key("api_key")
-    except (FileNotFoundError, PermissionError, KeyError) as e:
-        logger.debug("Could not load %s from encrypted store: %s", ADEN_CREDENTIAL_ID, e)
-    except Exception:
-        logger.warning(
-            "Unexpected error loading %s from encrypted store",
-            ADEN_CREDENTIAL_ID,
-            exc_info=True,
-        )
+    """Fallback: read an env var from shell config files."""
+    home = Path.home()
+    for rc in [home / ".zshrc", home / ".bashrc", home / ".bash_profile"]:
+        if rc.is_file():
+            try:
+                for line in rc.read_text(encoding="utf-8", errors="ignore").splitlines():
+                    line = line.strip()
+                    if line.startswith(f"export {env_var}=") or line.startswith(f"{env_var}="):
+                        val = line.split("=", 1)[1].strip("'\"")
+                        if val:
+                            return val
+            except Exception:
+                pass
     return None
